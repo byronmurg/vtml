@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+
+		<title>Starling testbed</title>
+
+		<link
+		  rel="stylesheet"
+		  href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"
+		/>
+		<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+
+	</head>
+	<body>
+
+		<header class="container" >
+			<nav>
+				<ul>
+					<li><b>Starling testbed</b></li>
+				</ul>
+			</nav>
+		</header>
+
+		<main class="container" >
+
+			<form method="POST" x-name="select_multi_test" >
+
+				<x-nodejs-body>
+					console.log($body)
+				</x-nodejs-body>
+
+				<select multiple name="test_select" required >
+					<option>Foo</option>
+					<option>Bar</option>
+					<option>Baz</option>
+				</select>
+
+				<button type="submit" >Go</button>
+			</form>
+
+		</main>
+	</body>
+
+</html>

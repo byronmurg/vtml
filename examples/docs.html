@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en" >
+	<x-hint-port port="3001" />
+
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="color-scheme" content="light dark" />
+
+		<link
+		  rel="stylesheet"
+		  href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"
+		/>
+
+		<style>
+			.docs-area {
+				display: grid;
+				column-gap: 1rem;
+				grid-template-areas:
+					"sidebar main main"
+				;
+			}
+
+			.docs-sidebar {
+				grid-area: "sidebar";
+			}
+
+			.docs-main {
+				grid-area: "main";
+			}
+
+			.page-footer {
+				display: block;
+				min-height: 10rem;
+			}
+
+			.tag {
+				background-color: var(--pico-primary);
+				color: var(--pico-contrast-inverse);
+				border-radius: 4px;
+				padding: 5px 1rem 5px 1rem;
+				float: right;
+			}
+		</style>
+
+	</head>
+	<body>
+
+		<header>
+			<nav style="padding-left:1rem;" >
+				<ul>
+					<li><h4>Starling docs</h4></li>
+				</ul>
+			</nav>
+			<hr/>
+		</header>
+
+		<main class="container" >
+
+			<x-json target="tags" >
+				[
+					{
+						"tag": "x-with",
+						"arguments": [
+							{ "name":"source", "default":"$" }
+						],
+						"description": "Include content block if variable is truthy. Sets the variable of children to the target if it is supplied"
+					},
+					{
+						"tag": "x-use",
+						"arguments": [
+							{ "name":"source" }
+						],
+						"description": "Set the current var to be 'source' for all children."
+					},
+					{
+						"tag": "x-if/x-unless",
+						"arguments": [
+							{ "name":"eq" , "optional":true },
+							{ "name":"lt" , "optional":true },
+							{ "name":"lte", "optional":true },
+							{ "name":"gt" , "optional":true },
+							{ "name":"gte", "optional":true },
+							{ "name":"source", "default":"$" }
+						],
+						"description": "Logic and stuff."
+					},
+					{
+						"tag": "x-json",
+						"arguments": [
+							{ "name":"target" }
+						],
+						"description": "Create a new variable at target from a json body"
+					},
+					{
+						"tag": "x-sql",
+						"arguments": [
+							{ "name":"target" }
+						],
+						"description": "Execute sql query and set a new variable at target"
+					},
+					{
+						"tag": "x-nodejs",
+						"arguments": [
+							{ "name":"target" }
+						],
+						"description": "Embed a nodejs function and set target to the return value"
+					},
+					{
+						"tag": "x-dump",
+						"description": "Dump the current variable as json inside a pre tag"
+					},
+					{
+						"tag": "x-hint-port",
+						"arguments": [
+							{ "name":"port", "default":"3000" }
+						],
+						"description": "A hint to the siskin engine to listen on this port"
+					},
+					{
+						"tag": "x-page",
+						"arguments": [
+							{ "name":"path" }
+						],
+						"description": "Define a page within the document."
+					},
+					{
+						"tag": "x-default-page",
+						"description": "The default content to show when no other page has been matched."
+					},
+					{
+						"tag": "x-include",
+						"description": "Include an external siskin-xml file. This tag is processed before anything else.",
+						"pre-process": true
+					}
+				]
+			</x-json>
+
+			<div class="docs-area" >
+
+				<aside class="docs-sidebar" >
+					<h4>Contents</h4>
+					<hr/>
+					<nav>
+						<ul>
+							<x-for-each source="$tags" >
+								<li><a href="#$tag" >$tag</a></li>
+							</x-for-each>
+						</ul>
+					</nav>
+				</aside>
+
+				<div class="docs-main" >
+
+					<x-for-each source="$tags" >
+						<section>
+							<a id="$tag" href="#$tag" ><h2>$tag</h2></a>
+							<x-with source="$pre-process" >
+								<span class="tag" >pre-process</span>
+							</x-with>
+							<x-with source="$form-only" >
+								<span class="tag" >form-only</span>
+							</x-with>
+
+							<p>$description</p>
+
+							<x-with source="$arguments" >
+								<table>
+									<thead>
+										<tr>
+											<th scope="col" >name</th>
+											<th scope="col" >default</th>
+										</tr>
+									</thead>
+									<tbody>
+										<x-for-each>
+											<tr>
+												<th scope="row" >$name</th>
+												<x-with source="$default" >
+													<td>$</td>
+												</x-with>
+												<x-unless source="$default" >
+													<x-if source="$optional" >
+														<td><i>optional</i></td>
+													</x-if>
+													<x-unless source="$optional" >
+														<td><b>required</b></td>
+													</x-unless>
+												</x-unless>
+											</tr>
+										</x-for-each>
+									</tbody>
+								</table>
+							</x-with>
+						</section>
+					</x-for-each>
+				</div>
+			</div>
+		</main>
+		<footer class="page-footer" ></footer>
+	</body>
+
+</html>

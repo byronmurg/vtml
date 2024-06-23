@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<link
+		  rel="stylesheet"
+		  href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"
+		/>
+		<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+
+		<style>
+			.centre {
+				display: block;
+				text-align: center;
+				margin-left: auto;
+				margin-right: auto;
+			}
+		</style>
+	</head>
+	<body>
+
+		<header class="container" >
+			<nav>
+				<ul>
+					<li><a href="/" >products</a></li>
+				</ul>
+				<ul>
+					<li><b>Starling shop</b></li>
+				</ul>
+
+				<x-sql target="basket_summary" >
+					select sum(p.price * ub.amount) as total from shop.user_basket ub, shop.products p where p._id = ub.product ;
+				</x-sql>
+
+				<x-with source="$basket_summary.0" >
+					<ul>
+						<li>total £$total</li>
+					</ul>
+				</x-with>
+			</nav>
+		</header>
+
+		<main class="container" >
+			<x-page path="/" >
+				<x-sql target="products" >
+					select p.*, ub.amount from shop.products p left join shop.user_basket ub on p._id = ub.product order by p._id
+				</x-sql>
+
+
+				<x-for-each source="$products" >
+					<article>
+						<header>
+							<p>$name</p>
+						</header>
+						<p>£$price</p>
+
+						<x-with source="$amount" >
+							<p>$ in basket</p>
+						</x-with>
+
+						<form method="POST" x-name="add_to_basket" >
+							<x-sql-body>
+								insert into shop.user_basket as ub (product, amount)
+								values ($.body.product_id, 1)
+								on conflict (product) do update set amount = (ub.amount +1)
+							</x-sql-body>
+							<x-dump />
+							<input name="product_id" type="hidden" value="$_id" />
+							<button>add to basket</button>
+						</form>
+					</article>
+				</x-for-each>
+
+			</x-page>
+
+
+			<x-default-page>
+				<h3>Not found :(</h3>
+			</x-default-page>
+
+		</main>
+	</body>
+
+</html>

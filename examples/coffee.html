@@ -1,0 +1,30 @@
+<div>
+<x-sql target="coffee" >
+	select * from coffee.coffee_time order by dow asc
+</x-sql>
+
+<x-json target="daysofweek" >
+	["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+</x-json>
+
+<table>
+	<tbody>
+		<x-for-each source="$coffee" >
+			<tr>
+				<td>$daysofweek.$dow</td>
+				<td>
+					<form method="POST" x-name="update_coffee" hx-trigger="focusout" hx-post="/ajax/update_coffee" hx-target="#coffee_ajax_output" >
+						<x-sql-body>
+							update coffee.coffee_time set time = $.body.time where dow = $.body.dow
+						</x-sql-body>
+						<input type="hidden" name="dow" value="$dow" />
+						<input type="time" name="time" value="$time" style="margin-bottom:0;" />
+					</form>
+				</td>
+			</tr>
+		</x-for-each>
+	</tbody>
+</table>
+
+<div id="coffee_ajax_output" style="color:#D93526" ></div>
+</div>

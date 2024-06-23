@@ -1,0 +1,32 @@
+{
+  "name": "starling",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "starling": "./build/starling.js"
+  },
+  "author": "",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "ajv": "^8.12.0",
+    "body-parser": "^1.20.2",
+    "debug": "^4.3.4",
+    "express": "^4.19.2",
+    "fast-xml-parser": "^4.4.0",
+    "lodash": "^4.17.21",
+    "pg": "^8.11.5",
+    "swagger-ui-express": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/debug": "^4.1.12",
+    "@types/express": "^4.17.21",
+    "@types/lodash": "^4.17.0",
+    "@types/pg": "^8.11.5",
+    "@types/swagger-ui-express": "^4.1.6",
+    "openapi3-ts": "^4.3.1"
+  }
+}

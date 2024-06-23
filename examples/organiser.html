@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+	<x-hint-port port="3001" />
+
+	<head>
+		<link
+		  rel="stylesheet"
+		  href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"
+		/>
+		<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+
+		<style>
+			.centre {
+				display: block;
+				text-align: center;
+				margin-left: auto;
+				margin-right: auto;
+			}
+		</style>
+
+		  <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+
+		<script>
+			console.log("I'm a script")
+		</script>
+	</head>
+	<body>
+
+		<header class="container" >
+			<nav>
+				<ul>
+					<li><b>Starling test</b></li>
+				</ul>
+				<ul>
+					<li><a href="/" >home</a></li>
+					<li><a href="/todo" >todos</a></li>
+					<li><a href="/people" >people</a></li>
+				</ul>
+			</nav>
+		</header>
+
+		<main class="container" >
+
+			<x-with source="$.headers.x-user" >
+				<p>Hi $</p>
+			</x-with>
+
+			<x-page path="/" >
+				<x-include src="./organiser_home.html" />
+			</x-page>
+
+			<x-page path="/coffee" >
+				<x-include src="./coffee.html" />
+			</x-page>
+
+			<x-page path="/people" >
+
+				<x-sql target="people" >
+					select * from people order by c desc
+				</x-sql>
+
+				<x-for-each source="$people" >
+					<article>
+						<form x-name="edit_person" method="POST" >
+							<x-sql-body>
+								update people set name = $.body.name, alive = $.body.alive, species = $.body.species where _id = $.body._id
+							</x-sql-body>
+
+							<input type="hidden" name="_id" value="$_id" />
+							<input name="name" value="$name" maxlength="128" />
+							<label>
+								<input type="checkbox" name="alive" checked="$alive" />
+								Alive
+							</label>
+
+							<select name="species" value="$species" >
+								<option value="human" >Human</option>
+								<option value="dog" >Dog</option>
+							</select>
+
+							<button type="submit" style="width:10rem;" >save</button>
+
+						</form>
+					</article>
+				</x-for-each>
+
+			</x-page>
+
+			<!-- page todo {{{ -->
+			<x-page path="/todo" >
+
+				<!-- Controls -->
+				<article>
+					<!-- create form -->
+					<form x-name="create_todo" method="POST" >
+						<x-sql-body>
+							insert into todos (text) values ($body.text)
+						</x-sql-body>
+						<fieldset role="group" >
+							<input name="text" type="text" autofocus="yes" />
+							<button type="submit" >create</button>
+						</fieldset>
+					</form>
+
+					<footer>
+						<!-- search options -->
+						<form>
+							<x-if source="$.query.showdone" >
+								<button style="width:10rem" type="submit" class="secondary" >hide done</button>
+							</x-if>
+							<x-if source="$.query.showdone" eq="" >
+								<input type="hidden" name="showdone" value="on" />
+								<button style="width:10rem" type="submit" >show done</button>
+							</x-if>
+						</form>
+
+					</footer>
+
+				</article>
+
+				<x-sql target="todos" >
+					select * from todos where $.query.showdone::boolean is not null or done = false order by c desc
+				</x-sql>
+
+				<x-for-each source="$todos" >
+
+					<x-json target="styles" >
+						{
+							"button": "width:6rem;"
+						}
+					</x-json>
+
+					<form method="POST" x-name="edit_todo" >
+						<x-sql-body>
+							update todos set text = $body.text where _id = $.body.id
+						</x-sql-body>
+						<fieldset role="group" >
+							<input type="hidden" name="id" value="$_id" />
+
+							<x-if source="$done" eq="false" >
+								<input name="text" value="$text" maxlength="128" />
+								<button type="submit" style="$styles.button" class="material-icons"  >save</button>
+								<button form="toggle-done-$_id" type="submit" style="$styles.button" class="contrast material-icons" >radio_button_unchecked</button>
+							</x-if>
+							<x-if source="$done" >
+								<input name="text" value="$text" maxlength="128" disabled="yes" />
+								<button form="delete-todo-$_id" type="submit" style="$styles.button" class="contrast material-icons" >delete</button>
+								<button form="toggle-done-$_id" type="submit" style="$styles.button" class="material-icons" >check_circle</button>
+							</x-if>
+
+						</fieldset>
+					</form>
+
+					<form id="delete-todo-$_id" method="POST" x-name="delete_todo" >
+						<x-sql-body>
+							delete from todos where _id = $.body.id
+						</x-sql-body>
+						<input type="hidden" name="id" value="$_id" />
+					</form>
+
+					<form id="toggle-done-$_id" method="POST" x-name="toggle_todo_done" >
+						<x-sql-body>
+							update todos set done = not done where _id = $.body.id
+						</x-sql-body>
+						<input type="hidden" name="id" value="$_id" />
+					</form>
+
+					<!-- <x-dump style="padding:1rem;" /> -->
+
+				</x-for-each>
+			</x-page>
+			<!-- end todo page }}} -->
+
+			<x-default-page>
+				<h3>Not found :(</h3>
+			</x-default-page>
+
+		</main>
+	</body>
+
+</html>
