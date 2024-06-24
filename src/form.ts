@@ -56,6 +56,7 @@ function parseFormFields(body:Record<string, any>, formFields:Element[]): Record
 }
 
 
+export
 type FormDescriptor = {
 	name: string
 	return: string

@@ -1,20 +1,13 @@
 #!/usr/bin/env node
 import Express from "express"
-import type { Element } from "./html"
-import * as HTML from "./html"
-import {readFileSync} from "node:fs"
-import * as OAPI from "openapi3-ts/oas31"
 import BodyParser from "body-parser"
 import Debug from "debug"
 import SwaggerUiExpress from "swagger-ui-express"
-import preLoad from "./pre_load"
 import {ValidationError} from "ajv"
 
+import StarlingDocument from "./document"
 import FilterContext from "./filter_context"
 import {RootDataset} from "./types"
-import FilterRoot from "./filter"
-import * as utils from "./utils"
-import PrepareForm from "./form"
 
 const debug = Debug("starling")
 
@@ -35,31 +28,25 @@ function formatValidationError(e:ValidationError): string {
 	return e.message +" : "+ e.errors[0].message
 }
 
+
 async function run() {
 	const filePath = process.argv[2]
-	const document = preLoad(filePath)
+	const starlingDocument = StarlingDocument.LoadFromFile(filePath)
+	exposeStarlingDocument(starlingDocument)
+}
+
+function exposeStarlingDocument(starlingDocument:StarlingDocument) {
 
 	const app = Express()
 	app.use(BodyParser.urlencoded({ extended:true }))
 
 	//
-	// POST Forms
+	// Expose POST Forms
 	//
 
-	const apiPaths: OAPI.OpenAPIObject["paths"] = {}
-	const apiSpec: OAPI.OpenAPIObject = {
-		openapi: "3.1.0",
-		info: {
-			title: "Starling api",
-			version: "1.0",
-		},
-		paths: apiPaths,
-	}
-	const postForms = utils.findPostForms(document)
+	const postForms = starlingDocument.forms
 
-	for (const formElement of postForms) {
-
-		const form = PrepareForm(formElement)
+	for (const form of postForms) {
 
 		app.post(`/action/${form.name}`, async (req, res) => {
 			try {
@@ -95,56 +82,33 @@ async function run() {
 			}
 		})
 
-		apiPaths[`/${form.name}`] = {
-			post: {
-				operationId: form.name,
-				requestBody: {
-					required: true,
-					content: {
-						"application/json": {
-							schema: form.inputSchema,
-						}
-					}
-				}
-			}
-		}
-
 		app.get(`/api/${form.name}`, (req, res) => {
 			res.json({ inputSchema:form.inputSchema })
 		})
 	}
 
 	// Expose api docs
-	app.use("/api-docs", SwaggerUiExpress.serve, SwaggerUiExpress.setup(apiSpec))
+	app.use("/api-docs", SwaggerUiExpress.serve, SwaggerUiExpress.setup(starlingDocument.oapiSchema))
 
-
-	//
-	// Main filter
-	//
-
-	// Create root filter
-	const renderDocument = FilterRoot(document)
 
 	// @NOTE for debuging
 	if (debug.enabled) {
 		app.get("/debug", async (req, res) => {
 			const ctx = createFilterContextFromRequest(req)
-			const clientDocument = await renderDocument(ctx)
+			const clientDocument = await starlingDocument.renderElements(ctx)
 			res.json(clientDocument)
 		})
 	}
 
 
-	const pages = utils.findPages(document)
+	const pages = starlingDocument.findPages()
 
-	for (const page of pages) {
-		const path = utils.requireAttribute(page, 'path')
+	for (const path of pages) {
 		debug("page found", path)
 
 		app.all(path, async (req, res) => {
 			const ctx = createFilterContextFromRequest(req)
-			const clientDocument = await renderDocument(ctx)
-			const html = HTML.serialize(clientDocument)
+			const html = await starlingDocument.renderLoader(ctx)
 			res.send(html)
 		})
 	}
@@ -153,8 +117,7 @@ async function run() {
 	// preserve the POST method
 	app.all("/*", async (req, res) => {
 		const ctx = createFilterContextFromRequest(req, true)
-		const clientDocument = await renderDocument(ctx)
-		const html = HTML.serialize(clientDocument)
+		const html = await starlingDocument.renderLoader(ctx)
 		res.send(html)
 	})
 
@@ -163,7 +126,7 @@ async function run() {
 	// - env
 	// - hint
 	// - default (3000)
-	const portStr = process.env.PORT || utils.findHint(document, "x-hint-port", "port") || "3000"
+	const portStr = process.env.PORT || starlingDocument.findHint("x-hint-port", "port") || "3000"
 	const port = parseInt(portStr)
 
 	if (isNaN(port)) {
