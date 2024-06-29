@@ -42,7 +42,7 @@ class StarlingDocument {
 		}
 
 		for (const form of this.forms) {
-			apiPaths[`/${form.name}`] = {
+			apiPaths[`/api/${form.name}`] = {
 				post: {
 					operationId: form.name,
 					requestBody: {
@@ -73,9 +73,14 @@ class StarlingDocument {
 		return this.renderDocument(ctx)
 	}
 
-	async renderLoader(ctx:FilterContext): Promise<string> {
+	async renderLoaderMl(ctx:FilterContext): Promise<string> {
 		const html = await this.renderElements(ctx)
 		return HTML.serialize(html)
+	}
+
+	async renderLoader(ctx:FilterContext): Promise<string> {
+		const html = await this.renderLoaderMl(ctx)
+		return "<!DOCTYPE html>"+ html
 	}
 
 	static LoadFromString(html:string) {

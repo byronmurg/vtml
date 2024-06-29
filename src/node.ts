@@ -4,7 +4,7 @@ import type FilterContext from "./filter_context"
 const nodeVarRegex = /(?<!\\)\$\w+/g
 
 export default
-function prepare(body:string, idAttr:string = "") {
+function prepare(body:string, idAttr:string) {
 	// Find ant ctx variables used by the js body
 	const injectVars = body.match(nodeVarRegex) || []
 

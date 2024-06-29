@@ -88,5 +88,5 @@ const builder = new XMLBuilder(parsingOptions);
 export
 function serialize(els:Element[]): string {
 	const jObj = els.map(toJsObj)
-	return "<!DOCTYPE html>"+builder.build(jObj);
+	return builder.build(jObj);
 }

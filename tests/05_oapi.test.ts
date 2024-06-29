@@ -1,18 +1,6 @@
 import StarlingDocument from "../src/document"
 import FilterContext from "../src/filter_context"
 
-const exampleHTML = `
-<x-json target="vars" >
-[
-	"foo", "bar"
-]
-</x-json>
-
-<x-for-each source="$vars">
-	<p>$</p>
-</x-for-each>
-`
-
 // Just an example context
 const ctx = FilterContext.Init({
 	path: "/",
@@ -23,11 +11,17 @@ const ctx = FilterContext.Init({
 	pageNotFound: false,
 })
 
-test("Basic check", async () => {
+test("form basic", async () => {
+
+	const exampleHTML = `
+		<form method="POST" x-name="foo" >
+			<input name="bar" type="text" required />
+		</form>
+	`
+
 	const doc = StarlingDocument.LoadFromString(exampleHTML)
 
-	const output = await doc.renderLoader(ctx)
+	const schema = doc.oapiSchema
 
-	expect(output).toBe(`<!DOCTYPE html><p>foo</p><p>bar</p>`)
+	expect(schema.info.version).toBe(`1.0`)
 })
-
