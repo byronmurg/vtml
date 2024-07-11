@@ -1,4 +1,5 @@
 import type { Element } from "./html"
+import type { ElementChain } from "./types"
 
 export
 function getAllAttributes(el:Element): Record<string, string|boolean> {
@@ -174,10 +175,50 @@ function findInputs(el:Element): Element[] {
 	)
 }
 
+function doesElementContainElement(look:Element, search:Element): boolean {
+	if (look === search) {
+		return true
+	} else {
+		const children = look.elements || []
+		return children.some((child) => doesElementContainElement(child, search))
+	}
+}
+
+export
+function getPrecedingElements(doc:Element[], search:Element): ElementChain[] {
+	const work = (doc:Element[], search:Element): ElementChain[] => {
+		const ret:ElementChain[] = []
+
+		for (const el of doc) {
+			if (el === search) {
+				return ret
+			} else if (doesElementContainElement(el, search)) {
+				const children = el.elements || []
+				ret.push({ element:el, contains:true })
+				return ret.concat(work(children, search))
+			} else {
+				ret.push({ element:el })
+			}
+		}
+
+		return ret //@NOTE shouldn't actually reach this
+	}
+
+	return work(doc, search)
+}
+
 export
 function findPages(el:Element[]): Element[] {
 	return findElement(
 		el,
 		(e) => e.name === "x-page"
+	)
+}
+
+export
+function findExposes(el:Element[]): Element[] {
+	return findElement(
+		el,
+		(e) => e.name === "x-expose"
 	)
 }

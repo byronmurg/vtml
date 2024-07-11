@@ -1,8 +1,7 @@
 import * as utils from "./utils"
 import type { Element } from "./html"
-import type {Tag, RootFilter, TagFilter, Branch, Filter} from "./types"
+import type {Tag, RootFilter, FormResult, TagFilter, Branch, Filter, ElementChain} from "./types"
 import FilterContext from "./filter_context"
-import {isFormAction} from "./form_action"
 import doesLogicSelectorMatch from "./logic"
 import Debug from "debug"
 import NodeFunction from "./node"
@@ -73,6 +72,15 @@ const tags: Tag[] = [
 					return { ctx, elements:s.elements }
 				}
 			}
+		},
+		actionContains(el) {
+			const source = utils.getSource(el)
+
+			return (ctx) => {
+				ctx = ctx.Select(source)
+				const found = !!ctx.dataset
+				return { ctx, found }
+			}
 		}
 	},
 
@@ -103,10 +111,7 @@ const tags: Tag[] = [
 				return filterHTML(el)
 			} else {
 				const xName = utils.requireAttribute(el, 'x-name')
-				const nonActionChildren = utils.filterElement(el.elements||[], utils.not(isFormAction))
-
-				// Only filter the remaining children
-				const childs = childFilters(nonActionChildren)
+				const childs = childFilters(el.elements)
 
 				return async (ctx:FilterContext) => {
 					const outputAttributes = templateAttributes(el.attributes, ctx)
@@ -145,7 +150,19 @@ const tags: Tag[] = [
 					return filterPass(ctx)
 				}
 			}
-		}
+		},
+
+		actionContains(el) {
+			// @TODO could be falled by filter
+			const attributes = utils.getAllAttributes(el)
+			const source = utils.getSource(el)
+
+			return (ctx) => {
+				const subCtx = ctx.Select(source)
+				const found = doesLogicSelectorMatch(subCtx.dataset, attributes)
+				return { ctx, found }
+			}
+		},
 	},
 	{
 		name: "x-unless",
@@ -165,10 +182,20 @@ const tags: Tag[] = [
 					return filterPass(ctx)
 				}
 			}
+		},
+
+		actionContains(el) {
+			// @TODO could be called by filter
+			const attributes = utils.getAllAttributes(el)
+			const source = utils.getSource(el)
+
+			return (ctx) => {
+				const subCtx = ctx.Select(source)
+				const found = !doesLogicSelectorMatch(subCtx.dataset, attributes)
+				return { ctx, found }
+			}
 		}
 	},
-
-
 
 
 	{
@@ -209,7 +236,6 @@ const tags: Tag[] = [
 		}
 	},
 
-
 	{
 		name: "x-page",
 		filter(el) {
@@ -228,6 +254,11 @@ const tags: Tag[] = [
 				}
 			}
 		}
+	},
+
+	{
+		name: "x-expose",
+		filter: stripFilter,
 	},
 
 	{
@@ -250,8 +281,8 @@ const tags: Tag[] = [
 		filter(el) {
 			// @NOTE Checkboxes have a slightly odd behaviour. HTML ticks a box if the
 			// checked tag exists but the dev needs a way to set it from a template.
-			if (el.name === "input" && utils.getAttribute(el, "type") === "checkbox") {
-				const childs = childFilters(el.elements)
+			// @TODO write test case for this.
+			if (utils.getAttribute(el, "type") === "checkbox") {
 				return async (ctx): Promise<Branch> => {
 
 					const checkedTmpl = utils.getAttribute(el, "checked")
@@ -269,7 +300,6 @@ const tags: Tag[] = [
 				}
 			} else {
 				// Otherwise it's just a normal html element
-				debug("input process as html")
 				return filterHTML(el)
 			}
 		}
@@ -331,10 +361,21 @@ const tags: Tag[] = [
 		filter(el:Element) {
 			const query = utils.requireOneTextChild(el)
 			const targetAttr = utils.requireTargetAttribute(el)
+			const single = utils.getBoolAttribute(el, "single-row")
 
 			return async (ctx): Promise<Branch> => {
-				const nextCtx = await ctx.AddSQLDatasource(query, targetAttr)
+				const nextCtx = await ctx.AddSQLDatasource(query, targetAttr, single)
 				return filterPass(nextCtx)
+			}
+		},
+
+		actionPreceeds(el:Element) {
+			const query = utils.requireOneTextChild(el)
+			const targetAttr = utils.requireTargetAttribute(el)
+			const single = utils.getBoolAttribute(el, "single-row")
+
+			return (ctx) => {
+				return ctx.AddSQLDatasource(query, targetAttr, single)
 			}
 		}
 	},
@@ -357,8 +398,67 @@ const tags: Tag[] = [
 				// Pass with new ctx
 				return filterPass(newCtx)
 			}
-		}
+		},
+
+		actionPreceeds(el:Element) {
+			const body = utils.requireOneTextChild(el)
+			const targetAttr = utils.requireTargetAttribute(el)
+			const idAttr = utils.getAttribute(el, "id")
+
+			const nodeBody = NodeFunction(body, idAttr)
+			
+			return async (ctx) => {
+				const resp = await nodeBody(ctx)
+
+				// Set output to target
+				return ctx.SetVar(targetAttr, resp)
+			}
+		},
 	},
+
+	{
+		name: "x-setcookie-action",
+		filter: stripFilter,
+		action(el:Element) {
+			const name = utils.requireAttribute(el, "name")
+			const value = utils.requireAttribute(el, "value")
+
+			return async (ctx) => ctx.SetCookie(name, value)
+			
+		},
+	},
+
+	{
+		name: "x-sql-action",
+		filter: stripFilter,
+
+		action: (formAction) => {
+			const query = utils.requireOneTextChild(formAction)
+			const target = utils.getAttribute(formAction, "target")
+			const single = utils.getBoolAttribute(formAction, "single-row")
+			return async (ctx:FilterContext) => {
+				const results = await ctx.RunSQL(query)
+				const output = single ? results[0] : results
+				return target ? ctx.SetVar(target, output) : ctx
+			}
+		},
+	},
+
+
+	{
+		name:"x-nodejs-action",
+		filter: stripFilter,
+		action: (formAction) => {
+			const query = utils.requireOneTextChild(formAction)
+			const target = utils.getAttribute(formAction, "target")
+			const idAttr = utils.getAttribute(formAction, "id")
+			const nodeFunc = NodeFunction(query, idAttr)
+			return async (ctx:FilterContext) => {
+				const output = await nodeFunc(ctx)
+				return target ? ctx.SetVar(target, output) : ctx
+			}
+		}
+	}
 ]
 
 function pathToRegex(path:string): RegExp {
@@ -368,11 +468,70 @@ function pathToRegex(path:string): RegExp {
 
 
 
+type ChainPair = {
+	tag: Tag
+	link: ElementChain
+
+	mutateCtx: (ctx:FilterContext) => Promise<FilterContext>
+	accessCtx: (ctx:FilterContext) => FormResult
+}
+
+const noMutation = async (ctx:FilterContext) => ctx
+const alwaysPass = (ctx:FilterContext) => ({ ctx, found:true })
+
+export
+function prepareChain(chainLinks:ElementChain[]) {
+	const chainTags:ChainPair[] = []
+
+	for (const link of chainLinks) {
+		const el = link.element
+		const tag = findTagIfX(el)
+
+		if (tag) {
+			const mutateCtx = tag.actionPreceeds ? tag.actionPreceeds(el) : noMutation
+			const accessCtx = tag.actionContains ? tag.actionContains(el) : alwaysPass
+
+			chainTags.push({ tag, link, mutateCtx, accessCtx })
+		}
+	}
+
+	return async (ctx:FilterContext): Promise<FormResult> => {
+		for (const chain of chainTags) {
+			const {link} = chain
+			if (link.contains) {
+				const access = chain.accessCtx(ctx)
+				if (access.found) {
+					ctx = access.ctx
+				} else {
+					return {ctx, found:false}
+				}
+			} else {
+				ctx = await chain.mutateCtx(ctx)
+			}
+		}
+
+		return { ctx, found:true }
+	}
+}
+
+export
+function findTag(el:Element): Tag|undefined {
+	return tags.find((t) => t.name === el.name)
+}
+
+export
+function findTagIfX(el:Element): Tag|undefined {
+	const tag = findTag(el)
+	if ((!tag) && el.name?.startsWith("x-")) {
+		throw Error(`Unknown x- tag ${el.name}`)
+	}
+	return tag
+}
 
 function elementFilter(el:Element): Filter {
 	const name = el.name || ""
 
-	const tag = tags.find((t) => t.name === name)
+	const tag = findTag(el)
 
 	if (tag) {
 		return tag.filter(el)
@@ -428,6 +587,8 @@ const passedAttributes = [
 	"max",
 	"min",
 	"pattern",
+	"content-type",
+	"path",
 ]
 
 function templateAttributes(attrs:Element["attributes"], ctx:FilterContext) {

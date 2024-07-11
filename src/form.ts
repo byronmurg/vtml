@@ -1,11 +1,12 @@
 import {createPostFormApiSchema, SchemaObject} from "./oapi"
-import type {RootDataset} from "./types"
+import type {RootDataset, ElementChain, FormResult} from "./types"
 import type {Element} from "./html"
 import * as utils from "./utils"
 import Ajv, {ValidationError} from "ajv"
 import FilterContext from "./filter_context"
 import createFormActions from "./form_action"
 import NodeFunction from "./node"
+import {prepareChain} from "./filter"
 
 const ajv = new Ajv()
 
@@ -61,18 +62,20 @@ type FormDescriptor = {
 	name: string
 	return: string
 	inputSchema: SchemaObject
-	execute: (rootDataset:RootDataset, body:Record<string, any>) => Promise<FilterContext>
-	executeFormEncoded: (rootDataset:RootDataset, body:Record<string, any>) => Promise<FilterContext>
+	execute: (rootDataset:RootDataset, body:Record<string, any>) => Promise<FormResult>
+	executeFormEncoded: (rootDataset:RootDataset, body:Record<string, any>) => Promise<FormResult>
 }
 
 export default
-function prepareForm(postForm:Element): FormDescriptor {
+function prepareForm(postForm:Element, preElements:ElementChain[]): FormDescriptor {
 	
 	const xName = utils.getAttribute(postForm, "x-name")
 
 	if (! xName) {
 		throw Error(`No x-name set in POST form`)
 	}
+
+	const chain = prepareChain(preElements)
 
 	const xReturn = utils.getAttribute(postForm, "x-return") || ""
 
@@ -91,17 +94,25 @@ function prepareForm(postForm:Element): FormDescriptor {
 	/*
 	 * Create an executor to call this form with a parsed (but not validated) body
 	 */
-	async function execute(rootDataset:RootDataset, body:Record<string, any>): Promise<FilterContext> {
+	async function execute(rootDataset:RootDataset, body:Record<string, any>): Promise<FormResult> {
 		await validator(body)
 		rootDataset.body = body
 
-		let ctx = FilterContext.Init(rootDataset)
+		const preCtx = FilterContext.Init(rootDataset)
+
+		const chainResult = await chain(preCtx)
+
+		if (! chainResult.found) {
+			return chainResult
+		}
+
+		let ctx = chainResult.ctx
 
 		for (const action of actions) {
 			ctx = await action(ctx)
 		}
 
-		return ctx
+		return {ctx, found:true}
 	}
 
 	/*

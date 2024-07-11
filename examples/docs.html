@@ -95,7 +95,8 @@
 					{
 						"tag": "x-sql",
 						"arguments": [
-							{ "name":"target" }
+							{ "name":"target" },
+							{ "name":"single-row", optional:true }
 						],
 						"description": "Execute sql query and set a new variable at target"
 					},
@@ -127,6 +128,14 @@
 					{
 						"tag": "x-default-page",
 						"description": "The default content to show when no other page has been matched."
+					},
+					{
+						"tag": "x-setcookie-action",
+						"arguments": [
+							{ name:"name" },
+							{ name:"value" }
+						],
+						"description": "Set a response cookie inside an action."
 					},
 					{
 						"tag": "x-include",

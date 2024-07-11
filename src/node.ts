@@ -3,6 +3,10 @@ import type FilterContext from "./filter_context"
 // A regex for matching vars in x-nodejs
 const nodeVarRegex = /(?<!\\)\$\w+/g
 
+const inbuiltVars: Record<string, any> = {
+	require: require,
+}
+
 export default
 function prepare(body:string, idAttr:string) {
 	// Find ant ctx variables used by the js body
@@ -11,9 +15,11 @@ function prepare(body:string, idAttr:string) {
 	// Extra details to add to Any error message
 	const extra = idAttr ? `(id ${idAttr})` : ""
 
+	const inbuiltKeys = Object.keys(inbuiltVars)
+
 	const buildFunction = () => {
 		try {
-			return new Function("$", ...injectVars, `return (async () => {\n ${body} \n})()`)
+			return new Function("$", ...inbuiltKeys, ...injectVars, `return (async () => {\n ${body} \n})()`)
 		} catch (e:any) {
 			throw Error(`Syntax error in x-node ${extra}: ${e.message}`)
 		}
@@ -25,6 +31,11 @@ function prepare(body:string, idAttr:string) {
 	return async (ctx:FilterContext): Promise<any> => {
 		// Root is always passed in
 		const args = [ctx.rootDataset]
+
+		for (const k in inbuiltVars) {
+			const v = inbuiltVars[k]
+			args.push(v)
+		}
 
 		// Push each of the injected vars
 		for (const v of injectVars) {

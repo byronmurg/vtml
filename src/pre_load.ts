@@ -4,6 +4,12 @@ import {readFileSync} from "node:fs"
 import path from "node:path"
 import * as utils from "./utils"
 
+const srcElements = [
+	"x-expose",
+]
+
+const isSrcElement = (el:Element) => srcElements.includes(el.name||"")
+
 function preFilter(el:Element, dir:string): Element {
 	const elements = el.elements || []
 
@@ -11,6 +17,13 @@ function preFilter(el:Element, dir:string): Element {
 		if (child.name === "x-include") {
 			const src = utils.requireAttribute(child, "src")
 			return preLoadInclude(path.join(dir, src), dir)
+		} else if (isSrcElement(child)) {
+			// If the element has a src attribute make sure
+			// that it is relative to the file.
+			if (child.attributes?.src){
+				child.attributes.src = path.join(dir, child.attributes.src.toString())
+			}
+			return child
 		} else {
 			return preFilter(child, dir)
 		}

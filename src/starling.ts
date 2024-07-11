@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import Express from "express"
 import BodyParser from "body-parser"
+import CookieParser from "cookie-parser"
 import Debug from "debug"
 import SwaggerUiExpress from "swagger-ui-express"
 import {ValidationError} from "ajv"
@@ -17,6 +18,7 @@ const createRootDataset = (req:Express.Request, pageNotFound:boolean = false): R
 	path: req.path,
 	method: req.method,
 	headers: req.headers,
+	cookies: req.cookies,
 	pageNotFound,
 })
 
@@ -39,6 +41,7 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument) {
 
 	const app = Express()
 	app.use(BodyParser.urlencoded({ extended:true }))
+	app.use(CookieParser())
 
 	//
 	// Expose POST Forms
@@ -46,14 +49,29 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument) {
 
 	const postForms = starlingDocument.forms
 
+	function setCookies(res:Express.Response, ctx:FilterContext) {
+		const cookies = ctx.GetCookies()
+
+		for (const k in cookies) {
+			const v = cookies[k]
+			res.cookie(k, v)
+		}
+	}
+
 	for (const form of postForms) {
 
 		app.post(`/action/${form.name}`, async (req, res) => {
 			try {
 				const rootDataset = createRootDataset(req)
-				await form.executeFormEncoded(rootDataset, req.body)
-				// Return the client to x-return or the referer
-				res.redirect(307, form.return || "back")
+				const formRes = await form.executeFormEncoded(rootDataset, req.body)
+
+				if (formRes.found) {
+					setCookies(res, formRes.ctx)
+					// Return the client to x-return or the referer
+					res.redirect(307, form.return || "back")
+				} else {
+					res.status(404).send("Not Found")
+				}
 		 	} catch (e) {
 				if (e instanceof ValidationError) {
 					const msg = formatValidationError(e)
@@ -68,9 +86,14 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument) {
 		app.post(`/ajax/${form.name}`, async (req, res) => {
 			try {
 				const rootDataset = createRootDataset(req)
-				await form.executeFormEncoded(rootDataset, req.body)
-				// @NOTE okay sends an empty response
-				res.send("")
+				const formRes = await form.executeFormEncoded(rootDataset, req.body)
+				if (formRes.found) {
+					setCookies(res, formRes.ctx)
+					// @NOTE okay sends an empty response
+					res.send("")
+				} else {
+					res.status(404).send("Not Found")
+				}
 			} catch (e) {
 				if (e instanceof ValidationError) {
 					const msg = formatValidationError(e)
@@ -78,6 +101,28 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument) {
 				} else {
 					console.error(e)
 					res.status(500).send("Something went wrong")
+				}
+			}
+		})
+
+		app.post(`/api/${form.name}`, Express.json(), async (req, res) => {
+			try {
+				const rootDataset = createRootDataset(req)
+				const formRes = await form.execute(rootDataset, req.body)
+				if (formRes.found) {
+					setCookies(res, formRes.ctx)
+					// @NOTE okay sends an empty response
+					res.json({})
+				} else {
+					res.status(404).json({ message: "Not Found" })
+				}
+			} catch (e) {
+				if (e instanceof ValidationError) {
+					const msg = formatValidationError(e)
+					res.status(400).json({ message:msg })
+				} else {
+					console.error(e)
+					res.status(500).json({ message: "Something went wrong" })
 				}
 			}
 		})
@@ -110,6 +155,21 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument) {
 			const ctx = createFilterContextFromRequest(req)
 			const html = await starlingDocument.renderLoader(ctx)
 			res.send(html)
+		})
+	}
+
+	// Exposes
+
+	const exposes = starlingDocument.findExposes()
+
+	for (const expose of exposes) {
+		app.get(expose.path, (req, res) => {
+			if (expose.contentType) {
+				res.setHeader("Content-Type", expose.contentType)
+			}
+			res.sendFile(expose.src, {
+				root: process.cwd(),
+			})
 		})
 	}
 

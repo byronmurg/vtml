@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+
+		<title>Simple example</title>
+
+		<link
+		  rel="stylesheet"
+		  href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"
+		/>
+		<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+
+		<style>
+			.centre {
+				display: block;
+				text-align: center;
+				margin-left: auto;
+				margin-right: auto;
+			}
+
+			.ctrl-button {
+				width: 6rem;
+			}
+		</style>
+
+	</head>
+	<body>
+
+		<x-sql target="user" >
+			select * from simple.users where session_key = $.cookies.skey
+		</x-sql>
+
+
+		<header class="container" >
+			<nav>
+				<ul>
+					<li><b>Starling test</b></li>
+				</ul>
+				<x-with source="$user.0" >
+					<ul>
+						<li>$name</li>
+					</ul>
+				</x-with>
+			</nav>
+		</header>
+
+		<main class="container" >
+
+			<x-unless source="$user.0" >
+
+				<form x-name="login" method="POST" >
+
+					<input type="text" name="username" />
+					<input type="password" name="password" />
+					<button type="submit" >login</button>
+
+					<x-nodejs-action target="password_hash" >
+						var crypto = require('crypto');
+
+						const password = $.body.password
+
+						return crypto.createHash('md5').update(password).digest('hex');
+					</x-nodejs-action>
+
+					<x-nodejs-action target="noddy" >
+						console.log($password_hash)
+					</x-nodejs-action>
+
+					<x-sql-action target="user" >
+						update simple.users set session_key = uuid()
+						where name = $.body.username and password_hash = $password_hash
+						returning *
+					</x-sql-action>
+
+					<x-setcookie-action name="skey" value="$user.0.session_key" />
+				</form>
+
+			</x-unless>
+
+			<x-if source="$user.0" >
+
+				<!-- create form -->
+				<form x-name="create_todo" method="POST" >
+					<x-sql-action>
+						insert into simple.todos (text) values ($body.text)
+					</x-sql-action>
+					<fieldset role="group" >
+						<input name="text" type="text" autofocus="yes" maxlength="128" required />
+						<button type="submit" class="material-icons" >add</button>
+					</fieldset>
+				</form>
+
+				<!-- search options -->
+				<details>
+					<summary class="material-icons" >settings</summary>
+						
+					<form>
+						<x-if source="$.query.showdone" >
+							<button style="width:10rem" type="submit" class="secondary" >hide done</button>
+						</x-if>
+						<x-if source="$.query.showdone" eq="" >
+							<input type="hidden" name="showdone" value="on" />
+							<button style="width:10rem" type="submit" >show done</button>
+						</x-if>
+					</form>
+				</details>
+
+				<hr/>
+
+				<!-- Get the todos -->
+				<x-sql target="todos" >
+					select * from simple.todos where $.query.showdone::boolean is not null or done = false order by c desc
+				</x-sql>
+
+				<x-nodejs target="ntodos" >
+					return $todos.length
+				</x-nodejs>
+
+				<p>There are $ntodos todos</p>
+
+				<!-- Loop through the todos -->
+				<x-for-each source="$todos" >
+
+					<!-- Form to update the text -->
+					<form method="POST" x-name="edit_todo" >
+						<x-sql-action>
+							update simple.todos set text = $body.text where _id = $.body.id
+						</x-sql-action>
+						<fieldset role="group" >
+							<input type="hidden" name="id" value="$_id" />
+
+							<x-if source="$done" eq="false" >
+								<input name="text" value="$text" maxlength="128" />
+								<button type="submit" class="ctrl-button material-icons"  >save</button>
+								<button form="toggle-done-$_id" type="submit" class="ctrl-button contrast material-icons" >radio_button_unchecked</button>
+							</x-if>
+							<x-if source="$done" >
+								<input name="text" value="$text" maxlength="128" disabled />
+								<button form="delete-todo-$_id" type="submit" class="ctrl-button contrast material-icons" >delete</button>
+								<button form="toggle-done-$_id" type="submit" class="ctrl-button material-icons" >check_circle</button>
+							</x-if>
+
+						</fieldset>
+					</form>
+
+					<!-- Hidden form to delete -->
+					<form id="delete-todo-$_id" method="POST" x-name="delete_todo" >
+						<x-sql-action>
+							delete from simple.todos where _id = $.body.id
+						</x-sql-action>
+						<input type="hidden" name="id" value="$_id" />
+					</form>
+
+					<!-- Hidden form to toggle done -->
+					<form id="toggle-done-$_id" method="POST" x-name="toggle_todo_done" >
+						<x-sql-action>
+							update simple.todos set done = not done where _id = $.body.id
+						</x-sql-action>
+						<input type="hidden" name="id" value="$_id" />
+					</form>
+
+				</x-for-each>
+
+			</x-if>
+
+		</main>
+	</body>
+
+</html>

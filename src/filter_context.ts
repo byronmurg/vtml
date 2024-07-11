@@ -26,6 +26,7 @@ class FilterContext {
 		public readonly dataset: any,
 		public readonly rootDataset: RootDataset,
 		private readonly parent: FilterContext|undefined = undefined,
+		private readonly setCookies: Record<string, string> = {},
 	) {}
 
 	// Initialize a new dataset with only the rootDataset
@@ -35,7 +36,18 @@ class FilterContext {
 
 	// Initialize a copy with a new dataset
 	private copy(dataset:any): FilterContext {
-		return new FilterContext(dataset, this.rootDataset, this)
+		return new FilterContext(dataset, this.rootDataset, this, {...this.setCookies})
+	}
+
+	SetCookie(key:string, value:string) {
+		const realValue = this.templateString(value)
+		const cpy = this.copy(this.dataset)
+		cpy.setCookies[key] = realValue
+		return cpy
+	}
+
+	GetCookies() {
+		return {...this.setCookies}
 	}
 
 	Select(token:string): FilterContext {
@@ -68,11 +80,12 @@ class FilterContext {
 		return this.copy(newDataset)
 	}
 
-	async AddSQLDatasource(query:string, target:string): Promise<FilterContext> {
+	async AddSQLDatasource(query:string, target:string, single:boolean): Promise<FilterContext> {
+		// @TODO this shouldn't be inside filter_context
 		const rows = await this.RunSQL(query)
 		const newDataset = {
 			...this.dataset,
-			[target]: rows,
+			[target]: single ? rows[0] : rows,
 		}
 
 		return this.copy(newDataset)
@@ -130,7 +143,6 @@ class FilterContext {
 
 
 	templateString(str:string): string {
-		debug("Template string", str)
 		return str.replace(templateRegex, (t) => this.getKey(t))
 	}
 }

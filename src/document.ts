@@ -5,7 +5,7 @@ import Debug from "debug"
 import preLoad from "./pre_load"
 
 import FilterContext from "./filter_context"
-import {RootFilter} from "./types"
+import {RootFilter, Expose} from "./types"
 import FilterRoot from "./filter"
 import * as utils from "./utils"
 import PrepareForm, {FormDescriptor} from "./form"
@@ -26,7 +26,11 @@ class StarlingDocument {
 
 	prepareForms(): FormDescriptor[] {
 		const postForms = utils.findPostForms(this.root)
-		return postForms.map(PrepareForm)
+
+		return postForms.map((form) => {
+			const preElements = utils.getPrecedingElements(this.root, form)
+			return PrepareForm(form, preElements)
+		})
 	}
 
 
@@ -67,6 +71,15 @@ class StarlingDocument {
 	findPages(): string[] {
 		const pages = utils.findPages(this.root)
 		return pages.map((page) => utils.requireAttribute(page, 'path'))
+	}
+
+	findExposes(): Expose[] {
+		const exposes = utils.findExposes(this.root)
+		return exposes.map((el) => ({
+			path: utils.requireAttribute(el, "path"),
+			contentType: utils.getAttribute(el, "content-type"),
+			src: utils.requireAttribute(el, "src"),
+		}))
 	}
 
 	renderElements(ctx:FilterContext) {

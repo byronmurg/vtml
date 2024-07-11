@@ -6,6 +6,7 @@ const ctx = FilterContext.Init({
 	path: "/",
 	query: {},
 	method: "GET",
+	cookies: {},
 	headers: {},
 	params:{},
 	pageNotFound: false,

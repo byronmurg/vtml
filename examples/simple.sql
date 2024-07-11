@@ -3,7 +3,9 @@ begin;
 create schema if not exists simple;
 
 create table simple.users (
-	name text primary key
+	name text primary key,
+	password_hash text not null,
+	session_key text
 );
 
 create table simple.todos (

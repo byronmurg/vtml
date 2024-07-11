@@ -1,55 +1,29 @@
 import type {Element} from "./html"
+import type {TagAction, Action} from "./types"
 import * as utils from "./utils"
 import FilterContext from "./filter_context"
+import {findTagIfX} from "./filter"
 import NodeFunction from "./node"
 
-type FormAction = (ctx:FilterContext) => Promise<FilterContext>
-type FormActionConstructor = (el:Element) => FormAction
+const defaultAction:Action = async (ctx:FilterContext) => ctx
 
-const formActionTypes: Record<string, FormActionConstructor> = {
-
-	"x-sql-body": (formAction) => {
-		const query = utils.requireOneTextChild(formAction)
-		const target = utils.getAttribute(formAction, "target")
-		return async (ctx:FilterContext) => {
-			const output = await ctx.RunSQL(query)
-			return target ? ctx.SetVar(target, output) : ctx
-		}
-	},
-
-	"x-nodejs-body": (formAction) => {
-		const query = utils.requireOneTextChild(formAction)
-		const target = utils.getAttribute(formAction, "target")
-		const idAttr = utils.getAttribute(formAction, "id")
-		const nodeFunc = NodeFunction(query, idAttr)
-		return async (ctx:FilterContext) => {
-			const output = await nodeFunc(ctx)
-			return target ? ctx.SetVar(target, output) : ctx
-		}
-	}
-}
-
-function prepareAction(formElement:Element): FormAction {
+function prepareAction(formElement:Element): Action {
 	const name = formElement.name || ""
-	const actionConstructor = formActionTypes[name]
+	const tag = findTagIfX(formElement)
 
-	if (actionConstructor) {
-		return actionConstructor(formElement)
+	if (tag && tag.action) {
+		return tag.action(formElement)
 	} else {
-		// Should never hit this
-		throw Error(`Something went very wrong`)
+		return defaultAction
 	}
+
+	//const action = tag?.action(formElement) || defaultAction
+
+	//return action
 }
-
-const formActionTags = Object.keys(formActionTypes)
-
-export
-const isFormAction = (el:Element) => formActionTags.includes(el.name||"")
 
 
 export default
-function createFormActions(postForm:Element): FormAction[] {
-	const formActions = utils.findElement(postForm.elements||[], isFormAction)
-	return formActions.map(prepareAction)
-
+function createFormActions(postForm:Element): Action[] {
+	return postForm.elements?.map(prepareAction) || []
 }
