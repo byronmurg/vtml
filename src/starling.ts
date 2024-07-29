@@ -12,9 +12,13 @@ import {RootDataset} from "./types"
 
 const debug = Debug("starling")
 
+const matchSearch = (url:string) => (url.match(/\?(.+)/)||[])[1]
+
 const createRootDataset = (req:Express.Request, pageNotFound:boolean = false): RootDataset => ({
 	query: req.query,
 	params: req.params,
+	search: matchSearch(req.originalUrl),
+	matchedPath: req.route.path,
 	path: req.path,
 	method: req.method,
 	headers: req.headers,
@@ -60,7 +64,7 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument) {
 
 	for (const form of postForms) {
 
-		app.post(`/action/${form.name}`, async (req, res) => {
+		app.post(`/action${form.path}`, async (req, res) => {
 			try {
 				const rootDataset = createRootDataset(req)
 				const formRes = await form.executeFormEncoded(rootDataset, req.body)
@@ -83,7 +87,7 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument) {
 			}
 		})
 
-		app.post(`/ajax/${form.name}`, async (req, res) => {
+		app.post(`/ajax${form.path}`, async (req, res) => {
 			try {
 				const rootDataset = createRootDataset(req)
 				const formRes = await form.executeFormEncoded(rootDataset, req.body)
@@ -105,7 +109,7 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument) {
 			}
 		})
 
-		app.post(`/api/${form.name}`, Express.json(), async (req, res) => {
+		app.post(`/api${form.path}`, Express.json(), async (req, res) => {
 			try {
 				const rootDataset = createRootDataset(req)
 				const formRes = await form.execute(rootDataset, req.body)

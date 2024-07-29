@@ -115,7 +115,10 @@ const tags: Tag[] = [
 
 				return async (ctx:FilterContext) => {
 					const outputAttributes = templateAttributes(el.attributes, ctx)
-					outputAttributes.action = `/action/${xName}`
+					const path = ctx.getKey("$.path")
+					const search = ctx.getKey("$.search")
+					const searchStr = search ? `?${search}` : ""
+					outputAttributes.action = `/action${path}/${xName}${searchStr}`
 
 					const children = await childs(ctx)
 
@@ -245,9 +248,9 @@ const tags: Tag[] = [
 
 			return async (ctx): Promise<Branch> => {
 				
-				const requestPath = ctx.getKey("$.path")
-				if (requestPath.match(pathRegex)) {
-					debug("Match on page", path, pathRegex)
+				const matchPath = ctx.getKey("$.matchedPath")
+				if (matchPath.startsWith(path)) {
+					debug("Match on page", path)
 					return await childs(ctx)
 				} else {
 					return filterPass(ctx)

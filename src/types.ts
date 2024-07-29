@@ -11,9 +11,11 @@ type ElementChain = {
 export
 type RootDataset = {
 	path: string
+	matchedPath: string
 	params: Record<string, string>
 	query: ParsedQs
 	method: string
+	search?: string
 	body?: any
 	headers: Record<string, string|string[]|undefined>
 	cookies: Record<string, string>

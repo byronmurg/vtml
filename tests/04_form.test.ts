@@ -4,6 +4,7 @@ import FilterContext from "../src/filter_context"
 // Just an example context
 const rootDataset = {
 	path: "/",
+	matchedPath: "/",
 	query: {},
 	method: "GET",
 	cookies: {},

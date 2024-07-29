@@ -46,9 +46,10 @@ class StarlingDocument {
 		}
 
 		for (const form of this.forms) {
-			apiPaths[`/api/${form.name}`] = {
+			apiPaths[`/api${form.oapiPath}`] = {
 				post: {
 					operationId: form.name,
+					parameters: form.parameters,
 					requestBody: {
 						required: true,
 						content: {

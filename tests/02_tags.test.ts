@@ -4,6 +4,7 @@ import FilterContext from "../src/filter_context"
 // Just an example context
 const ctx = FilterContext.Init({
 	path: "/",
+	matchedPath: "/",
 	query: {},
 	method: "GET",
 	cookies: {},
@@ -207,6 +208,7 @@ test("x-page", async () => {
 
 	const fooCtx = FilterContext.Init({
 		path: "/foo",
+		matchedPath: "/foo",
 		query: {},
 		method: "GET",
 		cookies: {},
@@ -233,6 +235,7 @@ test("x-default-page", async () => {
 
 	const fooCtx = FilterContext.Init({
 		path: "/foo",
+		matchedPath: "/foo",
 		query: {},
 		method: "GET",
 		cookies: {},

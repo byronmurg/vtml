@@ -1,4 +1,4 @@
-import {createPostFormApiSchema, SchemaObject} from "./oapi"
+import {createPostFormApiSchema, SchemaObject, ParameterObject, createPathParameters, expressToOapiPath} from "./oapi"
 import type {RootDataset, ElementChain, FormResult} from "./types"
 import type {Element} from "./html"
 import * as utils from "./utils"
@@ -56,12 +56,27 @@ function parseFormFields(body:Record<string, any>, formFields:Element[]): Record
 	return newBody
 }
 
+function getPagePath(preElements:ElementChain[]): string {
+	const elements = preElements.map((chain) => chain.element).reverse()
+	const pages = utils.findPages(elements)
+
+	if (pages.length) {
+		const page = pages[0]
+		return utils.getAttribute(page, "path")
+	} else {
+		return "/"
+	}
+}
 
 export
 type FormDescriptor = {
 	name: string
+	path: string
+	oapiPath: string
+
 	return: string
 	inputSchema: SchemaObject
+	parameters: ParameterObject[]
 	execute: (rootDataset:RootDataset, body:Record<string, any>) => Promise<FormResult>
 	executeFormEncoded: (rootDataset:RootDataset, body:Record<string, any>) => Promise<FormResult>
 }
@@ -75,6 +90,15 @@ function prepareForm(postForm:Element, preElements:ElementChain[]): FormDescript
 		throw Error(`No x-name set in POST form`)
 	}
 
+	// Get the path of the nearest page
+	const pagePath = getPagePath(preElements)
+
+	// Figure out the form path suffix
+	const path = `${pagePath}/${xName}`
+
+	// The oapi path is slightly different
+	const oapiPath = expressToOapiPath(path)
+
 	const chain = prepareChain(preElements)
 
 	const xReturn = utils.getAttribute(postForm, "x-return") || ""
@@ -84,6 +108,9 @@ function prepareForm(postForm:Element, preElements:ElementChain[]): FormDescript
 
 	// Create OAPI schema
 	const inputSchema = createPostFormApiSchema(postForm)
+
+	// Create OAPI parameters
+	const parameters = createPathParameters(pagePath)
 
 	// Find all inputs (and selects, and textareas)
 	const formInputs = utils.findInputs(postForm)
@@ -126,6 +153,9 @@ function prepareForm(postForm:Element, preElements:ElementChain[]): FormDescript
 
 	return {
 		name: xName,
+		path,
+		oapiPath,
+		parameters,
 		return: xReturn,
 		inputSchema,
 		execute,

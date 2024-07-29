@@ -123,3 +123,22 @@ function createPostFormApiSchema(postForm:Element): OAPI.SchemaObject {
 
 	return inputSchema
 }
+
+export
+function createPathParameters(path:string): OAPI.ParameterObject[] {
+	const partsRaw = path.match(/:\w+/g) || []
+	const parts = partsRaw.map((part) => part.replace(/^:/, ''))
+
+	return parts.map((part) => ({
+		in: "path",
+		name: part,
+		schema: { type:"string" },
+		required: true,
+		//description: "",
+	}))
+}
+
+export
+function expressToOapiPath(path:string): string {
+	return path.replace(/:\w+/g, (p) => `{${p.substr(1)}}`)	
+}
