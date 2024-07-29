@@ -138,9 +138,7 @@ class FilterContext {
 		} else {
 			throw Error(`Variable selectors must start with a '$'`)
 		}
-
 	}
-
 
 	templateString(str:string): string {
 		return str.replace(templateRegex, (t) => this.getKey(t))

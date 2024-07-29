@@ -7,6 +7,16 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="color-scheme" content="light dark" />
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+<!-- and it's easy to individually load additional languages -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/go.min.js"></script>
+
+<script>hljs.highlightAll();</script>
+		<!--
+		-->
+
 		<link
 		  rel="stylesheet"
 		  href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"
@@ -57,111 +67,7 @@
 
 		<main class="container" >
 
-			<x-json target="tags" >
-				[
-					{
-						"tag": "x-with",
-						"arguments": [
-							{ "name":"source", "default":"$" }
-						],
-						"description": "Include content block if variable is truthy. Sets the variable of children to the target if it is supplied"
-					},
-					{
-						"tag": "x-use",
-						"arguments": [
-							{ "name":"source" }
-						],
-						"description": "Set the current var to be 'source' for all children."
-					},
-					{
-						"tag": "x-if/x-unless",
-						"arguments": [
-							{ "name":"eq" , "optional":true },
-							{ "name":"lt" , "optional":true },
-							{ "name":"lte", "optional":true },
-							{ "name":"gt" , "optional":true },
-							{ "name":"gte", "optional":true },
-							{ "name":"source", "default":"$" }
-						],
-						"description": "Logic and stuff."
-					},
-					{
-						"tag": "x-json",
-						"arguments": [
-							{ "name":"target" }
-						],
-						"description": "Create a new variable at target from a json body"
-					},
-					{
-						"tag": "x-sql",
-						"arguments": [
-							{ "name":"target" },
-							{ "name":"single-row", "optional":true }
-						],
-						"description": "Execute sql query and set a new variable at target"
-					},
-					{
-						"tag": "x-sql-action",
-						"arguments": [
-							{ "name":"target" },
-							{ "name":"single-row", "optional":true }
-						],
-						"description": "Execute sql query inside a form action. When rendering the page this statement is skipped."
-					},
-					{
-						"tag": "x-nodejs",
-						"arguments": [
-							{ "name":"target" }
-						],
-						"description": "Embed a nodejs function and set target to the return value"
-					},
-					{
-						"tag": "x-dump",
-						"description": "Dump the current variable as json inside a pre tag"
-					},
-					{
-						"tag": "x-hint-port",
-						"arguments": [
-							{ "name":"port", "default":"3000" }
-						],
-						"description": "A hint to the siskin engine to listen on this port"
-					},
-					{
-						"tag": "x-page",
-						"arguments": [
-							{ "name":"path" }
-						],
-						"description": "Define a page within the document."
-					},
-					{
-						"tag": "x-expose",
-						"special": true,
-						"arguments": [
-							{ "name":"path" },
-							{ "name":"content-type", "optional":true },
-							{ "name":"src" }
-						],
-						"description": "Expose a file specified at (src) at http (path)"
-					},
-					{
-						"tag": "x-default-page",
-						"description": "The default content to show when no other page has been matched."
-					},
-					{
-						"tag": "x-setcookie-action",
-						"arguments": [
-							{ "name":"name" },
-							{ "name":"value" }
-						],
-						"description": "Set a response cookie inside an action."
-					},
-					{
-						"tag": "x-include",
-						"description": "Include an external siskin-xml file. This tag is processed before anything else.",
-						"pre-process": true
-					}
-				]
-			</x-json>
+			<x-yaml src="./docs.yaml" target="tags" />
 
 			<div class="docs-area" >
 
@@ -182,6 +88,7 @@
 					<x-for-each source="$tags" >
 						<section>
 							<a id="$tag" href="#$tag" ><h2>$tag</h2></a>
+
 							<x-with source="$pre-process" >
 								<span class="tag" >pre-process</span>
 							</x-with>
@@ -218,6 +125,11 @@
 										</x-for-each>
 									</tbody>
 								</table>
+							</x-with>
+
+
+							<x-with source="$example" >
+								<pre class="language-html" ><code>$</code></pre>
 							</x-with>
 						</section>
 					</x-for-each>

@@ -1,6 +1,8 @@
+import {readFileSync} from "fs"
 import * as utils from "./utils"
 import type { Element } from "./html"
 import type {Tag, RootFilter, FormResult, TagFilter, Branch, Filter, ElementChain} from "./types"
+import YAML from "yaml"
 import FilterContext from "./filter_context"
 import doesLogicSelectorMatch from "./logic"
 import Debug from "debug"
@@ -35,6 +37,7 @@ function textFilter(el:Element): Filter {
 	const textAttr = (el.text || "")
 	return async (ctx:FilterContext): Promise<Branch> => {
 		const text = ctx.templateString(textAttr.toString())
+		console.log("Text", text)
 		const resp:Element = {
 			...el,
 			text,
@@ -43,8 +46,50 @@ function textFilter(el:Element): Filter {
 	}
 }
 
+function filterHTML(el:Element): Filter {
+	const childs = childFilters(el.elements)
+
+	return async (ctx) => {
+		const children = await childs(ctx)
+		const resp:Element = {
+			...el,
+			attributes: templateAttributes(el.attributes, ctx),
+			elements: children.elements,
+		}
+		return filterPass(ctx, resp)
+	}
+}
+
+
+function elementFilter(el:Element): Filter {
+	const name = el.name || ""
+
+	const tag = findTag(el)
+
+	if (tag) {
+		return tag.filter(el)
+	} else {
+		// @TODO should be filter default
+		// Throw if this is an unknown x- tag
+		if (name.startsWith("x-")) {
+			throw Error(`Unknown x- tag ${name}`)
+		}
+
+		return filterHTML(el)
+	}
+}
+
 const stripFilter = (el:Element) => async (ctx:FilterContext) => filterPass(ctx)
 const justReturnFilter = (el:Element) => async (ctx:FilterContext) => filterPass(ctx, el)
+
+function bodyOrSrc(el:Element): string {
+	const srcPath = utils.getAttribute(el, "src")
+	if (srcPath) {
+		return readFileSync(srcPath, "utf8")
+	} else {
+		return utils.requireOneTextChild(el)
+	}
+}
 
 function filterNode(el:Element): Filter {
 	switch (el.type) {
@@ -348,7 +393,7 @@ const tags: Tag[] = [
 		name: "x-json",
 		filter(el:Element) {
 			
-			const json = utils.requireOneTextChild(el)
+			const json = bodyOrSrc(el)
 			const targetAttr = utils.requireTargetAttribute(el)
 			const jsonData = JSON.parse(json)
 
@@ -358,6 +403,23 @@ const tags: Tag[] = [
 			}
 		}
 	},
+
+	{
+		name: "x-yaml",
+		filter(el:Element) {
+			
+			const yamlSrc = utils.requireAttribute(el, "src")
+			const yaml = readFileSync(yamlSrc, "utf8")
+			const targetAttr = utils.requireTargetAttribute(el)
+			const yamlData = YAML.parse(yaml)
+
+			return async (ctx): Promise<Branch> => {
+				const nextCtx = ctx.SetVar(targetAttr, yamlData)
+				return filterPass(nextCtx)
+			}
+		}
+	},
+
 
 	{
 		name: "x-sql",
@@ -529,38 +591,6 @@ function findTagIfX(el:Element): Tag|undefined {
 		throw Error(`Unknown x- tag ${el.name}`)
 	}
 	return tag
-}
-
-function elementFilter(el:Element): Filter {
-	const name = el.name || ""
-
-	const tag = findTag(el)
-
-	if (tag) {
-		return tag.filter(el)
-	} else {
-		// @TODO should be filter default
-		// Throw if this is an unknown x- tag
-		if (name.startsWith("x-")) {
-			throw Error(`Unknown x- tag ${name}`)
-		}
-
-		return filterHTML(el)
-	}
-}
-
-function filterHTML(el:Element): Filter {
-	const childs = childFilters(el.elements)
-
-	return async (ctx) => {
-		const children = await childs(ctx)
-		const resp:Element = {
-			...el,
-			attributes: templateAttributes(el.attributes, ctx),
-			elements: children.elements,
-		}
-		return filterPass(ctx, resp)
-	}
 }
 
 export default

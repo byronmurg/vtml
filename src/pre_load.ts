@@ -6,6 +6,8 @@ import * as utils from "./utils"
 
 const srcElements = [
 	"x-expose",
+	"x-json",
+	"x-yaml",
 ]
 
 const isSrcElement = (el:Element) => srcElements.includes(el.name||"")

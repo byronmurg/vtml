@@ -20,7 +20,8 @@
     "fast-xml-parser": "^4.4.0",
     "lodash": "^4.17.21",
     "pg": "^8.11.5",
-    "swagger-ui-express": "^5.0.0"
+    "swagger-ui-express": "^5.0.0",
+    "yaml": "^2.5.0"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.24.7",
