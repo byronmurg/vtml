@@ -1,4 +1,5 @@
 import type { Element } from "./html"
+import type StarlingDocument from "./document"
 import * as OAPI from "openapi3-ts/oas31"
 import * as utils from "./utils"
 export * from "openapi3-ts/oas31"
@@ -141,4 +142,38 @@ function createPathParameters(path:string): OAPI.ParameterObject[] {
 export
 function expressToOapiPath(path:string): string {
 	return path.replace(/:\w+/g, (p) => `{${p.substr(1)}}`)	
+}
+
+export
+function createOpenApiSchema(doc:StarlingDocument): OAPI.OpenAPIObject {
+	const title = doc.title || "Starling"
+	
+	const apiPaths: OAPI.OpenAPIObject["paths"] = {}
+	const apiSpec: OAPI.OpenAPIObject = {
+		openapi: "3.1.0",
+		info: {
+			title: title+" api",
+			version: "1.0",
+		},
+		paths: apiPaths,
+	}
+
+	for (const form of doc.forms) {
+		apiPaths[`/api${form.oapiPath}`] = {
+			post: {
+				operationId: form.name,
+				parameters: form.parameters,
+				requestBody: {
+					required: true,
+					content: {
+						"application/json": {
+							schema: form.inputSchema,
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return apiSpec
 }

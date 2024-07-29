@@ -146,6 +146,19 @@ function findElement(els:Element[], check:(e:Element) => boolean): Element[] {
 }
 
 export
+function findTitle(els:Element[]): string {
+	const titles = findElement(els, (el) => el.name === "title")
+	if (titles.length === 1) {
+		const title = titles[0]
+		return requireOneTextChild(title)
+	} else if (titles.length > 1) {
+		throw Error(`Too many title elements`)
+	} else {
+		return ""
+	}
+}
+
+export
 function findHint(el:Element[], tag:string, attr:string): string|undefined {
 	const hintEl = findElement(el, (e) => e.name === tag)
 

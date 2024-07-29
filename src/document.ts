@@ -1,6 +1,6 @@
 import type { Element } from "./html"
 import * as HTML from "./html"
-import * as OAPI from "openapi3-ts/oas31"
+import * as OAPI from "./oapi"
 import Debug from "debug"
 import preLoad from "./pre_load"
 
@@ -20,8 +20,12 @@ class StarlingDocument {
 
 	constructor(private root:HTML.Element[]) {
 		this.forms = this.prepareForms()
-		this.oapiSchema = this.prepareOapiSchema()
+		this.oapiSchema = OAPI.createOpenApiSchema(this)
 		this.renderDocument = FilterRoot(root)
+	}
+
+	get title() {
+		return utils.findTitle(this.root)
 	}
 
 	prepareForms(): FormDescriptor[] {
@@ -31,38 +35,6 @@ class StarlingDocument {
 			const preElements = utils.getPrecedingElements(this.root, form)
 			return PrepareForm(form, preElements)
 		})
-	}
-
-
-	prepareOapiSchema() {
-		const apiPaths: OAPI.OpenAPIObject["paths"] = {}
-		const apiSpec: OAPI.OpenAPIObject = {
-			openapi: "3.1.0",
-			info: {
-				title: "Starling api",
-				version: "1.0",
-			},
-			paths: apiPaths,
-		}
-
-		for (const form of this.forms) {
-			apiPaths[`/api${form.oapiPath}`] = {
-				post: {
-					operationId: form.name,
-					parameters: form.parameters,
-					requestBody: {
-						required: true,
-						content: {
-							"application/json": {
-								schema: form.inputSchema,
-							}
-						}
-					}
-				}
-			}
-		}
-
-		return apiSpec
 	}
 
 	findHint(tag:string, attr:string): string|undefined {
