@@ -6,7 +6,7 @@ const parsingOptions = {
 
 	preserveOrder: true,
 	unpairedTags: ["hr", "br", "link", "meta", "input"],
-	stopNodes : [ "*.pre", "*.script"],
+	stopNodes : [ "*.pre", "*.script", "*.style"],
 	processEntities: true,
 	htmlEntities: true,
 	allowBooleanAttributes: true,
