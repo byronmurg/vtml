@@ -82,8 +82,12 @@ function toJsObj(el:Element): any {
 	}
 }
 
+const builderOptions = {
+	...parsingOptions,
+	format: false,
+};
 
-const builder = new XMLBuilder(parsingOptions);
+const builder = new XMLBuilder(builderOptions);
 
 export
 function serialize(els:Element[]): string {
