@@ -1,5 +1,6 @@
 import {createPostFormApiSchema, SchemaObject, ParameterObject, createPathParameters, expressToOapiPath} from "./oapi"
 import type {RootDataset, ElementChain, FormResult} from "./types"
+import pathLib from "path"
 import type {Element} from "./html"
 import * as utils from "./utils"
 import Ajv, {ValidationError} from "ajv"
@@ -94,7 +95,7 @@ function prepareForm(postForm:Element, preElements:ElementChain[]): FormDescript
 	const pagePath = getPagePath(preElements)
 
 	// Figure out the form path suffix
-	const path = `${pagePath}/${xName}`
+	const path = pathLib.posix.join(pagePath, xName)
 
 	// The oapi path is slightly different
 	const oapiPath = expressToOapiPath(path)

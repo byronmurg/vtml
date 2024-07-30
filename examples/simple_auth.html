@@ -81,6 +81,7 @@
 			<x-if source="$user.0" >
 
 				<!-- create form -->
+				<!-- <form x-name="create_todo" method="POST" hx-trigger="submit" hx-post="$__form_ajax" > -->
 				<form x-name="create_todo" method="POST" >
 					<x-sql-action>
 						insert into simple.todos (text) values ($body.text)

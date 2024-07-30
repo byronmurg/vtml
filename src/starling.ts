@@ -64,6 +64,7 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument) {
 
 	for (const form of postForms) {
 
+		debug(`Create action /action${form.path}`)
 		app.post(`/action${form.path}`, async (req, res) => {
 			try {
 				const rootDataset = createRootDataset(req)
@@ -177,9 +178,20 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument) {
 		})
 	}
 
+	// A fallback for favicon to avoid the whole page rendering
+	app.get("/favicon.ico", (_, res) => res.status(404).send("Not found"))
+
 	// This has to be an all as the redirects
 	// preserve the POST method
-	app.all("/*", async (req, res) => {
+	//app.all("/*", async (req, res) => {
+	//	const ctx = createFilterContextFromRequest(req, true)
+	//	const html = await starlingDocument.renderLoader(ctx)
+	//	res.send(html)
+	//})
+
+	// This has to be an all as the redirects
+	// preserve the POST method
+	app.all("/", async (req, res) => {
 		const ctx = createFilterContextFromRequest(req, true)
 		const html = await starlingDocument.renderLoader(ctx)
 		res.send(html)

@@ -1,4 +1,5 @@
 import {readFileSync} from "fs"
+import pathLib from "path"
 import * as utils from "./utils"
 import type { Element } from "./html"
 import type {Tag, RootFilter, FormResult, TagFilter, Branch, Filter, ElementChain} from "./types"
@@ -37,7 +38,6 @@ function textFilter(el:Element): Filter {
 	const textAttr = (el.text || "")
 	return async (ctx:FilterContext): Promise<Branch> => {
 		const text = ctx.templateString(textAttr.toString())
-		console.log("Text", text)
 		const resp:Element = {
 			...el,
 			text,
@@ -159,11 +159,26 @@ const tags: Tag[] = [
 				const childs = childFilters(el.elements)
 
 				return async (ctx:FilterContext) => {
-					const outputAttributes = templateAttributes(el.attributes, ctx)
 					const path = ctx.getKey("$.path")
 					const search = ctx.getKey("$.search")
 					const searchStr = search ? `?${search}` : ""
-					outputAttributes.action = `/action${path}/${xName}${searchStr}`
+
+					// Don't need extra slash if path is empty
+					const fullPath = pathLib.posix.join(path, xName)
+					const pathSuffix = `${fullPath}${searchStr}`
+
+					const actionPath = `/action${pathSuffix}`
+					const ajaxPath = `/ajax${pathSuffix}`
+
+					console.log({
+						path, pathSuffix, actionPath
+					})
+
+					ctx = ctx.SetVar('__form_action', actionPath)
+						.SetVar('__form_ajax', ajaxPath)
+
+					const outputAttributes = templateAttributes(el.attributes, ctx)
+					outputAttributes.action ||= actionPath
 
 					const children = await childs(ctx)
 
