@@ -170,10 +170,6 @@ const tags: Tag[] = [
 					const actionPath = `/action${pathSuffix}`
 					const ajaxPath = `/ajax${pathSuffix}`
 
-					console.log({
-						path, pathSuffix, actionPath
-					})
-
 					ctx = ctx.SetVar('__form_action', actionPath)
 						.SetVar('__form_ajax', ajaxPath)
 
