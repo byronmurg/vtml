@@ -17,8 +17,14 @@ type ProcessedSQL = {
 	vars: any[]
 }
 
-const templateRegex = /(?<!\\)\$[\$\w\[\]\.-]*/g
-
+//////////////////////////////////////////////
+// Big special template regex
+//////////////////////////////////////////////
+const templateRegex = /(?<!\\)\$(?!{)[\$\w\[\]\.-]*/g
+//                     ^^^^^^^ Cannot come after a backslash (for escaping
+//                            ^^ Match the $ dollar sign
+//                              ^^^^^ Cannot be preceeded by { (messes with js templates in scripts)
+//                                   ^^^^^^^^^^^^^^ Match legal characters A-z,0-9,[,],.,-
 
 export default
 class FilterContext {
