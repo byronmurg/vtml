@@ -175,7 +175,7 @@ export
 function findPostForms(el:Element[]): Element[] {
 	return findElement(
 		el,
-		(e) => e.name === "form" && getAttribute(e, 'method') == "POST"
+		(e) => e.name === "form" && getAttribute(e, 'method').toLowerCase() == "post"
 	)
 }
 
