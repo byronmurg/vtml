@@ -39,29 +39,14 @@
 
 			<!-- create form -->
 			<form x-name="create_todo" method="POST" >
-				<x-sql-body>
+				<x-sql-action>
 					insert into simple.todos (text) values ($body.text)
-				</x-sql-body>
+				</x-sql-action>
 				<fieldset role="group" >
 					<input name="text" type="text" autofocus="yes" maxlength="128" required />
 					<button type="submit" class="material-icons" >add</button>
 				</fieldset>
 			</form>
-
-			<!-- search options -->
-			<details>
-				<summary class="material-icons" >settings</summary>
-					
-				<form>
-					<x-if source="$.query.showdone" >
-						<button style="width:10rem" type="submit" class="secondary" >hide done</button>
-					</x-if>
-					<x-if source="$.query.showdone" eq="" >
-						<input type="hidden" name="showdone" value="on" />
-						<button style="width:10rem" type="submit" >show done</button>
-					</x-if>
-				</form>
-			</details>
 
 			<hr/>
 
@@ -81,39 +66,23 @@
 
 				<!-- Form to update the text -->
 				<form method="POST" x-name="edit_todo" >
-					<x-sql-body>
+					<x-sql-action>
 						update simple.todos set text = $body.text where _id = $.body.id
-					</x-sql-body>
+					</x-sql-action>
 					<fieldset role="group" >
-						<input type="hidden" name="id" value="$_id" />
 
-						<x-if source="$done" eq="false" >
-							<input name="text" value="$text" maxlength="128" />
-							<button type="submit" class="ctrl-button material-icons"  >save</button>
-							<button form="toggle-done-$_id" type="submit" class="ctrl-button contrast material-icons" >radio_button_unchecked</button>
-						</x-if>
-						<x-if source="$done" >
-							<input name="text" value="$text" maxlength="128" disabled />
-							<button form="delete-todo-$_id" type="submit" class="ctrl-button contrast material-icons" >delete</button>
-							<button form="toggle-done-$_id" type="submit" class="ctrl-button material-icons" >check_circle</button>
-						</x-if>
+						<input name="text" value="$text" maxlength="128" disabled />
+						<input type="hidden" name="id" value="$_id" />
+						<button form="delete-todo-$_id" type="submit" class="ctrl-button contrast material-icons" >delete</button>
 
 					</fieldset>
 				</form>
 
 				<!-- Hidden form to delete -->
 				<form id="delete-todo-$_id" method="POST" x-name="delete_todo" >
-					<x-sql-body>
+					<x-sql-action>
 						delete from simple.todos where _id = $.body.id
-					</x-sql-body>
-					<input type="hidden" name="id" value="$_id" />
-				</form>
-
-				<!-- Hidden form to toggle done -->
-				<form id="toggle-done-$_id" method="POST" x-name="toggle_todo_done" >
-					<x-sql-body>
-						update simple.todos set done = not done where _id = $.body.id
-					</x-sql-body>
+					</x-sql-action>
 					<input type="hidden" name="id" value="$_id" />
 				</form>
 
