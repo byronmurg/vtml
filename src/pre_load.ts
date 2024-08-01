@@ -23,7 +23,8 @@ function preFilter(el:Element, dir:string): Element {
 			// If the element has a src attribute make sure
 			// that it is relative to the file.
 			if (child.attributes?.src){
-				child.attributes.src = path.join(dir, child.attributes.src.toString())
+				const src = child.attributes.src.toString()
+				child.attributes.src = path.posix.join(dir, src)
 			}
 			return child
 		} else {
