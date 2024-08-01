@@ -9,6 +9,7 @@ import {ValidationError} from "ajv"
 import StarlingDocument from "./document"
 import FilterContext from "./filter_context"
 import {RootDataset} from "./types"
+import * as HTML from "./html"
 
 const debug = Debug("starling")
 
@@ -94,8 +95,8 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument) {
 				const formRes = await form.executeFormEncoded(rootDataset, req.body)
 				if (formRes.found) {
 					setCookies(res, formRes.ctx)
-					// @NOTE okay sends an empty response
-					res.send("")
+					const html = HTML.serialize(formRes.elements)
+					res.send(html)
 				} else {
 					res.status(404).send("Not Found")
 				}

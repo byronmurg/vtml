@@ -22,10 +22,44 @@ type RootDataset = {
 	pageNotFound: boolean
 }
 
+/////////////////////
+// Tag
+/////////////////////
+
+export
+type Tag = {
+	name: string
+
+	render: TagFilter
+	action?: TagFilter
+
+	actionPreceeds?: ActionPreceeds
+	actionContains?: ActionContains
+}
+
+/////////////////////
+// Branch
+/////////////////////
+
 export
 type Branch = {
 	elements: Element[]
 	ctx: FilterContext
+}
+
+
+/////////////////////
+// Filter
+/////////////////////
+
+
+export
+type Extractor = (tag:Tag) => TagFilter
+
+export
+type Cascade = {
+	childs: (doc:Element[]|undefined) => Filter
+	extract: Extractor
 }
 
 export
@@ -35,36 +69,30 @@ export
 type Filter = (ctx:FilterContext) => Promise<Branch>
 
 export
-type TagFilter = (el:Element) => Filter
+type TagFilter = (el:Element, cascade:Cascade) => Filter
 
-export
-type Action = (ctx:FilterContext) => Promise<FilterContext>
 
-export
-type TagAction = (el:Element) => Action
+/////////////////////
+// Chain
+/////////////////////
 
 export
 type ActionPreceeds = (el:Element) => (ctx:FilterContext) => Promise<FilterContext>
 
 export
-type ActionContains = (el:Element) => (ctx:FilterContext) => FormResult
+type ActionContains = (el:Element) => (ctx:FilterContext) => ChainResult
 
 export
-type Tag = {
-	name: string
-	filter: TagFilter
-
-	action?: TagAction
-
-	actionPreceeds?: ActionPreceeds
-	actionContains?: ActionContains
-}
-
-export
-type FormResult = {
+type ChainResult = {
 	ctx: FilterContext
 	found: boolean
 }
+
+export
+type FormResult = ChainResult & {
+	elements: Element[]
+}
+
 
 export
 type Expose = {

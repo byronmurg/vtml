@@ -5,9 +5,8 @@ import type {Element} from "./html"
 import * as utils from "./utils"
 import Ajv, {ValidationError} from "ajv"
 import FilterContext from "./filter_context"
-import createFormActions from "./form_action"
 import NodeFunction from "./node"
-import {prepareChain} from "./filter"
+import {prepareChain, createFormFilter} from "./filter"
 
 const ajv = new Ajv()
 
@@ -104,8 +103,8 @@ function prepareForm(postForm:Element, preElements:ElementChain[]): FormDescript
 
 	const xReturn = utils.getAttribute(postForm, "x-return") || ""
 
-	// Turn the action elements into form actions
-	const actions = createFormActions(postForm)
+	// Create the action filter
+	const filterAction = createFormFilter(postForm)
 
 	// Create OAPI schema
 	const inputSchema = createPostFormApiSchema(postForm)
@@ -131,16 +130,14 @@ function prepareForm(postForm:Element, preElements:ElementChain[]): FormDescript
 		const chainResult = await chain(preCtx)
 
 		if (! chainResult.found) {
-			return chainResult
+			return { ctx:preCtx, found:false, elements:[] }
 		}
 
 		let ctx = chainResult.ctx
 
-		for (const action of actions) {
-			ctx = await action(ctx)
-		}
+		const output = await filterAction(ctx)
 
-		return {ctx, found:true}
+		return {ctx:output.ctx, found:true, elements:output.elements}
 	}
 
 	/*

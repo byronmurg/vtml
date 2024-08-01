@@ -2,7 +2,7 @@ import {readFileSync} from "fs"
 import pathLib from "path"
 import * as utils from "./utils"
 import type { Element } from "./html"
-import type {Tag, RootFilter, FormResult, TagFilter, Branch, Filter, ElementChain} from "./types"
+import type {Tag, Extractor, ChainResult, FormResult, Cascade, RootFilter, TagFilter, Branch, Filter, ElementChain} from "./types"
 import YAML from "yaml"
 import FilterContext from "./filter_context"
 import doesLogicSelectorMatch from "./logic"
@@ -11,28 +11,33 @@ import NodeFunction from "./node"
 
 const debug = Debug("starling:filter")
 
-function filterPass(ctx:FilterContext, ...elements:Element[]): Branch {
-	return {elements, ctx}
-}
+const renderExtract: Extractor = (tag:Tag) => tag.render
+const actionExtract: Extractor = (tag:Tag) => tag.action || tag.render
 
-function childFilters(children:Element[]|undefined): Filter {
-	children = children || []
+function CreateCascade(extractor:Extractor): Cascade {
+	const childs = (children:Element[]|undefined): Filter => {
+		children = children || []
 
-	const childFilters = children.map(filterNode)
+		const childFilters = children.map((child) => filterNode(child, cascade))
 
-	return async (ctx:FilterContext): Promise<Branch> => {
-		let subCtx = ctx
-		const elements: Element[] = []
+		return async (ctx:FilterContext): Promise<Branch> => {
+			let subCtx = ctx
+			const elements: Element[] = []
 
-		for (const child of childFilters) {
-			const subBranch = await child(subCtx)
-			elements.push(...subBranch.elements)
-			subCtx = subBranch.ctx
+			for (const child of childFilters) {
+				const subBranch = await child(subCtx)
+				elements.push(...subBranch.elements)
+				subCtx = subBranch.ctx
+			}
+
+			return { ctx, elements }
 		}
-
-		return { ctx, elements }
 	}
+
+	const cascade = {childs, extract:extractor}
+	return cascade
 }
+
 
 function textFilter(el:Element): Filter {
 	const textAttr = (el.text || "")
@@ -46,8 +51,8 @@ function textFilter(el:Element): Filter {
 	}
 }
 
-function filterHTML(el:Element): Filter {
-	const childs = childFilters(el.elements)
+function filterHTML(el:Element, cascade:Cascade): Filter {
+	const childs = cascade.childs(el.elements)
 
 	return async (ctx) => {
 		const children = await childs(ctx)
@@ -61,13 +66,14 @@ function filterHTML(el:Element): Filter {
 }
 
 
-function elementFilter(el:Element): Filter {
+function elementFilter(el:Element, cascade:Cascade): Filter {
 	const name = el.name || ""
 
 	const tag = findTag(el)
 
 	if (tag) {
-		return tag.filter(el)
+		const fnc = cascade.extract(tag)
+		return fnc(el, cascade)
 	} else {
 		// @TODO should be filter default
 		// Throw if this is an unknown x- tag
@@ -75,12 +81,22 @@ function elementFilter(el:Element): Filter {
 			throw Error(`Unknown x- tag ${name}`)
 		}
 
-		return filterHTML(el)
+		return filterHTML(el, cascade)
 	}
 }
 
-const stripFilter = (el:Element) => async (ctx:FilterContext) => filterPass(ctx)
-const justReturnFilter = (el:Element) => async (ctx:FilterContext) => filterPass(ctx, el)
+function filterNode(el:Element, cascade:Cascade): Filter {
+	switch (el.type) {
+		case "element":
+			return elementFilter(el, cascade)
+		case "text":
+			return textFilter(el)
+		default:
+			throw Error(`unknown element type ${el.type}`)
+	}
+}
+
+// @TODO move to utils
 
 function bodyOrSrc(el:Element): string {
 	const srcPath = utils.getAttribute(el, "src")
@@ -91,23 +107,67 @@ function bodyOrSrc(el:Element): string {
 	}
 }
 
-function filterNode(el:Element): Filter {
-	switch (el.type) {
-		case "element":
-			return elementFilter(el)
-		case "text":
-			return textFilter(el)
-		default:
-			throw Error(`unknown element type ${el.type}`)
-	}
+
+// Tag utilities
+function filterPass(ctx:FilterContext, ...elements:Element[]): Branch {
+	return {elements, ctx}
 }
 
+const stripFilter = (el:Element) => async (ctx:FilterContext) => filterPass(ctx)
+const justReturnFilter = filterHTML
+
+// Form tag is a bit special and needs to be reference directly later
+const formTag: Tag = {
+	name: "form",
+	render(el, cascade) {
+		// If it's not a POST I don't care
+		if (el.attributes?.method !== "POST") {
+			return justReturnFilter(el, cascade)
+		} else {
+			const xName = utils.requireAttribute(el, 'x-name')
+			const childs = cascade.childs(el.elements)
+
+			return async (ctx:FilterContext) => {
+				const path = ctx.getKey("$.path")
+				const search = ctx.getKey("$.search")
+				const searchStr = search ? `?${search}` : ""
+
+				// Don't need extra slash if path is empty
+				const fullPath = pathLib.posix.join(path, xName)
+				const pathSuffix = `${fullPath}${searchStr}`
+
+				const actionPath = `/action${pathSuffix}`
+				const ajaxPath = `/ajax${pathSuffix}`
+
+				ctx = ctx.SetVar('__form_action', actionPath)
+					.SetVar('__form_ajax', ajaxPath)
+
+				const outputAttributes = templateAttributes(el.attributes, ctx)
+				outputAttributes.action ||= actionPath
+
+				const children = await childs(ctx)
+
+				const resp = {
+					...el,
+					attributes: outputAttributes,
+					elements: children.elements,
+				}
+				
+				return filterPass(ctx, resp)
+			}
+		}
+	},
+}
+
+
 const tags: Tag[] = [
+	formTag, // Include form tag
+
 	{
 		name: "x-with",
-		filter(el) {
+		render(el, cascade) {
 			const source = utils.getSource(el)
-			const content = childFilters(el.elements)
+			const content = cascade.childs(el.elements)
 			return async (ctx) => {
 				const sub = ctx.Select(source)
 				if (!sub.dataset) {
@@ -131,9 +191,9 @@ const tags: Tag[] = [
 
 	{
 		name: "x-use",
-		filter(el) {
+		render(el, cascade) {
 			const source = utils.requireSourceAttribute(el)
-			const content = childFilters(el.elements)
+			const content = cascade.childs(el.elements)
 			return async (ctx) => {
 				const sub = ctx.Select(source)
 				const s = await content(sub)
@@ -145,59 +205,16 @@ const tags: Tag[] = [
 	// x-hints are just stripped here
 	{
 		name: "x-hint-port",
-		filter: stripFilter,
+		render: stripFilter,
 	},
-
-	{
-		name: "form",
-		filter(el) {
-			// If it's not a POST I don't care
-			if (el.attributes?.method !== "POST") {
-				return filterHTML(el)
-			} else {
-				const xName = utils.requireAttribute(el, 'x-name')
-				const childs = childFilters(el.elements)
-
-				return async (ctx:FilterContext) => {
-					const path = ctx.getKey("$.path")
-					const search = ctx.getKey("$.search")
-					const searchStr = search ? `?${search}` : ""
-
-					// Don't need extra slash if path is empty
-					const fullPath = pathLib.posix.join(path, xName)
-					const pathSuffix = `${fullPath}${searchStr}`
-
-					const actionPath = `/action${pathSuffix}`
-					const ajaxPath = `/ajax${pathSuffix}`
-
-					ctx = ctx.SetVar('__form_action', actionPath)
-						.SetVar('__form_ajax', ajaxPath)
-
-					const outputAttributes = templateAttributes(el.attributes, ctx)
-					outputAttributes.action ||= actionPath
-
-					const children = await childs(ctx)
-
-					const resp = {
-						...el,
-						attributes: outputAttributes,
-						elements: children.elements,
-					}
-					
-					return filterPass(ctx, resp)
-				}
-			}
-		},
-	},
-
 
 	{
 		name: "x-if",
-		filter(el) {
+		render(el, cascade) {
 			
 			const attributes = utils.getAllAttributes(el)
 			const source = utils.getSource(el)
-			const childs = childFilters(el.elements)
+			const childs = cascade.childs(el.elements)
 
 			return async (ctx) => {
 				const subCtx = ctx.Select(source)
@@ -225,11 +242,11 @@ const tags: Tag[] = [
 	},
 	{
 		name: "x-unless",
-		filter(el) {
+		render(el, cascade) {
 			
 			const attributes = utils.getAllAttributes(el)
 			const source = utils.getSource(el)
-			const childs = childFilters(el.elements)
+			const childs = cascade.childs(el.elements)
 
 			return async (ctx) => {
 				const subCtx = ctx.Select(source)
@@ -259,10 +276,10 @@ const tags: Tag[] = [
 
 	{
 		name: "x-for-each",
-		filter(el) {
+		render(el, cascade) {
 			
 			const source = utils.getSource(el)
-			const childs = childFilters(el.elements)
+			const childs = cascade.childs(el.elements)
 
 			return async (ctx): Promise<Branch> => {
 				const ctxs = ctx.Select(source).Split()
@@ -276,7 +293,7 @@ const tags: Tag[] = [
 
 	{
 		name: "x-dump",
-		filter(el) {
+		render(el) {
 			return async (ctx): Promise<Branch> => {
 				const resp: Element = {
 					type: "element",
@@ -297,10 +314,10 @@ const tags: Tag[] = [
 
 	{
 		name: "x-page",
-		filter(el) {
+		render(el, cascade) {
 			const path = utils.requireAttribute(el, "path")
 			const pathRegex = pathToRegex(path)
-			const childs = childFilters(el.elements)
+			const childs = cascade.childs(el.elements)
 
 			return async (ctx): Promise<Branch> => {
 				
@@ -317,13 +334,13 @@ const tags: Tag[] = [
 
 	{
 		name: "x-expose",
-		filter: stripFilter,
+		render: stripFilter,
 	},
 
 	{
 		name: "x-default-page",
-		filter(el) {
-			const childs = childFilters(el.elements)
+		render(el, cascade) {
+			const childs = cascade.childs(el.elements)
 			return async (ctx): Promise<Branch> => {
 				if (ctx.getKey("$.pageNotFound")) {
 					return await childs(ctx)
@@ -337,7 +354,7 @@ const tags: Tag[] = [
 
 	{
 		name: "input",
-		filter(el) {
+		render(el, cascade) {
 			// @NOTE Checkboxes have a slightly odd behaviour. HTML ticks a box if the
 			// checked tag exists but the dev needs a way to set it from a template.
 			// @TODO write test case for this.
@@ -359,7 +376,7 @@ const tags: Tag[] = [
 				}
 			} else {
 				// Otherwise it's just a normal html element
-				return filterHTML(el)
+				return filterHTML(el, cascade)
 			}
 		}
 	},
@@ -367,8 +384,8 @@ const tags: Tag[] = [
 
 	{
 		name: "select",
-		filter(el) {
-			const childs = childFilters(el.elements)
+		render(el, cascade) {
+			const childs = cascade.childs(el.elements)
 
 			return async (ctx): Promise<Branch> => {
 
@@ -402,7 +419,7 @@ const tags: Tag[] = [
 
 	{
 		name: "x-json",
-		filter(el:Element) {
+		render(el:Element) {
 			
 			const json = bodyOrSrc(el)
 			const targetAttr = utils.requireTargetAttribute(el)
@@ -417,7 +434,7 @@ const tags: Tag[] = [
 
 	{
 		name: "x-yaml",
-		filter(el:Element) {
+		render(el:Element) {
 			
 			const yamlSrc = utils.requireAttribute(el, "src")
 			const yaml = readFileSync(yamlSrc, "utf8")
@@ -434,7 +451,7 @@ const tags: Tag[] = [
 
 	{
 		name: "x-sql",
-		filter(el:Element) {
+		render(el:Element) {
 			const query = utils.requireOneTextChild(el)
 			const targetAttr = utils.requireTargetAttribute(el)
 			const single = utils.getBoolAttribute(el, "single-row")
@@ -458,7 +475,7 @@ const tags: Tag[] = [
 
 	{
 		name: "x-nodejs",
-		filter(el:Element) {
+		render(el:Element) {
 			const body = utils.requireOneTextChild(el)
 			const targetAttr = utils.requireTargetAttribute(el)
 			const idAttr = utils.getAttribute(el, "id")
@@ -494,19 +511,22 @@ const tags: Tag[] = [
 
 	{
 		name: "x-setcookie-action",
-		filter: stripFilter,
+		render: stripFilter,
 		action(el:Element) {
 			const name = utils.requireAttribute(el, "name")
 			const value = utils.requireAttribute(el, "value")
 
-			return async (ctx) => ctx.SetCookie(name, value)
+			return async (ctx) => {
+				ctx = ctx.SetCookie(name, value)
+				return filterPass(ctx)
+			}
 			
 		},
 	},
 
 	{
 		name: "x-sql-action",
-		filter: stripFilter,
+		render: stripFilter,
 
 		action: (formAction) => {
 			const query = utils.requireOneTextChild(formAction)
@@ -515,7 +535,8 @@ const tags: Tag[] = [
 			return async (ctx:FilterContext) => {
 				const results = await ctx.RunSQL(query)
 				const output = single ? results[0] : results
-				return target ? ctx.SetVar(target, output) : ctx
+				ctx = target ? ctx.SetVar(target, output) : ctx
+				return filterPass(ctx)
 			}
 		},
 	},
@@ -523,7 +544,7 @@ const tags: Tag[] = [
 
 	{
 		name:"x-nodejs-action",
-		filter: stripFilter,
+		render: stripFilter,
 		action: (formAction) => {
 			const query = utils.requireOneTextChild(formAction)
 			const target = utils.getAttribute(formAction, "target")
@@ -531,7 +552,8 @@ const tags: Tag[] = [
 			const nodeFunc = NodeFunction(query, idAttr)
 			return async (ctx:FilterContext) => {
 				const output = await nodeFunc(ctx)
-				return target ? ctx.SetVar(target, output) : ctx
+				ctx = target ? ctx.SetVar(target, output) : ctx
+				return filterPass(ctx)
 			}
 		}
 	}
@@ -549,7 +571,7 @@ type ChainPair = {
 	link: ElementChain
 
 	mutateCtx: (ctx:FilterContext) => Promise<FilterContext>
-	accessCtx: (ctx:FilterContext) => FormResult
+	accessCtx: (ctx:FilterContext) => ChainResult
 }
 
 const noMutation = async (ctx:FilterContext) => ctx
@@ -571,7 +593,7 @@ function prepareChain(chainLinks:ElementChain[]) {
 		}
 	}
 
-	return async (ctx:FilterContext): Promise<FormResult> => {
+	return async (ctx:FilterContext): Promise<ChainResult> => {
 		for (const chain of chainTags) {
 			const {link} = chain
 			if (link.contains) {
@@ -602,17 +624,6 @@ function findTagIfX(el:Element): Tag|undefined {
 		throw Error(`Unknown x- tag ${el.name}`)
 	}
 	return tag
-}
-
-export default
-function rootFilter(els:Element[]): RootFilter {
-	const childs = childFilters(els)
-
-	return async (ctx:FilterContext) => {
-		const children = await childs(ctx)
-		return children.elements
-	}
-
 }
 
 // Attributes that are stripped out
@@ -655,4 +666,25 @@ function templateAttributes(attrs:Element["attributes"], ctx:FilterContext) {
 	}
 
 	return cpy
+}
+
+function CreateRootFilter(els:Element[], extractor:Extractor): RootFilter {
+	const cascade = CreateCascade(extractor)
+	const childs = cascade.childs(els)
+
+	return async (ctx:FilterContext) => {
+		const children = await childs(ctx)
+		return children.elements
+	}
+}
+
+export default
+function rootFilter(els:Element[]): RootFilter {
+	return CreateRootFilter(els, renderExtract)
+}
+
+export
+function createFormFilter(el:Element): Filter {
+	const cascade = CreateCascade(actionExtract)
+	return formTag.render(el, cascade)
 }

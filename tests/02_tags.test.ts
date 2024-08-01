@@ -193,7 +193,7 @@ test("x-dump", async () => {
 
 	const output = await doc.renderLoaderMl(ctx)
 
-	expect(output).toBe(`<pre>"bar"</pre>`)
+	expect(output).toBe(`<pre>&quot;bar&quot;</pre>`)
 })
 
 test("x-page", async () => {
