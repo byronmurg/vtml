@@ -16,10 +16,6 @@ function prepareAction(formElement:Element): Action {
 	} else {
 		return defaultAction
 	}
-
-	//const action = tag?.action(formElement) || defaultAction
-
-	//return action
 }
 
 
