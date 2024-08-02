@@ -120,3 +120,12 @@
     else.
   pre-process: true
 
+- tag: form
+  arguments:
+  - name: x-name
+    description: "The endpoint name to create for this action"
+  - name: x-ajax
+    description: "Strip out the method and action for this form"
+  description: |
+    Although form is an inbuilt tag we do alter it's behaviour. Defining a form with
+    method="POST" and an x-name attribute will create an action endpoint.
