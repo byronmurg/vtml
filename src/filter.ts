@@ -42,7 +42,7 @@ function CreateCascade(extractor:Extractor): Cascade {
 function textFilter(el:Element): Filter {
 	const textAttr = (el.text || "")
 	return async (ctx:FilterContext): Promise<Branch> => {
-		const text = ctx.templateString(textAttr.toString())
+		const text = ctx.templateStringSafe(textAttr.toString())
 		const resp:Element = {
 			...el,
 			text,
@@ -116,6 +116,11 @@ function filterPass(ctx:FilterContext, ...elements:Element[]): Branch {
 const stripFilter = (el:Element) => async (ctx:FilterContext) => filterPass(ctx)
 const justReturnFilter = filterHTML
 
+
+function prefixIfNotAlready(str:string, prefix:string): string {
+	return str.startsWith(prefix)? str : prefix.concat(str)
+}
+
 // Form tag is a bit special and needs to be reference directly later
 const formTag: Tag = {
 	name: "form",
@@ -125,6 +130,7 @@ const formTag: Tag = {
 			return justReturnFilter(el, cascade)
 		} else {
 			const xName = utils.requireAttribute(el, 'x-name')
+			const xAjax = utils.getBoolAttribute(el, 'x-ajax')
 			const childs = cascade.childs(el.elements)
 
 			return async (ctx:FilterContext) => {
@@ -133,17 +139,22 @@ const formTag: Tag = {
 				const searchStr = search ? `?${search}` : ""
 
 				// Don't need extra slash if path is empty
-				const fullPath = pathLib.posix.join(path, xName)
+				const fullPath = path.endsWith(xName) ? path : pathLib.posix.join(path, xName)
 				const pathSuffix = `${fullPath}${searchStr}`
 
-				const actionPath = `/action${pathSuffix}`
-				const ajaxPath = `/ajax${pathSuffix}`
+				const actionPath = prefixIfNotAlready(pathSuffix, "/action")
+				const ajaxPath = prefixIfNotAlready(pathSuffix, "/ajax")
 
 				ctx = ctx.SetVar('__form_action', actionPath)
 					.SetVar('__form_ajax', ajaxPath)
 
 				const outputAttributes = templateAttributes(el.attributes, ctx)
-				outputAttributes.action ||= actionPath
+
+				if (xAjax) {
+					delete outputAttributes.method
+				} else {
+					outputAttributes.action ||= actionPath
+				}
 
 				const children = await childs(ctx)
 
@@ -391,6 +402,7 @@ const tags: Tag[] = [
 
 				const attrs = templateAttributes(el.attributes, ctx)
 				const children = await childs(ctx)	
+				//@TODO options don't have to be direct children
 				for (const child of children.elements) {
 					if (child.name === "option") {
 						let value = utils.optAttribute(child, 'value')
@@ -629,6 +641,7 @@ function findTagIfX(el:Element): Tag|undefined {
 // Attributes that are stripped out
 const protectedAttributes = [
 	"x-name",
+	"x-ajax",
 ]
 
 // Attributes that cannot be templated
@@ -659,7 +672,7 @@ function templateAttributes(attrs:Element["attributes"], ctx:FilterContext) {
 			cpy[k] = v
 		} else if (typeof(v) === "string") {
 			// Template it
-			cpy[k] = ctx.templateString(v)
+			cpy[k] = ctx.templateStringSafe(v)
 		} else {
 			cpy[k] = v
 		}

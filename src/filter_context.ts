@@ -146,8 +146,25 @@ class FilterContext {
 		}
 	}
 
+	getKeySafe(token:string) {
+		const value = this.getKey(token)
+
+		switch (typeof value) {
+			case "string":
+			case "number":
+			case "boolean":
+				return value.toString()
+			default:
+				return ""
+		}
+	}
+
 	templateString(str:string): string {
 		return str.replace(templateRegex, (t) => this.getKey(t))
+	}
+
+	templateStringSafe(str:string): string {
+		return str.replace(templateRegex, (t) => this.getKeySafe(t))
 	}
 }
 
