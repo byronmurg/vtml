@@ -1,5 +1,6 @@
 x-mustache tag
 expose with <img x-src="..." > ?
-Empty tag support '<>'
+load-only for x-sql etc.
 x-set
-<scrript> tag own templating
+<script> tag own templating
+expiry for x-setcookie
