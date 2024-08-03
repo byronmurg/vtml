@@ -4,3 +4,4 @@ load-only for x-sql etc.
 x-set
 <script> tag own templating
 expiry for x-setcookie
+Stream serialization (currently only memory)

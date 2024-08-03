@@ -13,6 +13,10 @@ const ctx = FilterContext.Init({
 	pageNotFound: false,
 })
 
+function trimAll(str:string): string {
+	return str.split("\n").map((s) => s.trim()).join("")
+}
+
 test("x-with", async () => {
 
 	const exampleHTML = `
@@ -74,7 +78,7 @@ test("x-hint-port", async () => {
 
 test("x-if", async () => {
 
-	function testIf(tag:string) {
+	async function testIf(tag:string) {
 		const exampleHTML = `
 			<x-json target="var" >
 				22
@@ -85,28 +89,22 @@ test("x-if", async () => {
 
 		const doc = StarlingDocument.LoadFromString(exampleHTML)
 
-		return doc.renderLoaderMl(ctx)
+		return trimAll(await doc.renderLoaderMl(ctx))
 	}
 
 	const truthyOut = await testIf(`
-		<x-if source="$var" >
-			truthy
-		</x-if>
+		<x-if source="$var" >truthy</x-if>
 	`)
 	expect(truthyOut).toBe(`truthy`)
 
 	const eqOut = await testIf(`
-		<x-if source="$var" eq="22" >
-			true
-		</x-if>
+		<x-if source="$var" eq="22" >true</x-if>
 	`)
 
 	expect(eqOut).toBe(`true`)
 
 	const gteOut = await testIf(`
-		<x-if source="$var" gte="22" >
-			true
-		</x-if>
+		<x-if source="$var" gte="22" >true</x-if>
 	`)
 
 	expect(gteOut).toBe(`true`)
@@ -193,7 +191,7 @@ test("x-dump", async () => {
 
 	const output = await doc.renderLoaderMl(ctx)
 
-	expect(output).toBe(`<pre>&quot;bar&quot;</pre>`)
+	expect(output).toBe(`<pre>"bar"</pre>`)
 })
 
 test("x-page", async () => {
@@ -220,7 +218,7 @@ test("x-page", async () => {
 	const doc = StarlingDocument.LoadFromString(exampleHTML)
 
 	const fooOut = await doc.renderLoaderMl(fooCtx)
-	expect(fooOut).toBe(`Foo`)
+	expect(trimAll(fooOut)).toBe(`Foo`)
 })
 
 test("x-default-page", async () => {
@@ -247,7 +245,7 @@ test("x-default-page", async () => {
 	const doc = StarlingDocument.LoadFromString(exampleHTML)
 
 	const fooOut = await doc.renderLoaderMl(fooCtx)
-	expect(fooOut).toBe(`Foo`)
+	expect(trimAll(fooOut)).toBe(`Foo`)
 })
 
 test(`select`, async () => {

@@ -1,96 +1,130 @@
-import { XMLParser, XMLBuilder } from "fast-xml-parser"
-
-const parsingOptions = {
-	ignoreAttributes: false,
-    attributeNamePrefix : "",
-
-	preserveOrder: true,
-	unpairedTags: ["hr", "br", "link", "meta", "input"],
-	stopNodes : ["*.script", "*.style", "*.x-sql"],
-	processEntities: true,
-	htmlEntities: true,
-	allowBooleanAttributes: true,
-};
-
-const parser = new XMLParser(parsingOptions);
+import * as htmlparser2 from "htmlparser2"
+import type { Document, ChildNode, Element as DomElement } from "domhandler"
 
 export
 type Element = {
-	type: "element"|"text"
+	type: "element" | "text"
 	name?: string
-	attributes?: Record<string, string|boolean>
+	attributes?: Record<string, string | boolean>
 	elements?: Element[]
 	text?: string
 }
 
-function toElement(jsObj:any): Element {
-	const attrs = jsObj[":@"]
-	delete jsObj[":@"]
+const singleTags = ["hr", "br", "link", "meta"]
 
-	const keys = Object.keys(jsObj)
-	if (keys.length > 1) {
-		throw Error(`Unknown keys ${keys.join(",")}`)
-	}
-
-	const name = keys[0]
-
-	let text;
-	let children:Element[] = []
-
-	if (name === "#text") {
-		text = jsObj[name]
-
-		return {
-			type: "text",
-			text,
-		}
-
-	} else {
-		const childObjs = jsObj[name]
-		children = childObjs.map(toElement)
-
-		const el: Element = {
-			type: "element",
-			name,
-			attributes: attrs,
-			elements: children,
-			text,
-		}
-
-		return el
-	}
+const emptyTags: Record<string, string[]> = {
+	input: ["required"],
+	form: ["x-ajax"],
+	"x-sql": ["single-row"],
+	"x-sql-action": ["single-row"],
 }
 
+const neverClose = [
+	"script",
+]
+
+const shouldNeverClose = (tag:string) => neverClose.includes(tag)
+
+function canBeEmptyAttribute(tag: string, attribute: string): boolean {
+	const empties = emptyTags[tag] || []
+	return empties.includes(attribute)
+}
+
+function toAttributes(el: DomElement): Element["attributes"] {
+	const ret: Element["attributes"] = {}
+
+	for (const k in el.attribs) {
+		const v = el.attribs[k]
+		if (v === "" && canBeEmptyAttribute(el.name, k)) {
+			ret[k] = true
+		} else {
+			ret[k] = v
+		}
+	}
+
+	return ret
+}
+
+function childrenToElements(children: ChildNode[]): Element[] {
+	const ret: Element[] = []
+
+	for (const child of children) {
+		switch (child.type) {
+			case "tag":
+			case "script":
+				ret.push({
+					type: "element",
+					name: child.name,
+					elements: childrenToElements(child.children),
+					attributes: toAttributes(child),
+				})
+				break
+
+			case "text":
+				if (child.data.match(/^\s*$/)) continue
+
+				ret.push({
+					type: "text",
+					text: child.data,
+				})
+				break
+		}
+	}
+
+	return ret
+}
+
+function toElement(doc: Document): Element[] {
+	return childrenToElements(doc.children)
+}
 
 export
-function parse(html:string): Element[] {
-	const jsObj = parser.parse(html)
-	return jsObj.map(toElement)
+function parse(htmlString: string) {
+	const dom = htmlparser2.parseDocument(htmlString, { recognizeSelfClosing:true })
+	return toElement(dom)
 }
 
+function serializeAttributes(el: Element): string {
+	const ret: string[] = []
 
-function toJsObj(el:Element): any {
+	for (const k in el.attributes) {
+		const v = el.attributes[k]
+
+		if (typeof v === "boolean") {
+			ret.push(`${k}`)
+		} else {
+			ret.push(`${k}="${v}"`)
+		}
+	}
+
+	if (ret.length) {
+		return " " + ret.join(" ")
+	} else {
+		return ""
+	}
+}
+
+function stringifyEl(el: Element): string {
 	if (el.type === "text") {
-		return {
-			"#text": el.text,
-		}
+		return el.text || ""
 	} else {
-		return {
-			[el.name||""]: (el.elements || []).map(toJsObj),
-			":@": el.attributes,
+		const name = el.name || ""
+		const attrStr = serializeAttributes(el)
+		if (singleTags.includes(name)) {
+			return `<${el.name}${attrStr}>`
+		} else {
+			const nElements = el.elements?.length || 0
+			if ((nElements > 0) || shouldNeverClose(name)) {
+				const content = serialize(el.elements || [])
+				return `<${el.name}${attrStr}>${content}</${el.name}>`
+			} else {
+				return `<${el.name}${attrStr}/>`
+			}
 		}
 	}
 }
 
-const builderOptions = {
-	...parsingOptions,
-	format: false,
-};
-
-const builder = new XMLBuilder(builderOptions);
-
 export
-function serialize(els:Element[]): string {
-	const jObj = els.map(toJsObj)
-	return builder.build(jObj);
+function serialize(doc: Element[]): string {
+	return doc.map(stringifyEl).join("")
 }

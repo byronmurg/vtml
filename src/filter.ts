@@ -5,6 +5,9 @@ import FilterContext from "./filter_context"
 import {filterPass} from "./tag_utils"
 import templateAttributes from "./attributes"
 
+import Debug from "debug"
+const debug = Debug("starling:filter")
+
 const tags = Object.values(TagMap)
 
 const renderExtract: Extractor = (tag:Tag) => tag.render
@@ -69,6 +72,7 @@ function elementFilter(el:Element, cascade:Cascade): Filter {
 	const tag = findTag(el)
 
 	if (tag) {
+		debug("process tag", name)
 		const fnc = cascade.extract(tag)
 		return fnc(el, cascade)
 	} else {
