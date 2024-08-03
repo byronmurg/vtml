@@ -1,5 +1,4 @@
 import StarlingDocument from "../src/document"
-import FilterContext from "../src/filter_context"
 
 // Just an example context
 const rootDataset = {

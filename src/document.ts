@@ -1,7 +1,5 @@
-import type { Element } from "./html"
 import * as HTML from "./html"
 import * as OAPI from "./oapi"
-import Debug from "debug"
 import preLoad from "./pre_load"
 
 import FilterContext from "./filter_context"
@@ -9,8 +7,6 @@ import {RootFilter, Expose} from "./types"
 import FilterRoot from "./filter"
 import * as utils from "./utils"
 import PrepareForm, {FormDescriptor} from "./form"
-
-const debug = Debug("starling:document")
 
 export default
 class StarlingDocument {

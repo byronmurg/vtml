@@ -18,7 +18,7 @@ function preFilter(el:Element, dir:string): Element {
 	const children = elements.flatMap((child) => {
 		if (child.name === "x-include") {
 			const src = utils.requireAttribute(child, "src")
-			return preLoadInclude(path.join(dir, src), dir)
+			return preLoadInclude(path.join(dir, src))
 		} else if (isSrcElement(child)) {
 			// If the element has a src attribute make sure
 			// that it is relative to the file.
@@ -43,7 +43,7 @@ function loadXml(filePath:string): Element[] {
 	return HTML.parse(filedata)
 }
 
-function preLoadInclude(filePath:string, dir:string): Element[] {
+function preLoadInclude(filePath:string): Element[] {
 	const preDoc = loadXml(filePath)
 	const newDir = path.dirname(filePath)
 

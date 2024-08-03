@@ -16,13 +16,23 @@ const LogicOperators: LogicOperator[] = [
 	{ key: "gte", operation: (source, check) => source >= check },
 ]
 
+function toNum(v:unknown): number {
+	if (typeof(v) === "number") {
+		return v
+	} else if (typeof(v) === "string") {
+		return parseFloat(v)
+	} else {
+		return NaN
+	}
+}
+
 export default
-function doesLogicSelectorMatch(value:any, attributes:Element["attributes"] = {}): boolean {
+function doesLogicSelectorMatch(value:unknown, attributes:Element["attributes"] = {}): boolean {
 
 	// If the selector has any math operators then all of them must not conflict
 	const hasMathOperator = !!LogicOperators.find((op) => attributes[op.key] != undefined)
 	if (hasMathOperator) {
-		const asNum = parseFloat(value)
+		const asNum = toNum(value)
 		for (const op of LogicOperators) {
 			const checkStr = attributes[op.key]
 			if (checkStr !== undefined) {
@@ -37,7 +47,8 @@ function doesLogicSelectorMatch(value:any, attributes:Element["attributes"] = {}
 		// If 'eq' is specified then it must match the value as a string
 		debug("test equality", value, attributes.eq)
 		if (value === undefined) value = ""
-		return value.toString() === attributes.eq
+		const str = `${value}`
+		return str === attributes.eq
 	} else {
 		// Otherwise just return truthy
 		return !!value

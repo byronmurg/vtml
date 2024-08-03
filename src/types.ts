@@ -2,6 +2,8 @@ import {ParsedQs} from "qs"
 import type { Element } from "./html"
 import type FilterContext from "./filter_context"
 
+export type InputValue = string|string[]|number|boolean
+
 export
 type ElementChain = {
 	element: Element
@@ -16,7 +18,7 @@ type RootDataset = {
 	query: ParsedQs
 	method: string
 	search?: string
-	body?: any
+	body?: unknown
 	headers: Record<string, string|string[]|undefined>
 	cookies: Record<string, string>
 	pageNotFound: boolean

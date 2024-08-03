@@ -1,5 +1,6 @@
 import type { Element } from "./html"
 import type { ElementChain } from "./types"
+import {readFileSync} from "fs"
 
 export
 function getAllAttributes(el:Element): Record<string, string|boolean> {
@@ -87,55 +88,6 @@ function requireOneTextChild(el:Element): string {
 	}
 
 	return (textEl.text || "").toString().trim()
-}
-
-export
-function requireSpecialChild(el:Element, searchTag:string): Element[] {
-	const children = el.elements || []
-	const special = children.find((child) => child.name === searchTag)
-
-	if (! special) {
-		throw Error(`${el.name} must have a ${searchTag} element`)
-	}
-
-	const other = children.filter((child) => child.name !== searchTag)
-	return [special, ...other]
-}
-
-type SpecialFilterOutput = {
-	special: Element[]
-	other: Element[]
-}
-
-export
-function findSpecialChildren(el:Element, searchTag:string): SpecialFilterOutput {
-	const children = el.elements || []
-	const special = children.filter((child) => child.name === searchTag)
-	const other = children.filter((child) => child.name !== searchTag)
-
-	return {special, other}
-}
-
-export
-function requireSpecialChildren(el:Element, searchTag:string): SpecialFilterOutput {
-	const out = findSpecialChildren(el, searchTag)
-	if (out.special.length < 1) {
-		throw Error(`${el.name} must have at least one ${searchTag} element`)
-	}
-	return out
-}
-
-export
-function filterElement(els:Element[], check:(e:Element) => boolean): Element[] {
-	return els.filter(check).map((el) => ({
-		...el,
-		elements: findElement(el.elements||[], check)
-	}))
-}
-
-export
-function not<T>(cbk:(i:T) => boolean) {
-	return (ii:T) => !cbk(ii)
 }
 
 export
@@ -235,3 +187,14 @@ function findExposes(el:Element[]): Element[] {
 		(e) => e.name === "x-expose"
 	)
 }
+
+export function bodyOrSrc(el:Element): string {
+	const srcPath = getAttribute(el, "src")
+	if (srcPath) {
+		return readFileSync(srcPath, "utf8")
+	} else {
+		return requireOneTextChild(el)
+	}
+}
+
+

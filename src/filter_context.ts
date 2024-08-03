@@ -7,29 +7,29 @@ const debug = Debug("starling:ctx")
 
 const db = new Pool()
 
-const dbQuery = (sql:string, vars:any[]) => {
+const dbQuery = (sql:string, vars:unknown[]) => {
 	debug("sql", sql, vars)
 	return db.query(sql, vars)
 }
 
 type ProcessedSQL = {
 	sql: string
-	vars: any[]
+	vars: unknown[]
 }
 
 //////////////////////////////////////////////
 // Big special template regex
 //////////////////////////////////////////////
-const templateRegex = /(?<!\\)\$(?!{)[\$\w\[\]\.-]*/g
+const templateRegex = /(?<!\\)\$(?!{)[$\w[\].-]*/g
 //                     ^^^^^^^ Cannot come after a backslash (for escaping
 //                            ^^ Match the $ dollar sign
 //                              ^^^^^ Cannot be preceeded by { (messes with js templates in scripts)
-//                                   ^^^^^^^^^^^^^^ Match legal characters A-z,0-9,[,],.,-
+//                                   ^^^^^^^^^^^ Match legal characters A-z,0-9,[,],.,-
 
 export default
 class FilterContext {
 	constructor(
-		public readonly dataset: any,
+		public readonly dataset: object,
 		public readonly rootDataset: RootDataset,
 		private readonly parent: FilterContext|undefined = undefined,
 		private readonly setCookies: Record<string, string> = {},
@@ -41,7 +41,7 @@ class FilterContext {
 	}
 
 	// Initialize a copy with a new dataset
-	private copy(dataset:any): FilterContext {
+	private copy(dataset:object): FilterContext {
 		return new FilterContext(dataset, this.rootDataset, this, {...this.setCookies})
 	}
 
@@ -71,13 +71,13 @@ class FilterContext {
 		}
 	}
 
-	async RunSQL(query:string): Promise<any[]> {
+	async RunSQL(query:string): Promise<object[]> {
 		const {sql, vars} = this.processSQL(query)
 		const {rows} = await dbQuery(sql, vars)
 		return rows
 	}
 
-	SetVar(target:string, data:any): FilterContext {
+	SetVar(target:string, data:unknown): FilterContext {
 		const newDataset = {
 			...this.dataset,
 			[target]: data,
@@ -98,7 +98,7 @@ class FilterContext {
 	}
 
 	private processSQL(sql:string): ProcessedSQL {
-		const vars: any[] = []
+		const vars: unknown[] = []
 		const matches = sql.match(templateRegex)
 		if (! matches) {
 			return {sql, vars}
@@ -115,7 +115,7 @@ class FilterContext {
 		return {sql, vars}
 	}
 
-	private getLocal(key:string): any {
+	private getLocal(key:string): unknown {
 		const localVar = get(this.dataset, key)
 		// If the key doesn't exist in local
 		if (localVar === undefined) {
@@ -166,6 +166,7 @@ class FilterContext {
 	templateStringSafe(str:string): string {
 		return str.replace(templateRegex, (t) => this.getKeySafe(t))
 	}
+
 }
 
 

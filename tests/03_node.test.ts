@@ -67,7 +67,8 @@ test("x-nodejs invalid", async () => {
 	try {
 		const doc = StarlingDocument.LoadFromString(exampleHTML)
 		await doc.renderLoaderMl(ctx)
-	} catch (e:any) {
+	} catch (err) {
+		const e = err as Error
 		expect(e.message).toMatch(`Syntax error in x-node : Unexpected number`)
 	}
 })
@@ -86,7 +87,8 @@ test("x-nodejs throw", async () => {
 	try {
 		const doc = StarlingDocument.LoadFromString(exampleHTML)
 		await doc.renderLoaderMl(ctx)
-	} catch (e:any) {
+	} catch (err) {
+		const e = err as Error
 		expect(e.message).toMatch(`Error in x-node : See me`)
 	}
 })
@@ -105,7 +107,8 @@ test("x-nodejs throw with id", async () => {
 	try {
 		const doc = StarlingDocument.LoadFromString(exampleHTML)
 		await doc.renderLoaderMl(ctx)
-	} catch (e:any) {
+	} catch (err) {
+		const e = err as Error
 		expect(e.message).toMatch(`Error in x-node (id seeme): See me`)
 	}
 })

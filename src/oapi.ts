@@ -17,14 +17,14 @@ function createStringInputSchema(input:Element): [OAPI.SchemaObject, boolean] {
 	return [property, required]
 }
 
-function createBoolInputSchema(input:Element): [OAPI.SchemaObject, boolean] {
+function createBoolInputSchema(): [OAPI.SchemaObject, boolean] {
 	const property: OAPI.SchemaObject = {
 		type: "boolean",
 	}
 	return [property, true]
 }
 
-function createNumberInputSchema(input:Element): [OAPI.SchemaObject, boolean] {
+function createNumberInputSchema(): [OAPI.SchemaObject, boolean] {
 	const property: OAPI.SchemaObject = {
 		type: "number"
 	}
@@ -36,9 +36,9 @@ function createInputSchema(input:Element): [OAPI.SchemaObject, boolean] {
 	switch (utils.getAttribute(input, "type")) {
 		case "range":
 		case "number":
-			return createNumberInputSchema(input)
+			return createNumberInputSchema()
 		case "checkbox":
-			return createBoolInputSchema(input)
+			return createBoolInputSchema()
 		default:
 			// Text by default
 			return createStringInputSchema(input)

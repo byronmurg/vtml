@@ -1,17 +1,5 @@
 import StarlingDocument from "../src/document"
-import FilterContext from "../src/filter_context"
 
-// Just an example context
-const ctx = FilterContext.Init({
-	path: "/",
-	matchedPath: "/",
-	query: {},
-	method: "GET",
-	cookies: {},
-	headers: {},
-	params:{},
-	pageNotFound: false,
-})
 
 test("form basic", async () => {
 

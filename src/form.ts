@@ -1,16 +1,15 @@
 import {createPostFormApiSchema, SchemaObject, ParameterObject, createPathParameters, expressToOapiPath} from "./oapi"
-import type {RootDataset, ElementChain, FormResult} from "./types"
+import type {RootDataset, InputValue, ElementChain, FormResult} from "./types"
 import pathLib from "path"
 import type {Element} from "./html"
 import * as utils from "./utils"
-import Ajv, {ValidationError} from "ajv"
+import Ajv from "ajv"
 import FilterContext from "./filter_context"
-import NodeFunction from "./node"
 import {prepareChain, createFormFilter} from "./filter"
 
 const ajv = new Ajv()
 
-function parseFormInput(value:string, input:Element): any {
+function parseFormInput(value:string, input:Element): boolean|string|number {
 	const type = utils.getAttribute(input, "type")
 	switch (type) {
 		case "checkbox":
@@ -23,16 +22,16 @@ function parseFormInput(value:string, input:Element): any {
 	}
 }
 
-function asArray(v:unknown): any {
+function asArray(v:string|string[]): string[] {
 	return Array.isArray(v)? v : [v]
 }
 
-function parseFormSelect(value:string, field:Element): any {
+function parseFormSelect(value:string, field:Element): string|string[] {
 	const isMulti = utils.getBoolAttribute(field, "multiple")
 	return isMulti ? asArray(value) : value
 }
 
-function parseFormField(value:string, field:Element): any {
+function parseFormField(value:string, field:Element): InputValue {
 	if (field.name === "input") {
 		return parseFormInput(value, field)
 	} else if (field.name === "select") {
@@ -42,14 +41,14 @@ function parseFormField(value:string, field:Element): any {
 	}
 }
 
-function parseFormFields(body:Record<string, any>, formFields:Element[]): Record<string, any> {
-	const newBody: Record<string, any> = {}
+function parseFormFields(body:Record<string, string>, formFields:Element[]): Record<string, InputValue> {
+	const newBody: Record<string, InputValue> = {}
 
 	for (const field of formFields) {
 		const name = utils.getAttribute(field, "name")
 		if (! name) continue
 
-		let value = body[name]
+		const value = body[name]
 		newBody[name] = parseFormField(value, field)
 	}
 
@@ -77,8 +76,8 @@ type FormDescriptor = {
 	return: string
 	inputSchema: SchemaObject
 	parameters: ParameterObject[]
-	execute: (rootDataset:RootDataset, body:Record<string, any>) => Promise<FormResult>
-	executeFormEncoded: (rootDataset:RootDataset, body:Record<string, any>) => Promise<FormResult>
+	execute: (rootDataset:RootDataset, body:Record<string, InputValue>) => Promise<FormResult>
+	executeFormEncoded: (rootDataset:RootDataset, body:Record<string, string>) => Promise<FormResult>
 }
 
 export default
@@ -121,7 +120,7 @@ function prepareForm(postForm:Element, preElements:ElementChain[]): FormDescript
 	/*
 	 * Create an executor to call this form with a parsed (but not validated) body
 	 */
-	async function execute(rootDataset:RootDataset, body:Record<string, any>): Promise<FormResult> {
+	async function execute(rootDataset:RootDataset, body:Record<string, InputValue>): Promise<FormResult> {
 		await validator(body)
 		rootDataset.body = body
 
@@ -133,7 +132,7 @@ function prepareForm(postForm:Element, preElements:ElementChain[]): FormDescript
 			return { ctx:preCtx, found:false, elements:[] }
 		}
 
-		let ctx = chainResult.ctx
+		const ctx = chainResult.ctx
 
 		const output = await filterAction(ctx)
 

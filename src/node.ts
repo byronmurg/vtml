@@ -3,7 +3,7 @@ import type FilterContext from "./filter_context"
 // A regex for matching vars in x-nodejs
 const nodeVarRegex = /(?<!\\)\$\w+/g
 
-const inbuiltVars: Record<string, any> = {
+const inbuiltVars: Record<string, unknown> = {
 	require: require,
 }
 
@@ -20,7 +20,8 @@ function prepare(body:string, idAttr:string) {
 	const buildFunction = () => {
 		try {
 			return new Function("$", ...inbuiltKeys, ...injectVars, `return (async () => {\n ${body} \n})()`)
-		} catch (e:any) {
+		} catch (err) {
+			const e = err as Error
 			throw Error(`Syntax error in x-node ${extra}: ${e.message}`)
 		}
 	}
@@ -28,9 +29,9 @@ function prepare(body:string, idAttr:string) {
 	// Build a function object
 	const fnc = buildFunction()
 	
-	return async (ctx:FilterContext): Promise<any> => {
+	return async (ctx:FilterContext): Promise<unknown> => {
 		// Root is always passed in
-		const args = [ctx.rootDataset]
+		const args:unknown[] = [ctx.rootDataset]
 
 		for (const k in inbuiltVars) {
 			const v = inbuiltVars[k]
@@ -45,7 +46,8 @@ function prepare(body:string, idAttr:string) {
 		try {
 			// Call our function
 			return await fnc(...args)
-		} catch (e:any) {
+		} catch (err) {
+			const e = err as Error
 			throw Error(`Error in x-node ${extra}: ${e.message}`)
 		}
 	}
