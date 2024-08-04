@@ -1,12 +1,12 @@
 import type FilterContext from "../filter_context"
 import type { Tag } from "../types"
 import * as utils from "../utils"
-import {Element} from "../html"
+import type {TagElement} from "../html"
 
 import { filterPass } from "../tag_utils"
 import doesLogicSelectorMatch from "../logic"
 
-function elementCheck(el:Element) {
+function elementCheck(el:TagElement) {
 	const attributes = utils.getAllAttributes(el)
 	const source = utils.getSource(el)
 

@@ -149,6 +149,10 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument) {
 			const clientDocument = await starlingDocument.renderElements(ctx)
 			res.json(clientDocument)
 		})
+
+		app.get("/root", async (req, res) => {
+			res.json(starlingDocument.root)
+		})
 	}
 
 

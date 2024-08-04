@@ -1,4 +1,4 @@
-import type { Element } from "./html"
+import type { TagElement, TextElement, Element } from "./html"
 import type {Tag, Extractor, ChainResult, Cascade, RootFilter, Branch, Filter, ElementChain} from "./types"
 import * as TagMap from "./tags"
 import FilterContext from "./filter_context"
@@ -38,10 +38,9 @@ function CreateCascade(extractor:Extractor): Cascade {
 }
 
 
-function textFilter(el:Element): Filter {
-	const textAttr = (el.text || "")
+function textFilter(el:TextElement): Filter {
 	return async (ctx:FilterContext): Promise<Branch> => {
-		const text = ctx.templateStringSafe(textAttr.toString())
+		const text = ctx.templateStringSafe(el.text)
 		const resp:Element = {
 			...el,
 			text,
@@ -51,7 +50,7 @@ function textFilter(el:Element): Filter {
 }
 
 export
-function filterHTML(el:Element, cascade:Cascade): Filter {
+function filterHTML(el:TagElement, cascade:Cascade): Filter {
 	const childs = cascade.childs(el.elements)
 
 	return async (ctx) => {
@@ -66,8 +65,8 @@ function filterHTML(el:Element, cascade:Cascade): Filter {
 }
 
 
-function elementFilter(el:Element, cascade:Cascade): Filter {
-	const name = el.name || ""
+function elementFilter(el:TagElement, cascade:Cascade): Filter {
+	const name = el.name
 
 	const tag = findTag(el)
 
@@ -92,8 +91,6 @@ function filterNode(el:Element, cascade:Cascade): Filter {
 			return elementFilter(el, cascade)
 		case "text":
 			return textFilter(el)
-		default:
-			throw Error(`unknown element type ${el.type}`)
 	}
 }
 
@@ -115,6 +112,7 @@ function prepareChain(chainLinks:ElementChain[]) {
 
 	for (const link of chainLinks) {
 		const el = link.element
+
 		const tag = findTagIfX(el)
 
 		if (tag) {
@@ -145,12 +143,16 @@ function prepareChain(chainLinks:ElementChain[]) {
 }
 
 export
-function findTag(el:Element): Tag|undefined {
+function findTag(el:TagElement): Tag|undefined {
 	return tags.find((t) => t.name === el.name)
 }
 
 export
 function findTagIfX(el:Element): Tag|undefined {
+	if (el.type === "text") {
+		return undefined
+	}
+
 	const tag = findTag(el)
 	if ((!tag) && el.name?.startsWith("x-")) {
 		throw Error(`Unknown x- tag ${el.name}`)
@@ -175,7 +177,7 @@ function rootFilter(els:Element[]): RootFilter {
 }
 
 export
-function createFormFilter(el:Element): Filter {
+function createFormFilter(el:TagElement): Filter {
 	const cascade = CreateCascade(actionExtract)
 	return TagMap.FormTag.render(el, cascade)
 }

@@ -1,12 +1,11 @@
 import type { Tag } from "../types"
 import { filterPass, stripFilter } from "../tag_utils"
 import * as utils from "../utils"
-import type { Element } from "../html"
 import type FilterContext from "../filter_context"
 
 export const XSQL: Tag = {
 	name: "x-sql",
-	render(el: Element) {
+	render(el) {
 		const query = utils.requireOneTextChild(el)
 		const targetAttr = utils.requireTargetAttribute(el)
 		const single = utils.getBoolAttribute(el, "single-row")
@@ -17,7 +16,7 @@ export const XSQL: Tag = {
 		}
 	},
 
-	actionPreceeds(el: Element) {
+	actionPreceeds(el) {
 		const query = utils.requireOneTextChild(el)
 		const targetAttr = utils.requireTargetAttribute(el)
 		const single = utils.getBoolAttribute(el, "single-row")

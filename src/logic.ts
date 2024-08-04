@@ -1,5 +1,5 @@
 import Debug from "debug"
-import type {Element} from "./html"
+import type {TagElement} from "./html"
 
 const debug = Debug("starling:logic")
 
@@ -27,7 +27,7 @@ function toNum(v:unknown): number {
 }
 
 export default
-function doesLogicSelectorMatch(value:unknown, attributes:Element["attributes"] = {}): boolean {
+function doesLogicSelectorMatch(value:unknown, attributes:TagElement["attributes"] = {}): boolean {
 
 	// If the selector has any math operators then all of them must not conflict
 	const hasMathOperator = !!LogicOperators.find((op) => attributes[op.key] != undefined)

@@ -1,10 +1,10 @@
-import type { Element } from "./html"
+import type { TagElement } from "./html"
 import type StarlingDocument from "./document"
 import * as OAPI from "openapi3-ts/oas31"
 import * as utils from "./utils"
 export * from "openapi3-ts/oas31"
 
-function createStringInputSchema(input:Element): [OAPI.SchemaObject, boolean] {
+function createStringInputSchema(input:TagElement): [OAPI.SchemaObject, boolean] {
 	const property: OAPI.SchemaObject = {
 		type: "string",
 		pattern: utils.optAttribute(input, "pattern"),
@@ -31,7 +31,7 @@ function createNumberInputSchema(): [OAPI.SchemaObject, boolean] {
 	return [property, true]
 }
 
-function createInputSchema(input:Element): [OAPI.SchemaObject, boolean] {
+function createInputSchema(input:TagElement): [OAPI.SchemaObject, boolean] {
 	
 	switch (utils.getAttribute(input, "type")) {
 		case "range":
@@ -49,8 +49,8 @@ function wrapSelectMulti(items:OAPI.SchemaObject): OAPI.SchemaObject {
 	return { type:"array", items }
 }
 
-function createSelectSchema(input:Element): [OAPI.SchemaObject, boolean] {
-	const options = input.elements?.filter((child) => child.name === "option") || []
+function createSelectSchema(input:TagElement): [OAPI.SchemaObject, boolean] {
+	const options = utils.findElement(input.elements, (child) => child.name === "option")
 	const enumOptions: string[] = []
 
 	for (const option of options) {
@@ -59,15 +59,15 @@ function createSelectSchema(input:Element): [OAPI.SchemaObject, boolean] {
 			throw Error(`Too many children in select option`)
 		}
 
-		const textEl = option.elements?.[0]
-		const value = option.attributes?.value?.toString()
+		const textEl = utils.getText(option)
+		const value = utils.getAttribute(option, "value")
 		if (value){
 			enumOptions.push(value)
 		} else if (! textEl) {
 			// There may be no text element for an empty option
 			enumOptions.push("")
 		} else {
-			enumOptions.push(textEl.text?.toString()||"")
+			enumOptions.push(textEl)
 		}
 	}
 
@@ -83,7 +83,7 @@ function createSelectSchema(input:Element): [OAPI.SchemaObject, boolean] {
 	return [property, true]
 }
 
-function createElementSchema(input:Element): [OAPI.SchemaObject, boolean] {
+function createElementSchema(input:TagElement): [OAPI.SchemaObject, boolean] {
 	if (input.name === "select") {
 		return createSelectSchema(input)
 	} else {
@@ -92,7 +92,7 @@ function createElementSchema(input:Element): [OAPI.SchemaObject, boolean] {
 }
 
 export
-function createPostFormApiSchema(postForm:Element): OAPI.SchemaObject {
+function createPostFormApiSchema(postForm:TagElement): OAPI.SchemaObject {
 	const properties: OAPI.SchemaObject["properties"] = {}
 	const required: OAPI.SchemaObject["required"] = []
 	const inputSchema: OAPI.SchemaObject = {

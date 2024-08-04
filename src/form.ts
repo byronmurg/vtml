@@ -1,7 +1,7 @@
 import {createPostFormApiSchema, SchemaObject, ParameterObject, createPathParameters, expressToOapiPath} from "./oapi"
 import type {RootDataset, InputValue, ElementChain, FormResult} from "./types"
 import pathLib from "path"
-import type {Element} from "./html"
+import type {TagElement} from "./html"
 import * as utils from "./utils"
 import Ajv from "ajv"
 import FilterContext from "./filter_context"
@@ -9,7 +9,7 @@ import {prepareChain, createFormFilter} from "./filter"
 
 const ajv = new Ajv()
 
-function parseFormInput(value:string, input:Element): boolean|string|number {
+function parseFormInput(value:string, input:TagElement): boolean|string|number {
 	const type = utils.getAttribute(input, "type")
 	switch (type) {
 		case "checkbox":
@@ -26,12 +26,12 @@ function asArray(v:string|string[]): string[] {
 	return Array.isArray(v)? v : [v]
 }
 
-function parseFormSelect(value:string, field:Element): string|string[] {
+function parseFormSelect(value:string, field:TagElement): string|string[] {
 	const isMulti = utils.getBoolAttribute(field, "multiple")
 	return isMulti ? asArray(value) : value
 }
 
-function parseFormField(value:string, field:Element): InputValue {
+function parseFormField(value:string, field:TagElement): InputValue {
 	if (field.name === "input") {
 		return parseFormInput(value, field)
 	} else if (field.name === "select") {
@@ -41,7 +41,7 @@ function parseFormField(value:string, field:Element): InputValue {
 	}
 }
 
-function parseFormFields(body:Record<string, string>, formFields:Element[]): Record<string, InputValue> {
+function parseFormFields(body:Record<string, string>, formFields:TagElement[]): Record<string, InputValue> {
 	const newBody: Record<string, InputValue> = {}
 
 	for (const field of formFields) {
@@ -81,7 +81,7 @@ type FormDescriptor = {
 }
 
 export default
-function prepareForm(postForm:Element, preElements:ElementChain[]): FormDescriptor {
+function prepareForm(postForm:TagElement, preElements:ElementChain[]): FormDescriptor {
 	
 	const xName = utils.getAttribute(postForm, "x-name")
 

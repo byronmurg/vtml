@@ -1,4 +1,4 @@
-import type { Element } from "./html"
+import type { TagElement, Element } from "./html"
 import * as HTML from "./html"
 import {readFileSync} from "node:fs"
 import path from "node:path"
@@ -10,13 +10,17 @@ const srcElements = [
 	"x-yaml",
 ]
 
-const isSrcElement = (el:Element) => srcElements.includes(el.name||"")
+const isSrcElement = (el:TagElement) => srcElements.includes(el.name||"")
 
 function preFilter(el:Element, dir:string): Element {
+	if (el.type === "text") return el
+
 	const elements = el.elements || []
 
 	const children = elements.flatMap((child) => {
-		if (child.name === "x-include") {
+		if (child.type === "text") {
+			return child
+		} else if (child.name === "x-include") {
 			const src = utils.requireAttribute(child, "src")
 			return preLoadInclude(path.join(dir, src))
 		} else if (isSrcElement(child)) {

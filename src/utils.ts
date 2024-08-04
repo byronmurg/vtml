@@ -1,40 +1,40 @@
-import type { Element } from "./html"
+import type { Element, TagElement } from "./html"
 import type { ElementChain } from "./types"
 import {readFileSync} from "fs"
 
 export
-function getAllAttributes(el:Element): Record<string, string|boolean> {
+function getAllAttributes(el:TagElement): Record<string, string|boolean> {
 	return (el.attributes || {}) as Record<string, string|boolean>
 }
 
 export
-function getBaseAttribute(el:Element, name:string): string|boolean|undefined {
+function getBaseAttribute(el:TagElement, name:string): string|boolean|undefined {
 	return el.attributes?.[name]
 }
 
 export
-function getBoolAttribute(el:Element, name:string): boolean {
+function getBoolAttribute(el:TagElement, name:string): boolean {
 	const v = getBaseAttribute(el, name)
 	// The attribute must be either boolean true or the same as the name
 	return typeof(v) === "boolean" ? v : v === name
 }
 
 export
-function getAttribute(el:Element, name:string): string {
+function getAttribute(el:TagElement, name:string): string {
 	const v = getBaseAttribute(el, name) || ""
 	return v.toString()
 }
 
 export
-function optAttribute(el:Element, name:string): string|undefined {
-	const attrs = el.attributes || {}
+function optAttribute(el:TagElement, name:string): string|undefined {
+	const attrs = el.attributes
 	const v = attrs[name]
 	return v === undefined ? v : v.toString()
 }
 
 export
-function optNumAttribute(el:Element, name:string): number|undefined {
-	const attrs = el.attributes || {}
+function optNumAttribute(el:TagElement, name:string): number|undefined {
+	const attrs = el.attributes
 	const v = attrs[name]
 	if (v === undefined) {
 		return undefined
@@ -48,7 +48,7 @@ function optNumAttribute(el:Element, name:string): number|undefined {
 }
 
 export
-function requireAttribute(el:Element, attr:string): string {
+function requireAttribute(el:TagElement, attr:string): string {
 	const v = getAttribute(el, attr)
 	if (v === "") {
 		throw Error(`${el.name} must have a ${attr} attribute`)
@@ -57,31 +57,31 @@ function requireAttribute(el:Element, attr:string): string {
 }
 
 export
-function getSource(el:Element) {
+function getSource(el:TagElement) {
 	return getAttribute(el, "source") || "$"
 }
 
 
 export
-function requireSourceAttribute(el:Element) {
+function requireSourceAttribute(el:TagElement) {
 	return requireAttribute(el, "source")
 }
 
 export
-function requireTargetAttribute(el:Element) {
+function requireTargetAttribute(el:TagElement) {
 	return requireAttribute(el, "target")
 }
 
 export
-function getText(el:Element): string {
-	const children = el.elements || []
+function getText(el:TagElement): string {
+	const children = el.elements
 	const textNode = children.find((child) => child.type === "text")
 	return textNode?.text?.toString() || ""
 }
 
 export
-function requireOneTextChild(el:Element): string {
-	const children = el.elements || []
+function requireOneTextChild(el:TagElement): string {
+	const children = el.elements
 	const textEl = children[0]
 	if ((children.length !== 1) || (textEl?.type !== "text")) {
 		throw Error(`${el.name} must have exactly one text element`)
@@ -91,8 +91,9 @@ function requireOneTextChild(el:Element): string {
 }
 
 export
-function findElement(els:Element[], check:(e:Element) => boolean): Element[] {
+function findElement(els:Element[], check:(e:TagElement) => boolean): TagElement[] {
 	return els.flatMap((el) => {
+		if (el.type !== "element") return []
 		return (check(el)) ? [el] : findElement(el.elements||[], check)
 	})
 }
@@ -124,7 +125,7 @@ function findHint(el:Element[], tag:string, attr:string): string|undefined {
 }
 
 export
-function findPostForms(el:Element[]): Element[] {
+function findPostForms(el:Element[]): TagElement[] {
 	return findElement(
 		el,
 		(e) => e.name === "form" && getAttribute(e, 'method').toLowerCase() == "post"
@@ -132,19 +133,21 @@ function findPostForms(el:Element[]): Element[] {
 }
 
 export
-function findInputs(el:Element): Element[] {
+function findInputs(el:TagElement): TagElement[] {
 	const inputTypes = ["input", "select", "textarea"]
 	return findElement(
-		el.elements||[],
-		(e) => inputTypes.includes(e.name||"")
+		el.elements,
+		(e) => inputTypes.includes(e.name)
 	)
 }
 
 function doesElementContainElement(look:Element, search:Element): boolean {
 	if (look === search) {
 		return true
+	} else if (look.type === "text") {
+		return false
 	} else {
-		const children = look.elements || []
+		const children = look.elements
 		return children.some((child) => doesElementContainElement(child, search))
 	}
 }
@@ -157,10 +160,13 @@ function getPrecedingElements(doc:Element[], search:Element): ElementChain[] {
 		for (const el of doc) {
 			if (el === search) {
 				return ret
+			} else if (el.type === "text") {
+				// A preceeding text el can never do anything
+				// so just skip it.
+				continue
 			} else if (doesElementContainElement(el, search)) {
-				const children = el.elements || []
 				ret.push({ element:el, contains:true })
-				return ret.concat(work(children, search))
+				return ret.concat(work(el.elements, search))
 			} else {
 				ret.push({ element:el })
 			}
@@ -173,22 +179,24 @@ function getPrecedingElements(doc:Element[], search:Element): ElementChain[] {
 }
 
 export
-function findPages(el:Element[]): Element[] {
+function findElementByName(el:Element[], name:string): TagElement[] {
 	return findElement(
 		el,
-		(e) => e.name === "x-page"
+		(e) => e.name === name
 	)
 }
 
 export
-function findExposes(el:Element[]): Element[] {
-	return findElement(
-		el,
-		(e) => e.name === "x-expose"
-	)
+function findPages(el:Element[]) {
+	return findElementByName(el, "x-page")
 }
 
-export function bodyOrSrc(el:Element): string {
+export
+function findExposes(el:Element[]): TagElement[] {
+	return findElementByName(el, "x-expose")
+}
+
+export function bodyOrSrc(el:TagElement): string {
 	const srcPath = getAttribute(el, "src")
 	if (srcPath) {
 		return readFileSync(srcPath, "utf8")

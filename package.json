@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "node_modules/.bin/jest . --coverage",
-    "lint": "node_modules/.bin/eslint"
+    "lint": "node_modules/.bin/eslint src/**"
   },
   "bin": {
     "starling": "./build/src/starling.js"

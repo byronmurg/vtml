@@ -2,13 +2,21 @@ import * as htmlparser2 from "htmlparser2"
 import type { Document, ChildNode, Element as DomElement } from "domhandler"
 
 export
-type Element = {
-	type: "element" | "text"
-	name?: string
-	attributes?: Record<string, string | boolean>
-	elements?: Element[]
-	text?: string
+type TextElement = {
+	type: "text"
+	text: string
 }
+
+export
+type TagElement = {
+	type: "element",
+	name: string
+	attributes: Record<string, string | boolean>
+	elements: Element[]
+}
+
+export
+type Element = TextElement | TagElement
 
 const singleTags = ["hr", "br", "link", "meta"]
 
@@ -30,8 +38,8 @@ function canBeEmptyAttribute(tag: string, attribute: string): boolean {
 	return empties.includes(attribute)
 }
 
-function toAttributes(el: DomElement): Element["attributes"] {
-	const ret: Element["attributes"] = {}
+function toAttributes(el: DomElement): TagElement["attributes"] {
+	const ret: TagElement["attributes"] = {}
 
 	for (const k in el.attribs) {
 		const v = el.attribs[k]
@@ -46,6 +54,8 @@ function toAttributes(el: DomElement): Element["attributes"] {
 }
 
 function childrenToElements(children: ChildNode[]): Element[] {
+	// Convert nodes created by htmlparser2 into our Element type
+
 	const ret: Element[] = []
 
 	for (const child of children) {
@@ -74,8 +84,55 @@ function childrenToElements(children: ChildNode[]): Element[] {
 	return ret
 }
 
+function processEmptyTags(doc:Element[], hint:string): Element[] {
+	// htmlparser2 parses empty tags as text nodes. So we have to convert
+	// them into empty tags.
+
+	const cpy:Element[] = []
+	let buffer:Element[] = []
+	let inEmpty = false
+
+	for (const el of doc) {
+
+		if (el.type === "text" && el.text.match(/\s*<>\s*/)) {
+			inEmpty = true
+		} else if (el.type === "text" && el.text.match(/\s*<\/>\s*/)) {
+			inEmpty = false
+			cpy.push({
+				type: "element",
+				name: "",
+				attributes: {},
+				elements: buffer,
+			})
+			buffer = []
+		} else if (inEmpty) {
+			buffer.push(cascadeEmptyTags(el))
+		} else {
+			cpy.push(cascadeEmptyTags(el))
+		}
+	}
+
+	if (inEmpty) {
+		throw Error(`Unmatched empty tag (<>) in ${hint}`)
+	}
+
+	return cpy
+}
+
+function cascadeEmptyTags(el:Element): Element {
+	if (el.type === "element") {
+		return {
+			...el,
+			elements: processEmptyTags(el.elements, el.name),
+		}
+	} else {
+		return el
+	}
+}
+
 function toElement(doc: Document): Element[] {
-	return childrenToElements(doc.children)
+	const baseElements = childrenToElements(doc.children)
+	return processEmptyTags(baseElements, "<root>")
 }
 
 export
@@ -84,7 +141,7 @@ function parse(htmlString: string) {
 	return toElement(dom)
 }
 
-function serializeAttributes(el: Element): string {
+function serializeAttributes(el: TagElement): string {
 	const ret: string[] = []
 
 	for (const k in el.attributes) {
@@ -108,7 +165,7 @@ function stringifyEl(el: Element): string {
 	if (el.type === "text") {
 		return el.text || ""
 	} else {
-		const name = el.name || ""
+		const name = el.name
 		const attrStr = serializeAttributes(el)
 		if (singleTags.includes(name)) {
 			return `<${el.name}${attrStr}>`

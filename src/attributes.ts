@@ -1,4 +1,4 @@
-import type { Element } from "./html"
+import type { TagElement } from "./html"
 import FilterContext from "./filter_context"
 
 // Attributes that are stripped out
@@ -23,8 +23,8 @@ const passedAttributes = [
 ]
 
 export default
-function templateAttributes(attrs:Element["attributes"], ctx:FilterContext) {
-	const cpy:Element["attributes"] = {}
+function templateAttributes(attrs:TagElement["attributes"], ctx:FilterContext) {
+	const cpy:TagElement["attributes"] = {}
 
 	for (const k in attrs) {
 		const v = attrs[k]

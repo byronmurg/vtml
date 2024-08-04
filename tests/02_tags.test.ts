@@ -1,17 +1,8 @@
 import StarlingDocument from "../src/document"
-import FilterContext from "../src/filter_context"
+import {InitCtx} from "./test_lib"
 
 // Just an example context
-const ctx = FilterContext.Init({
-	path: "/",
-	matchedPath: "/",
-	query: {},
-	method: "GET",
-	cookies: {},
-	headers: {},
-	params:{},
-	pageNotFound: false,
-})
+const ctx = InitCtx()
 
 function trimAll(str:string): string {
 	return str.split("\n").map((s) => s.trim()).join("")
@@ -204,15 +195,9 @@ test("x-page", async () => {
 		</x-page>
 	`
 
-	const fooCtx = FilterContext.Init({
+	const fooCtx = InitCtx({
 		path: "/foo",
 		matchedPath: "/foo",
-		query: {},
-		method: "GET",
-		cookies: {},
-		headers: {},
-		params:{},
-		pageNotFound: false,
 	})
 
 	const doc = StarlingDocument.LoadFromString(exampleHTML)
@@ -231,14 +216,9 @@ test("x-default-page", async () => {
 		</x-default-page>
 	`
 
-	const fooCtx = FilterContext.Init({
+	const fooCtx = InitCtx({
 		path: "/foo",
 		matchedPath: "/foo",
-		query: {},
-		method: "GET",
-		cookies: {},
-		headers: {},
-		params:{},
 		pageNotFound: true,
 	})
 
@@ -262,4 +242,19 @@ test(`select`, async () => {
 	const output = await doc.renderLoaderMl(ctx)
 
 	expect(output).toBe(`<select value="foo"><option selected="yes">foo</option><option>bar</option></select>`)
+})
+
+test("<> empty", async () => {
+	const exampleHTML = `
+		<>
+			<x-json target="foo" >22</x-json>
+			<p>in:$foo</p>
+		</>
+		<p>out:$foo</p>
+	`
+
+	const doc = StarlingDocument.LoadFromString(exampleHTML)
+
+	const fooOut = await doc.renderLoaderMl(ctx)
+	expect(trimAll(fooOut)).toBe(`<p>in:22</p><p>out:</p>`)
 })

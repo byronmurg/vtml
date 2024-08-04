@@ -1,11 +1,11 @@
 import FilterContext from "../filter_context"
 import type { Tag, Branch } from "../types"
-import type { Element } from "../html"
+import type { TagElement } from "../html"
 import { filterPass, stripFilter } from "../tag_utils"
 import * as utils from "../utils"
 import NodeFunction from "../node"
 
-function elementNodeFunction(el: Element) {
+function elementNodeFunction(el: TagElement) {
 	const body = utils.requireOneTextChild(el)
 	const idAttr = utils.getAttribute(el, "id")
 
@@ -14,7 +14,7 @@ function elementNodeFunction(el: Element) {
 
 export const XNodejs: Tag = {
 	name: "x-nodejs",
-	render(el: Element) {
+	render(el) {
 		const targetAttr = utils.requireTargetAttribute(el)
 		const nodeBody = elementNodeFunction(el)
 
@@ -29,7 +29,7 @@ export const XNodejs: Tag = {
 		}
 	},
 
-	actionPreceeds(el: Element) {
+	actionPreceeds(el) {
 		const targetAttr = utils.requireTargetAttribute(el)
 		const nodeBody = elementNodeFunction(el)
 

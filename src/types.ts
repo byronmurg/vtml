@@ -1,12 +1,12 @@
 import {ParsedQs} from "qs"
-import type { Element } from "./html"
+import type { TagElement, Element } from "./html"
 import type FilterContext from "./filter_context"
 
 export type InputValue = string|string[]|number|boolean
 
 export
 type ElementChain = {
-	element: Element
+	element: TagElement
 	contains?: boolean
 }
 
@@ -71,7 +71,7 @@ export
 type Filter = (ctx:FilterContext) => Promise<Branch>
 
 export
-type TagFilter = (el:Element, cascade:Cascade) => Filter
+type TagFilter = (el:TagElement, cascade:Cascade) => Filter
 
 
 /////////////////////
@@ -79,10 +79,10 @@ type TagFilter = (el:Element, cascade:Cascade) => Filter
 /////////////////////
 
 export
-type ActionPreceeds = (el:Element) => (ctx:FilterContext) => Promise<FilterContext>
+type ActionPreceeds = (el:TagElement) => (ctx:FilterContext) => Promise<FilterContext>
 
 export
-type ActionContains = (el:Element) => (ctx:FilterContext) => ChainResult
+type ActionContains = (el:TagElement) => (ctx:FilterContext) => ChainResult
 
 export
 type ChainResult = {

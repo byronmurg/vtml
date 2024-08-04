@@ -1,5 +1,5 @@
 import type { Tag, Branch } from "../types"
-import type { Element } from "../html"
+import type { TagElement } from "../html"
 import { filterPass } from "../tag_utils"
 import * as utils from "../utils"
 import templateAttributes from "../attributes"
@@ -43,7 +43,7 @@ export const SelectTag: Tag = {
 			const children = await childs(ctx)
 			//@TODO options don't have to be direct children
 			for (const child of children.elements) {
-				if (child.name === "option") {
+				if (child.type === "element" && child.name === "option") {
 					let value = utils.optAttribute(child, "value")
 					// The value may be set as a child
 					if (value === undefined) {
@@ -51,13 +51,12 @@ export const SelectTag: Tag = {
 					}
 
 					if (value === attrs.value) {
-						child.attributes = child.attributes || {}
 						child.attributes.selected = "yes"
 					}
 				}
 			}
 
-			const resp: Element = {
+			const resp: TagElement = {
 				...el,
 				attributes: attrs,
 				elements: children.elements,
