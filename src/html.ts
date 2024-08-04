@@ -30,6 +30,8 @@ const emptyTags: Record<string, string[]> = {
 const neverClose = [
 	"script",
 	"progress",
+	"span",
+	"p",
 ]
 
 const shouldNeverClose = (tag:string) => neverClose.includes(tag)
