@@ -21,7 +21,7 @@ type Element = TextElement | TagElement
 const singleTags = ["hr", "br", "link", "meta"]
 
 const emptyTags: Record<string, string[]> = {
-	input: ["required"],
+	input: ["required", "disabled"],
 	form: ["x-ajax"],
 	"x-sql": ["single-row"],
 	"x-sql-action": ["single-row"],
@@ -29,6 +29,7 @@ const emptyTags: Record<string, string[]> = {
 
 const neverClose = [
 	"script",
+	"progress",
 ]
 
 const shouldNeverClose = (tag:string) => neverClose.includes(tag)
@@ -146,9 +147,12 @@ function serializeAttributes(el: TagElement): string {
 
 	for (const k in el.attributes) {
 		const v = el.attributes[k]
+		const canBeEmpty = canBeEmptyAttribute(el.name, k)
 
-		if (typeof v === "boolean") {
+		if (((v === true) || (v === "true")) && canBeEmpty) {
 			ret.push(`${k}`)
+		} else if (((v === false) || (v === "false")) && canBeEmpty) {
+			continue
 		} else {
 			ret.push(`${k}="${v}"`)
 		}
@@ -175,7 +179,7 @@ function stringifyEl(el: Element): string {
 				const content = serialize(el.elements || [])
 				return `<${el.name}${attrStr}>${content}</${el.name}>`
 			} else {
-				return `<${el.name}${attrStr}/>`
+				return `<${el.name}${attrStr} />`
 			}
 		}
 	}
