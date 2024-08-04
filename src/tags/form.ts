@@ -9,7 +9,7 @@ export const FormTag:Tag = {
 	name: "form",
 	render(el, cascade) {
 		// If it's not a POST I don't care
-		if (el.attributes?.method !== "POST") {
+		if (utils.getAttribute(el, "method").toLowerCase() !== "post") {
 			return justReturnFilter(el, cascade)
 		} else {
 			const xName = utils.requireAttribute(el, 'x-name')
