@@ -29,7 +29,7 @@ const templateRegex = /(?<!\\)\$(?!{)[$\w[\].-]*/g
 export default
 class FilterContext {
 	constructor(
-		public readonly dataset: object,
+		public readonly dataset: unknown,
 		public readonly rootDataset: RootDataset,
 		private readonly parent: FilterContext|undefined = undefined,
 		private readonly setCookies: Record<string, string> = {},
@@ -41,7 +41,7 @@ class FilterContext {
 	}
 
 	// Initialize a copy with a new dataset
-	private copy(dataset:object): FilterContext {
+	private copy(dataset:unknown): FilterContext {
 		return new FilterContext(dataset, this.rootDataset, this, {...this.setCookies})
 	}
 
@@ -78,23 +78,21 @@ class FilterContext {
 	}
 
 	SetVar(target:string, data:unknown): FilterContext {
-		const newDataset = {
-			...this.dataset,
-			[target]: data,
-		}
+		const newDataset = (target === "$") ? data : {[target]: data}
 
+		return this.Set(newDataset)
+	}
+
+	Set(newDataset:unknown): FilterContext {
 		return this.copy(newDataset)
 	}
 
 	async AddSQLDatasource(query:string, target:string, single:boolean): Promise<FilterContext> {
 		// @TODO this shouldn't be inside filter_context
 		const rows = await this.RunSQL(query)
-		const newDataset = {
-			...this.dataset,
-			[target]: single ? rows[0] : rows,
-		}
+		const newDataset = single ? rows[0] : rows
 
-		return this.copy(newDataset)
+		return this.SetVar(target, newDataset)
 	}
 
 	private processSQL(sql:string): ProcessedSQL {

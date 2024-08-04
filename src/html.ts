@@ -72,6 +72,7 @@ function childrenToElements(children: ChildNode[]): Element[] {
 				break
 
 			case "text":
+				// Skip empty text nodes
 				if (child.data.match(/^\s*$/)) continue
 
 				ret.push({
@@ -121,6 +122,7 @@ function processEmptyTags(doc:Element[], hint:string): Element[] {
 }
 
 function cascadeEmptyTags(el:Element): Element {
+	// Just an element wrapper for processEmptyTags
 	if (el.type === "element") {
 		return {
 			...el,
