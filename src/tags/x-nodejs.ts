@@ -33,6 +33,11 @@ export const XNodejs: Tag = {
 		const targetAttr = utils.requireTargetAttribute(el)
 		const nodeBody = elementNodeFunction(el)
 
+		const loaderOnly = utils.getBoolAttribute(el, "loader-only")
+		if (loaderOnly) {
+			return async (ctx) => ctx
+		}
+
 		return async (ctx) => {
 			const resp = await nodeBody(ctx)
 

@@ -21,6 +21,11 @@ export const XSQL: Tag = {
 		const targetAttr = utils.requireTargetAttribute(el)
 		const single = utils.getBoolAttribute(el, "single-row")
 
+		const loaderOnly = utils.getBoolAttribute(el, "loader-only")
+		if (loaderOnly) {
+			return async (ctx) => ctx
+		}
+
 		return (ctx) => {
 			return ctx.AddSQLDatasource(query, targetAttr, single)
 		}

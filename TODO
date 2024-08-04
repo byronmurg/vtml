@@ -1,6 +1,5 @@
 x-mustache tag
 expose with <img x-src="..." > ?
-load-only for x-sql etc.
 x-set
 <script> tag own templating
 expiry for x-setcookie

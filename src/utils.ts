@@ -16,7 +16,7 @@ export
 function getBoolAttribute(el:TagElement, name:string): boolean {
 	const v = getBaseAttribute(el, name)
 	// The attribute must be either boolean true or the same as the name
-	return typeof(v) === "boolean" ? v : v === name
+	return typeof(v) === "boolean" ? v : ((v === name) || (v === ""))
 }
 
 export

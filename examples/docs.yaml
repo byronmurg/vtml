@@ -66,6 +66,8 @@
   - name: target
   - name: single-row
     optional: true
+  - name: loader-only
+    optional: true
   description: Execute sql query and set a new variable at target
 
 - tag: x-sql-action
@@ -80,6 +82,8 @@
 - tag: x-nodejs
   arguments:
   - name: target
+  - name: loader-only
+    optional: true
   description: Embed a nodejs function and set target to the return value
 
 - tag: x-dump
