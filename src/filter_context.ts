@@ -26,13 +26,18 @@ const templateRegex = /(?<!\\)\$(?!{)[$\w[\].-]*/g
 //                              ^^^^^ Cannot be preceeded by { (messes with js templates in scripts)
 //                                   ^^^^^^^^^^^ Match legal characters A-z,0-9,[,],.,-
 
+type Cookie = {
+	value: string
+	maxAge: number
+}
+
 export default
 class FilterContext {
 	constructor(
 		public readonly dataset: unknown,
 		public readonly rootDataset: RootDataset,
 		private readonly parent: FilterContext|undefined = undefined,
-		private readonly setCookies: Record<string, string> = {},
+		private setCookies: Record<string, Cookie> = {},
 	) {}
 
 	// Initialize a new dataset with only the rootDataset
@@ -42,14 +47,16 @@ class FilterContext {
 
 	// Initialize a copy with a new dataset
 	private copy(dataset:unknown): FilterContext {
-		return new FilterContext(dataset, this.rootDataset, this, {...this.setCookies})
+		return new FilterContext(dataset, this.rootDataset, this, this.setCookies)
 	}
 
-	SetCookie(key:string, value:string) {
+	SetCookie(key:string, value:string, maxAge:number) {
 		const realValue = this.templateString(value)
-		const cpy = this.copy(this.dataset)
-		cpy.setCookies[key] = realValue
-		return cpy
+		// Never set an empty cookie
+		if (realValue) {
+			this.setCookies[key] = { value:realValue, maxAge }
+		}
+		return this
 	}
 
 	GetCookies() {

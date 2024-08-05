@@ -4,3 +4,5 @@ x-set
 <script> tag own templating
 expiry for x-setcookie
 Stream serialization (currently only memory)
+
+duplicate form x-name

@@ -60,7 +60,8 @@ function filterHTML(el:TagElement, cascade:Cascade): Filter {
 			attributes: templateAttributes(el.attributes, ctx),
 			elements: children.elements,
 		}
-		return filterPass(ctx, resp)
+
+		return filterPass(children.ctx, resp)
 	}
 }
 
