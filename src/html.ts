@@ -88,56 +88,8 @@ function childrenToElements(children: ChildNode[]): Element[] {
 	return ret
 }
 
-function processEmptyTags(doc:Element[], hint:string): Element[] {
-	// htmlparser2 parses empty tags as text nodes. So we have to convert
-	// them into empty tags.
-
-	const cpy:Element[] = []
-	let buffer:Element[] = []
-	let inEmpty = false
-
-	for (const el of doc) {
-
-		if (el.type === "text" && el.text.match(/\s*<>\s*/)) {
-			inEmpty = true
-		} else if (el.type === "text" && el.text.match(/\s*<\/>\s*/)) {
-			inEmpty = false
-			cpy.push({
-				type: "element",
-				name: "",
-				attributes: {},
-				elements: buffer,
-			})
-			buffer = []
-		} else if (inEmpty) {
-			buffer.push(cascadeEmptyTags(el))
-		} else {
-			cpy.push(cascadeEmptyTags(el))
-		}
-	}
-
-	if (inEmpty) {
-		throw Error(`Unmatched empty tag (<>) in ${hint}`)
-	}
-
-	return cpy
-}
-
-function cascadeEmptyTags(el:Element): Element {
-	// Just an element wrapper for processEmptyTags
-	if (el.type === "element") {
-		return {
-			...el,
-			elements: processEmptyTags(el.elements, el.name),
-		}
-	} else {
-		return el
-	}
-}
-
 function toElement(doc: Document): Element[] {
-	const baseElements = childrenToElements(doc.children)
-	return processEmptyTags(baseElements, "<root>")
+	return childrenToElements(doc.children)
 }
 
 export

@@ -12,11 +12,7 @@ export const XExpose: Tag = {
 	render: stripFilter,
 }
 
-// Empty tag is basically for '<>' tags.
-// They are useful for creating an isolated
-// variable scope
-
-export const emptyTag: Tag = {
-	name: "",
+export const XPass: Tag = {
+	name: "x-pass",
 	render: passthroughFilter
 }

@@ -133,3 +133,17 @@
   description: |
     Although form is an inbuilt tag we do alter it's behaviour. Defining a form with
     method="POST" and an x-name attribute will create an action endpoint.
+
+- tag: x-pass
+  description: |
+    This tag allows you to pass-over a value context to avoid executing loader
+    actions inside the chain of a form. Also stops any variables declared inside
+    from leaking out.
+
+    In the exmaple only `out:` would be renderered as the $foo value is scoped to the x-pass.
+
+  example: |
+	<x-pass>
+		<x-json target="foo" >22</x-json>
+	</x-pass>
+	out:$foo

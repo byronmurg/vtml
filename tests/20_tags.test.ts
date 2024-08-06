@@ -244,17 +244,3 @@ test(`select`, async () => {
 	expect(output).toBe(`<select value="foo"><option selected="yes">foo</option><option>bar</option></select>`)
 })
 
-test("<> empty", async () => {
-	const exampleHTML = `
-		<>
-			<x-json target="foo" >22</x-json>
-			<p>in:$foo</p>
-		</>
-		<p>out:$foo</p>
-	`
-
-	const doc = StarlingDocument.LoadFromString(exampleHTML)
-
-	const fooOut = await doc.renderLoaderMl(ctx)
-	expect(trimAll(fooOut)).toBe(`<p>in:22</p><p>out:</p>`)
-})
