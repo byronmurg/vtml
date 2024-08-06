@@ -31,6 +31,10 @@ type Cookie = {
 	maxAge: number
 }
 
+const escapeHtml = (unsafe:string) => {
+    return unsafe.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;');
+}
+
 export default
 class FilterContext {
 	constructor(
@@ -155,10 +159,11 @@ class FilterContext {
 		const value = this.getKey(token)
 
 		switch (typeof value) {
-			case "string":
 			case "number":
 			case "boolean":
 				return value.toString()
+			case "string":
+				return escapeHtml(value)
 			default:
 				return ""
 		}
