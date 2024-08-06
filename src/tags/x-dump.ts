@@ -9,11 +9,13 @@ export const XDump: Tag = {
 			const resp: Element = {
 				type: "element",
 				name: "pre",
+				startIndex: el.startIndex,
 				attributes: el.attributes,
 				elements: [
 					{
 						type: "text",
 						text: JSON.stringify(ctx.dataset, null, 2),
+						startIndex: el.startIndex,
 					},
 				],
 			}

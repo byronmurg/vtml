@@ -5,6 +5,7 @@ export
 type TextElement = {
 	type: "text"
 	text: string
+	startIndex: number
 }
 
 export
@@ -13,6 +14,7 @@ type TagElement = {
 	name: string
 	attributes: Record<string, string | boolean>
 	elements: Element[]
+	startIndex: number
 }
 
 export
@@ -32,6 +34,12 @@ const neverClose = [
 	"progress",
 	"span",
 	"p",
+	"head",
+	"header",
+	"footer",
+	"table",
+	"tbody",
+	"tfoot",
 ]
 
 const shouldNeverClose = (tag:string) => neverClose.includes(tag)
@@ -65,11 +73,13 @@ function childrenToElements(children: ChildNode[]): Element[] {
 		switch (child.type) {
 			case "tag":
 			case "script":
+			case "style":
 				ret.push({
 					type: "element",
 					name: child.name,
 					elements: childrenToElements(child.children),
 					attributes: toAttributes(child),
+					startIndex: child.startIndex || NaN,
 				})
 				break
 
@@ -80,6 +90,7 @@ function childrenToElements(children: ChildNode[]): Element[] {
 				ret.push({
 					type: "text",
 					text: child.data,
+					startIndex: child.startIndex || NaN,
 				})
 				break
 		}
@@ -94,7 +105,7 @@ function toElement(doc: Document): Element[] {
 
 export
 function parse(htmlString: string) {
-	const dom = htmlparser2.parseDocument(htmlString, { recognizeSelfClosing:true })
+	const dom = htmlparser2.parseDocument(htmlString, { recognizeSelfClosing:true, withStartIndices:true })
 	return toElement(dom)
 }
 

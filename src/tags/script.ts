@@ -19,12 +19,14 @@ export const ScriptTag:Tag = {
 				const textNode: TextElement = {
 					type: "text",
 					text: textBody,
+					startIndex: el.startIndex,
 				}
 
 				return filterPass(ctx, {
 					...el,
 					attributes,
-					elements:[textNode]
+					elements:[textNode],
+					startIndex: el.startIndex,
 				})
 			}
 		} else {
