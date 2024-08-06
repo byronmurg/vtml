@@ -164,6 +164,11 @@ class FilterContext {
 		}
 	}
 
+	getKeyJSON(token:string) {
+		const value = this.getKey(token)
+		return JSON.stringify(value)
+	}
+
 	templateString(str:string): string {
 		return str.replace(templateRegex, (t) => this.getKey(t))
 	}
@@ -172,6 +177,9 @@ class FilterContext {
 		return str.replace(templateRegex, (t) => this.getKeySafe(t))
 	}
 
+	templateStringJson(str:string): string {
+		return str.replace(templateRegex, (t) => this.getKeyJSON(t))
+	}
 }
 
 
