@@ -8,6 +8,7 @@ const srcElements = [
 	"x-expose",
 	"x-json",
 	"x-yaml",
+	"x-markdown",
 ]
 
 const isSrcElement = (el:TagElement) => srcElements.includes(el.name)

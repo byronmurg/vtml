@@ -2,6 +2,7 @@ import {Pool} from "pg"
 import get from "lodash/get"
 import type {RootDataset} from "./types"
 import Debug from "debug"
+import {escapeHtml} from "./html"
 
 const debug = Debug("starling:ctx")
 
@@ -29,10 +30,6 @@ const templateRegex = /(?<!\\)\$(?!{)[$\w[\].-]*/g
 type Cookie = {
 	value: string
 	maxAge: number
-}
-
-const escapeHtml = (unsafe:string) => {
-    return unsafe.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;');
 }
 
 export default
