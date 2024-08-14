@@ -15,7 +15,7 @@ const rootDataset = {
 test("form", async () => {
 
 	const exampleHTML = `
-		<form method="POST" x-name="test1" >
+		<form x-name="test1" >
 			<input name="name" type="text" />
 		</form>
 	`
@@ -40,7 +40,7 @@ test("form not found", async () => {
 			return false
 		</x-nodejs>
 		<x-if source="$foo" >
-			<form method="POST" x-name="test1" >
+			<form x-name="test1" >
 				<input name="name" type="text" />
 			</form>
 		</x-if>

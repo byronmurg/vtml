@@ -55,11 +55,18 @@
   arguments:
   - name: target
   - name: src
-    optional: true
   description: |
     Create a new variable at target from a yaml document specified by the src argument.
 
     Cannot use a body due to confusing indenting.
+
+- tag: x-markdown
+  arguments:
+  - name: src
+  description: |
+    Load in-place a markdown document.
+
+    This is currently not templated at all.
 
 - tag: x-sql
   arguments:
@@ -141,9 +148,8 @@
     from leaking out.
 
     In the exmaple only `out:` would be renderered as the $foo value is scoped to the x-pass.
-
   example: |
-	<x-pass>
-		<x-json target="foo" >22</x-json>
-	</x-pass>
-	out:$foo
+    <x-pass>
+      <x-json target="foo" >22</x-json>
+    </x-pass>
+    out:$foo
