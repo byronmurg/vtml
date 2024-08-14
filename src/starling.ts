@@ -140,6 +140,7 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument) {
 
 	// Expose api docs
 	app.use("/api-docs", SwaggerUiExpress.serve, SwaggerUiExpress.setup(starlingDocument.oapiSchema))
+	app.use("/api/_schema.json", (_, res) => res.json(starlingDocument.oapiSchema))
 
 
 	// @NOTE for debuging
