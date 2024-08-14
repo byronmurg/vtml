@@ -5,14 +5,20 @@ import * as utils from "./utils"
 export * from "openapi3-ts/oas31"
 
 function createStringInputSchema(input:TagElement): [OAPI.SchemaObject, boolean] {
+	const required = utils.getBoolAttribute(input, "required")
+
+	let minLength = utils.optNumAttribute(input, "minLength")
+
+	if (required && !minLength) {
+		minLength = 1
+	}
+
 	const property: OAPI.SchemaObject = {
 		type: "string",
 		pattern: utils.optAttribute(input, "pattern"),
 		maxLength: utils.optNumAttribute(input, "maxlength"),
-		minLength: utils.optNumAttribute(input, "minlength"),
+		minLength,
 	}
-
-	const required = utils.getBoolAttribute(input, "required")
 
 	return [property, required]
 }
