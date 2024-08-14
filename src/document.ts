@@ -25,12 +25,25 @@ class StarlingDocument {
 	}
 
 	prepareForms(): FormDescriptor[] {
-		const postForms = utils.findActionForms(this.root)
+		const actionForms = utils.findActionForms(this.root)
 
-		return postForms.map((form) => {
+		const forms = actionForms.map((form) => {
 			const preElements = utils.getPrecedingElements(this.root, form)
 			return PrepareForm(form, preElements)
 		})
+
+		const formNames:Record<string, true> = {}
+
+		for (const form of forms) {
+
+			if (formNames[form.name]) {
+				throw Error(`Duplicate form x-name`)
+			}
+
+			formNames[form.name] = true
+		}
+
+		return forms
 	}
 
 	findHint(tag:string, attr:string): string|undefined {

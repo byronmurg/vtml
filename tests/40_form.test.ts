@@ -59,3 +59,17 @@ test("form not found", async () => {
 
 	expect(outOk.found).toBe(false)
 })
+
+test("duplicate forms throw errors", async () => {
+
+	const exampleHTML = `
+		<form x-name="foo" ></form>
+		<form x-name="foo" ></form>
+	`
+
+	function innerTest() {
+		return StarlingDocument.LoadFromString(exampleHTML)
+	}
+
+	expect(innerTest).toThrow("Duplicate form x-name")
+})
