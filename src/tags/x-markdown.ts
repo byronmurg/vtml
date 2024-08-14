@@ -11,7 +11,7 @@ export const XMarkdown: Tag = {
 		const mdSrc = utils.requireAttribute(el, "src")
 		const md = readFileSync(mdSrc, "utf8")
 		const rawHTML = mdParse(HTML.escapeHtml(md)) as string
-		const html = HTML.parse(rawHTML)
+		const html = HTML.parse(rawHTML, el.filename)
 
 		// @TODO startIndex?
 		return async (ctx): Promise<Branch> => {

@@ -71,5 +71,5 @@ test("duplicate forms throw errors", async () => {
 		return StarlingDocument.LoadFromString(exampleHTML)
 	}
 
-	expect(innerTest).toThrow("Duplicate form x-name")
+	expect(innerTest).toThrow("Duplicate x-name in form (<string>:33)")
 })

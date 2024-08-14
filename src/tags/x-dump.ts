@@ -10,12 +10,14 @@ export const XDump: Tag = {
 				type: "element",
 				name: "pre",
 				startIndex: el.startIndex,
+				filename: el.filename,
 				attributes: el.attributes,
 				elements: [
 					{
 						type: "text",
 						text: JSON.stringify(ctx.dataset, null, 2),
 						startIndex: el.startIndex,
+						filename: el.filename,
 					},
 				],
 			}

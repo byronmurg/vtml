@@ -51,7 +51,7 @@ export
 function requireAttribute(el:TagElement, attr:string): string {
 	const v = getAttribute(el, attr)
 	if (v === "") {
-		throw Error(`${el.name} must have a ${attr} attribute`)
+		error(el, `must have a ${attr} attribute`)
 	}
 	return v
 }
@@ -84,7 +84,7 @@ function requireOneTextChild(el:TagElement): string {
 	const children = el.elements
 	const textEl = children[0]
 	if ((children.length !== 1) || (textEl?.type !== "text")) {
-		throw Error(`${el.name} must have exactly one text element`)
+		error(el, `must have exactly one text element`)
 	}
 
 	return (textEl.text || "").toString().trim()
@@ -205,4 +205,11 @@ export function bodyOrSrc(el:TagElement): string {
 	}
 }
 
+export function error(el:TagElement, message:string): never {
+	if (el.type === "element") {
+		throw Error(`${message} in ${el.name} (${el.filename}:${el.startIndex})`)
+	} else {
+		throw Error(`${message} in text element (${el.filename}:${el.startIndex})`)
+	}
+}
 

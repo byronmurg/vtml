@@ -6,6 +6,7 @@ type TextElement = {
 	type: "text"
 	text: string
 	startIndex: number
+	filename: string
 }
 
 export
@@ -15,6 +16,7 @@ type TagElement = {
 	attributes: Record<string, string | boolean>
 	elements: Element[]
 	startIndex: number
+	filename: string
 }
 
 export
@@ -64,7 +66,7 @@ function toAttributes(el: DomElement): TagElement["attributes"] {
 	return ret
 }
 
-function childrenToElements(children: ChildNode[]): Element[] {
+function childrenToElements(children: ChildNode[], filename:string): Element[] {
 	// Convert nodes created by htmlparser2 into our Element type
 
 	const ret: Element[] = []
@@ -77,9 +79,10 @@ function childrenToElements(children: ChildNode[]): Element[] {
 				ret.push({
 					type: "element",
 					name: child.name,
-					elements: childrenToElements(child.children),
+					elements: childrenToElements(child.children, filename),
 					attributes: toAttributes(child),
 					startIndex: child.startIndex || NaN,
+					filename,
 				})
 				break
 
@@ -91,6 +94,7 @@ function childrenToElements(children: ChildNode[]): Element[] {
 					type: "text",
 					text: child.data,
 					startIndex: child.startIndex || NaN,
+					filename,
 				})
 				break
 		}
@@ -99,14 +103,14 @@ function childrenToElements(children: ChildNode[]): Element[] {
 	return ret
 }
 
-function toElement(doc: Document): Element[] {
-	return childrenToElements(doc.children)
+function toElement(doc: Document, filename:string): Element[] {
+	return childrenToElements(doc.children, filename)
 }
 
 export
-function parse(htmlString: string) {
+function parse(htmlString: string, filename:string) {
 	const dom = htmlparser2.parseDocument(htmlString, { recognizeSelfClosing:true, withStartIndices:true })
-	return toElement(dom)
+	return toElement(dom, filename)
 }
 
 export

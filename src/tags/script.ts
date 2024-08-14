@@ -20,6 +20,7 @@ export const ScriptTag:Tag = {
 					type: "text",
 					text: textBody,
 					startIndex: el.startIndex,
+					filename: el.filename,
 				}
 
 				return filterPass(ctx, {

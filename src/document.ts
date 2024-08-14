@@ -37,7 +37,7 @@ class StarlingDocument {
 		for (const form of forms) {
 
 			if (formNames[form.name]) {
-				throw Error(`Duplicate form x-name`)
+				utils.error(form.element, `Duplicate x-name`)
 			}
 
 			formNames[form.name] = true
@@ -79,7 +79,7 @@ class StarlingDocument {
 	}
 
 	static LoadFromString(html:string) {
-		const document = HTML.parse(html)
+		const document = HTML.parse(html, "<string>")
 		return new this(document)
 	}
 

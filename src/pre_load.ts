@@ -47,7 +47,7 @@ function preFilterElements(elements:Element[], dir:string): Element[] {
 
 function loadXml(filePath:string): Element[] {
 	const filedata = readFileSync(filePath, "utf8")
-	return HTML.parse(filedata)
+	return HTML.parse(filedata, filePath)
 }
 
 function preLoadInclude(filePath:string): Element[] {

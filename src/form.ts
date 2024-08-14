@@ -73,6 +73,7 @@ type FormDescriptor = {
 	path: string
 	oapiPath: string
 
+	element: TagElement
 	return: string
 	inputSchema: SchemaObject
 	parameters: ParameterObject[]
@@ -150,6 +151,7 @@ function prepareForm(postForm:TagElement, preElements:ElementChain[]): FormDescr
 
 	return {
 		name: xName,
+		element: postForm,
 		path,
 		oapiPath,
 		parameters,

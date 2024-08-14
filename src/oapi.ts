@@ -62,7 +62,7 @@ function createSelectSchema(input:TagElement): [OAPI.SchemaObject, boolean] {
 	for (const option of options) {
 		const nElements = option.elements?.length || 0
 		if (nElements > 1) {
-			throw Error(`Too many children in select option`)
+			utils.error(option, "Too many children")
 		}
 
 		const textEl = utils.getText(option)
@@ -114,10 +114,10 @@ function createPostFormApiSchema(postForm:TagElement): OAPI.SchemaObject {
 
 		const name = attributes.name
 		if (! name) {
-			throw Error(`Unamed input`)
+			utils.error(input, "Unamed input")
 		}
 		if (typeof(name) !== "string") {
-			throw Error(`Invalid input name ${name}`)
+			utils.error(input, `Invalid input name ${name}`)
 		}
 
 		const [property, propRequired] = createElementSchema(input)
