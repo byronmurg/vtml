@@ -25,7 +25,7 @@ class StarlingDocument {
 	}
 
 	prepareForms(): FormDescriptor[] {
-		const postForms = utils.findPostForms(this.root)
+		const postForms = utils.findActionForms(this.root)
 
 		return postForms.map((form) => {
 			const preElements = utils.getPrecedingElements(this.root, form)

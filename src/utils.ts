@@ -125,10 +125,10 @@ function findHint(el:Element[], tag:string, attr:string): string|undefined {
 }
 
 export
-function findPostForms(el:Element[]): TagElement[] {
+function findActionForms(el:Element[]): TagElement[] {
 	return findElement(
 		el,
-		(e) => e.name === "form" && getAttribute(e, 'method').toLowerCase() == "post"
+		(e) => (e.name === "form") && (!!getAttribute(e, 'x-name'))
 	)
 }
 

@@ -8,11 +8,11 @@ import templateAttributes from "../attributes"
 export const FormTag:Tag = {
 	name: "form",
 	render(el, cascade) {
-		// If it's not a POST I don't care
-		if (utils.getAttribute(el, "method").toLowerCase() !== "post") {
+		const xName = utils.requireAttribute(el, 'x-name')
+		// If it's not an action I don't care
+		if (!xName) {
 			return justReturnFilter(el, cascade)
 		} else {
-			const xName = utils.requireAttribute(el, 'x-name')
 			const xAjax = utils.getBoolAttribute(el, 'x-ajax')
 			const childs = cascade.childs(el.elements)
 
@@ -33,9 +33,8 @@ export const FormTag:Tag = {
 
 				const outputAttributes = templateAttributes(el.attributes, ctx)
 
-				if (xAjax) {
-					delete outputAttributes.method
-				} else {
+				if (! xAjax) {
+					outputAttributes.method = "POST"
 					outputAttributes.action ||= actionPath
 				}
 
