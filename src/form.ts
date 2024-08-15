@@ -120,7 +120,7 @@ function prepareForm(postForm:TagElement, preElements:ElementChain[]): FormDescr
 
 	const chain = prepareChain(preElements)
 
-	const xReturn = utils.getAttribute(postForm, "x-return") || ""
+	const xReturn = utils.getAttribute(postForm, "x-return")
 
 	// Create the action filter
 	const filterAction = createFormFilter(postForm)
