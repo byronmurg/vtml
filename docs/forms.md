@@ -99,8 +99,6 @@ Here's an example using HTMX to handle the ajax.
     x-ajax
 	hx-trigger="focusout"
     hx-post="$__form_ajax"
-	hx-target="this"
-	hx-swap="outerHTML"
 >
     ...
     <input type="text" value="$.body.text" />
@@ -115,7 +113,6 @@ The basic attributes
 And some HTMX specific ones which I will give a brief explanation of.
 - hx-trigger: Trigger on a focusout event (when the focus leaves this form)
 - hx-post: POST to this address. We're using `$__form_ajax` which is a special variable attached to all forms. It simply resolves to the ajax route which in this case would be `/ajax/update_text`.
-- hx-target/hx-swap: Replace the whole form with whatever comes back from the server.
 
 Finally there is the `x-ajax` attribute which disabled the usual added attributes.
 
