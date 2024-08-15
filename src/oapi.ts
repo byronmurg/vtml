@@ -37,9 +37,11 @@ function createNumberInputSchema(): [OAPI.SchemaObject, boolean] {
 	return [property, true]
 }
 
-function createInputSchema(input:TagElement): [OAPI.SchemaObject, boolean] {
+function createInputSchema(input:TagElement): [OAPI.SchemaObject, boolean]|undefined {
 	
 	switch (utils.getAttribute(input, "type")) {
+		case "radio":
+			return undefined
 		case "range":
 		case "number":
 			return createNumberInputSchema()
@@ -89,7 +91,7 @@ function createSelectSchema(input:TagElement): [OAPI.SchemaObject, boolean] {
 	return [property, true]
 }
 
-function createElementSchema(input:TagElement): [OAPI.SchemaObject, boolean] {
+function createElementSchema(input:TagElement): [OAPI.SchemaObject, boolean]|undefined {
 	if (input.name === "select") {
 		return createSelectSchema(input)
 	} else {
@@ -99,34 +101,60 @@ function createElementSchema(input:TagElement): [OAPI.SchemaObject, boolean] {
 
 export
 function createPostFormApiSchema(postForm:TagElement): OAPI.SchemaObject {
+
 	const properties: OAPI.SchemaObject["properties"] = {}
-	const required: OAPI.SchemaObject["required"] = []
+	const requiredSet = new Set<string>()
+
+	const formInputs = utils.findInputs(postForm)
+	for (const input of formInputs) {
+		const name = utils.requireAttribute(input, "name")
+
+		const schemaParts = createElementSchema(input)
+
+		if (!schemaParts) {
+			continue
+		}
+
+		const [property, propRequired] = schemaParts
+		
+		properties[name] = property
+		if (propRequired) {
+			requiredSet.add(name)
+		}
+	}
+
+	// Now do the radio buttons
+	const radios:Record<string, Set<string>> = {}
+	for (const input of formInputs) {
+		if (input.name !== "input") continue
+		if (utils.getAttribute(input, "type") !== "radio") continue
+
+		const name = utils.requireAttribute(input, "name")
+		const options = radios[name] || (radios[name] = new Set())
+		const value = utils.requireAttribute(input, 'value')
+		options.add(value)
+
+		if (utils.getBoolAttribute(input, "required")) {
+			requiredSet.add(name)
+		}
+	}
+
+	for (const name in radios) {
+		const options = radios[name]
+
+		properties[name] = {
+			type: "string",
+			enum: [...options]
+		}
+	}
+
 	const inputSchema: OAPI.SchemaObject = {
 		type: "object",
 		properties,
 		additionalProperties: false,
-		required,
+		required: [...requiredSet],
 	}
 
-	const formInputs = utils.findInputs(postForm)
-	for (const input of formInputs) {
-		const attributes = input.attributes || {}
-
-		const name = attributes.name
-		if (! name) {
-			utils.error(input, "Unamed input")
-		}
-		if (typeof(name) !== "string") {
-			utils.error(input, `Invalid input name ${name}`)
-		}
-
-		const [property, propRequired] = createElementSchema(input)
-		
-		properties[name] = property
-		if (propRequired) {
-			required.push(name)
-		}
-	}
 
 	return inputSchema
 }
