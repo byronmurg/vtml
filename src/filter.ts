@@ -175,5 +175,5 @@ function rootFilter(els:Element[]): RootFilter {
 export
 function createFormFilter(el:TagElement): Filter {
 	const cascade = CreateCascade(actionExtract)
-	return TagMap.FormTag.render(el, cascade)
+	return cascade.childs(el.elements)
 }
