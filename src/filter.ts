@@ -4,6 +4,7 @@ import * as TagMap from "./tags"
 import FilterContext from "./filter_context"
 import {filterPass} from "./tag_utils"
 import templateAttributes from "./attributes"
+import * as utils from "./utils"
 
 import Debug from "debug"
 const debug = Debug("starling:filter")
@@ -69,19 +70,13 @@ function filterHTML(el:TagElement, cascade:Cascade): Filter {
 function elementFilter(el:TagElement, cascade:Cascade): Filter {
 	const name = el.name
 
-	const tag = findTag(el)
+	const tag = findTagIfX(el)
 
 	if (tag) {
 		debug("process tag", name)
 		const fnc = cascade.extract(tag)
 		return fnc(el, cascade)
 	} else {
-		// @TODO should be filter default
-		// Throw if this is an unknown x- tag
-		if (name.startsWith("x-")) {
-			throw Error(`Unknown x- tag ${name}`)
-		}
-
 		return filterHTML(el, cascade)
 	}
 }
@@ -156,7 +151,7 @@ function findTagIfX(el:Element): Tag|undefined {
 
 	const tag = findTag(el)
 	if ((!tag) && el.name?.startsWith("x-")) {
-		throw Error(`Unknown x- tag ${el.name}`)
+		utils.error(el, `Unknown x- tag`)
 	}
 	return tag
 }

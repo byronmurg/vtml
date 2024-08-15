@@ -8,6 +8,14 @@ function trimAll(str:string): string {
 	return str.split("\n").map((s) => s.trim()).join("")
 }
 
+test("Unknown tags throw an error", () => {
+	const exampleHTML = `<x-dunnome/>`
+
+	const func = () => StarlingDocument.LoadFromString(exampleHTML)
+
+	expect(func).toThrow(`Unknown x- tag in x-dunnome`)
+})
+
 test("x-with", async () => {
 
 	const exampleHTML = `
