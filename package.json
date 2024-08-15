@@ -14,6 +14,7 @@
   "license": "UNLICENSED",
   "dependencies": {
     "ajv": "^8.12.0",
+    "ajv-formats": "^3.0.1",
     "body-parser": "^1.20.2",
     "cookie-parser": "^1.4.6",
     "debug": "^4.3.4",

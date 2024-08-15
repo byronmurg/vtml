@@ -4,16 +4,22 @@ import pathLib from "path"
 import type {TagElement} from "./html"
 import * as utils from "./utils"
 import Ajv from "ajv"
+import AjvFormats from "ajv-formats"
+
 import FilterContext from "./filter_context"
 import {prepareChain, createFormFilter} from "./filter"
 
 const ajv = new Ajv()
+AjvFormats(ajv)
 
 function parseFormInput(value:string, input:TagElement): boolean|string|number {
 	const type = utils.getAttribute(input, "type")
 	switch (type) {
 		case "checkbox":
 			return (value === "on")
+		case "datetime-local":
+		case "time":
+			return value +":00.000Z"
 		case "number":
 		case "range":
 			return parseFloat(value)
@@ -146,6 +152,7 @@ function prepareForm(postForm:TagElement, preElements:ElementChain[]): FormDescr
 	async function executeFormEncoded(rootDataset:RootDataset, formBody:Record<string, string>) {
 		
 		const body = parseFormFields(formBody, formInputs)
+		console.log("Body", body)
 		return execute(rootDataset, body)
 	}
 

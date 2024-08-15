@@ -4,6 +4,17 @@ import * as OAPI from "openapi3-ts/oas31"
 import * as utils from "./utils"
 export * from "openapi3-ts/oas31"
 
+function createExoticFormat(input:TagElement, format:string): [OAPI.SchemaObject, boolean] {
+	const required = utils.getBoolAttribute(input, "required")
+	
+	const property: OAPI.SchemaObject = {
+		type: "string",
+		format,
+	}
+
+	return [property, required]
+}
+
 function createStringInputSchema(input:TagElement): [OAPI.SchemaObject, boolean] {
 	const required = utils.getBoolAttribute(input, "required")
 
@@ -40,11 +51,24 @@ function createNumberInputSchema(): [OAPI.SchemaObject, boolean] {
 function createInputSchema(input:TagElement): [OAPI.SchemaObject, boolean]|undefined {
 	
 	switch (utils.getAttribute(input, "type")) {
-		case "radio":
+		case "radio": // @NOTE Radios are handled elsewhere
+		case "submit": // Don't need submits
+		case "reset": // ...or resets
+		case "button": // ...or buttons
 			return undefined
 		case "range":
 		case "number":
 			return createNumberInputSchema()
+		case "email":
+			return createExoticFormat(input, "email")
+		case "date":
+			return createExoticFormat(input, "date")
+		case "url":
+			return createExoticFormat(input, "uri")
+		case "time":
+			return createExoticFormat(input, "time")
+		case "datetime-local":
+			return createExoticFormat(input, "date-time")
 		case "checkbox":
 			return createBoolInputSchema()
 		default:
