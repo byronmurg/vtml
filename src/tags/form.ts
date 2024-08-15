@@ -1,9 +1,27 @@
 import FilterContext from "../filter_context"
 import type {Tag} from "../types"
-import {filterPass, justReturnFilter, prefixIfNotAlready} from "../tag_utils"
+import {filterPass, justReturnFilter} from "../tag_utils"
 import pathLib from "path"
 import * as utils from "../utils"
 import templateAttributes from "../attributes"
+
+function extractRelevantPath(path:string, matchedPage:string = ''): string {
+	const noRelevantParts = matchedPage.split('/').length
+	return path.split('/').slice(1, noRelevantParts).join('/')
+}
+
+function getFullPath(xName:string, ctx:FilterContext): string {
+	const path = ctx.getKey("$.path")
+	const search = ctx.getKey("$.search")
+	const matchedPage = ctx.getKey("$__matchedPage")
+	const searchStr = search ? `?${search}` : ""
+
+	const relevantPath = extractRelevantPath(path, matchedPage)
+
+	// Don't need extra slash if path is empty
+	const fullPath = pathLib.posix.join(relevantPath, xName)
+	return `/${fullPath}${searchStr}`
+}
 
 export const FormTag:Tag = {
 	name: "form",
@@ -17,16 +35,10 @@ export const FormTag:Tag = {
 			const childs = cascade.childs(el.elements)
 
 			return async (ctx:FilterContext) => {
-				const path = ctx.getKey("$.path")
-				const search = ctx.getKey("$.search")
-				const searchStr = search ? `?${search}` : ""
+				const fullPath = getFullPath(xName, ctx)
 
-				// Don't need extra slash if path is empty
-				const fullPath = path.endsWith(xName) ? path : pathLib.posix.join(path, xName)
-				const pathSuffix = `${fullPath}${searchStr}`
-
-				const actionPath = prefixIfNotAlready(pathSuffix, "/action")
-				const ajaxPath = prefixIfNotAlready(pathSuffix, "/ajax")
+				const actionPath = "/action" +fullPath
+				const ajaxPath = "/ajax" +fullPath
 
 				ctx = ctx.SetVar('__form_action', actionPath)
 					.SetVar('__form_ajax', ajaxPath)

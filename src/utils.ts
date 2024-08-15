@@ -94,7 +94,14 @@ export
 function findElement(els:Element[], check:(e:TagElement) => boolean): TagElement[] {
 	return els.flatMap((el) => {
 		if (el.type !== "element") return []
-		return (check(el)) ? [el] : findElement(el.elements||[], check)
+
+		const childMatches = findElement(el.elements, check)
+
+		if (check(el)) {
+			return [el].concat(childMatches)
+		} else {
+			return childMatches
+		}
 	})
 }
 
@@ -186,8 +193,17 @@ function findElementByName(el:Element[], name:string): TagElement[] {
 	)
 }
 
+function isTagElement(el:Element): el is TagElement {
+	return el.type === "element"
+}
+
 export
-function findPages(el:Element[]) {
+function findPagesInChain(el:Element[]): TagElement[] {
+	return el.filter(isTagElement).filter((e) => e.name === "x-page")
+}
+
+export
+function findPages(el:Element[]): TagElement[] {
 	return findElementByName(el, "x-page")
 }
 

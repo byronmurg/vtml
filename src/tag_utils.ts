@@ -12,7 +12,3 @@ export const stripFilter = () => async (ctx:FilterContext) => filterPass(ctx)
 export const justReturnFilter = filterHTML
 export const passthroughFilter: TagFilter = (el, cascade) => cascade.childs(el.elements)
 
-
-export function prefixIfNotAlready(str:string, prefix:string): string {
-	return str.startsWith(prefix)? str : prefix.concat(str)
-}

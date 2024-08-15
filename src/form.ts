@@ -57,7 +57,7 @@ function parseFormFields(body:Record<string, string>, formFields:TagElement[]): 
 
 function getPagePath(preElements:ElementChain[]): string {
 	const elements = preElements.map((chain) => chain.element).reverse()
-	const pages = utils.findPages(elements)
+	const pages = utils.findPagesInChain(elements)
 
 	if (pages.length) {
 		const page = pages[0]
@@ -87,7 +87,7 @@ function prepareForm(postForm:TagElement, preElements:ElementChain[]): FormDescr
 	const xName = utils.getAttribute(postForm, "x-name")
 
 	if (! xName) {
-		throw Error(`No x-name set in POST form`)
+		utils.error(postForm, `No x-name set`)
 	}
 
 	// Get the path of the nearest page
@@ -155,6 +155,7 @@ function prepareForm(postForm:TagElement, preElements:ElementChain[]): FormDescr
 		path,
 		oapiPath,
 		parameters,
+
 		return: xReturn,
 		inputSchema,
 		execute,

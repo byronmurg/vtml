@@ -16,6 +16,7 @@ export const XPage:Tag = {
 			const matchPath = ctx.getKey("$.matchedPath")
 			if (matchPath.startsWith(path)) {
 				debug("Match on page", path)
+				ctx = ctx.SetVar("__matchedPage", path)
 				return await childs(ctx)
 			} else {
 				return filterPass(ctx)
