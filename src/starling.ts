@@ -59,7 +59,8 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument) {
 
 		for (const k in cookies) {
 			const v = cookies[k]
-			res.cookie(k, v.value, {maxAge:v.maxAge})
+			const maxAge = v.maxAge || undefined
+			res.cookie(k, v.value, {maxAge})
 		}
 	}
 
