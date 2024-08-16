@@ -45,7 +45,9 @@ export const FormTag:Tag = {
 
 				const outputAttributes = templateAttributes(el.attributes, ctx)
 
-				if (! xAjax) {
+				if (xAjax) {
+					outputAttributes.onsubmit ||= "return false"
+				} else {
 					outputAttributes.method = "POST"
 					outputAttributes.action ||= actionPath
 				}
