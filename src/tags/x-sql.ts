@@ -1,6 +1,6 @@
 import type { Tag } from "../types"
 import type {TagElement} from "../html"
-import { filterPass, stripFilter } from "../tag_utils"
+import { filterPass, stripFilter, loaderOnlyPreceeds, loaderOnlyFilter } from "../tag_utils"
 import * as utils from "../utils"
 import type FilterContext from "../filter_context"
 import * as SQL from "../sql"
@@ -26,7 +26,8 @@ function passSQL(el:TagElement) {
 export const XSQL: Tag = {
 	name: "x-sql",
 	render: passSQL,
-	actionPreceeds: runSQL,
+	action: loaderOnlyFilter(passSQL),
+	actionPreceeds: loaderOnlyPreceeds(runSQL),
 }
 
 export const XSQLAction: Tag = {

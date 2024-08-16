@@ -1,7 +1,7 @@
 import type FilterContext from "../filter_context"
 import type { Tag } from "../types"
 import type { TagElement } from "../html"
-import { filterPass, stripFilter } from "../tag_utils"
+import { filterPass, stripFilter, loaderOnlyPreceeds, loaderOnlyFilter } from "../tag_utils"
 import * as utils from "../utils"
 import NodeFunction from "../node"
 
@@ -31,8 +31,8 @@ function passNode(el:TagElement) {
 
 export const XNodejs: Tag = {
 	name: "x-nodejs",
-	render: passNode,
-	actionPreceeds: runNode,
+	render: loaderOnlyFilter(passNode),
+	actionPreceeds: loaderOnlyPreceeds(runNode),
 }
 
 export const XNodejsAction: Tag = {
