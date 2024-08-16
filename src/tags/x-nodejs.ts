@@ -1,5 +1,5 @@
-import FilterContext from "../filter_context"
-import type { Tag, Branch } from "../types"
+import type FilterContext from "../filter_context"
+import type { Tag } from "../types"
 import type { TagElement } from "../html"
 import { filterPass, stripFilter } from "../tag_utils"
 import * as utils from "../utils"
@@ -12,54 +12,31 @@ function elementNodeFunction(el: TagElement) {
 	return NodeFunction(body, idAttr)
 }
 
+function runNode(el:TagElement) {
+	const target = utils.getAttribute(el, "target")
+	const nodeBody = elementNodeFunction(el)
+
+	return async (ctx:FilterContext) => {
+		const resp = await nodeBody(ctx)
+
+		// Set output to target
+		return target ? ctx.SetVar(target, resp) : ctx
+	}
+}
+
+function passNode(el:TagElement) {
+	const run = runNode(el)
+	return (ctx:FilterContext) => run(ctx).then(filterPass)
+}
+
 export const XNodejs: Tag = {
 	name: "x-nodejs",
-	render(el) {
-		const targetAttr = utils.requireTargetAttribute(el)
-		const nodeBody = elementNodeFunction(el)
-
-		return async (ctx): Promise<Branch> => {
-			const resp = await nodeBody(ctx)
-
-			// Set output to target
-			const newCtx = ctx.SetVar(targetAttr, resp)
-
-			// Pass with new ctx
-			return filterPass(newCtx)
-		}
-	},
-
-	actionPreceeds(el) {
-		const targetAttr = utils.requireTargetAttribute(el)
-		const nodeBody = elementNodeFunction(el)
-
-		const loaderOnly = utils.getBoolAttribute(el, "loader-only")
-		if (loaderOnly) {
-			return async (ctx) => ctx
-		}
-
-		return async (ctx) => {
-			const resp = await nodeBody(ctx)
-
-			// Set output to target
-			return ctx.SetVar(targetAttr, resp)
-		}
-	},
+	render: passNode,
+	actionPreceeds: runNode,
 }
 
 export const XNodejsAction: Tag = {
 	name: "x-nodejs-action",
 	render: stripFilter,
-	action: (el) => {
-		const target = utils.getAttribute(el, "target")
-		const nodeBody = elementNodeFunction(el)
-
-		return async (ctx: FilterContext) => {
-			const output = await nodeBody(ctx)
-
-			ctx = target ? ctx.SetVar(target, output) : ctx
-
-			return filterPass(ctx)
-		}
-	},
+	action: passNode,
 }

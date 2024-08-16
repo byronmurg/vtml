@@ -1,22 +1,6 @@
-import {Pool} from "pg"
 import get from "lodash/get"
 import type {RootDataset} from "./types"
-import Debug from "debug"
 import {escapeHtml} from "./html"
-
-const debug = Debug("starling:ctx")
-
-const db = new Pool()
-
-const dbQuery = (sql:string, vars:unknown[]) => {
-	debug("sql", sql, vars)
-	return db.query(sql, vars)
-}
-
-type ProcessedSQL = {
-	sql: string
-	vars: unknown[]
-}
 
 //////////////////////////////////////////////
 // Big special template regex
@@ -45,6 +29,8 @@ class FilterContext {
 	static Init(dataset:RootDataset) {
 		return new FilterContext(dataset, dataset)
 	}
+
+	static TemplateRegex = templateRegex
 
 	// Initialize a copy with a new dataset
 	private copy(dataset:unknown): FilterContext {
@@ -79,12 +65,6 @@ class FilterContext {
 		}
 	}
 
-	async RunSQL(query:string): Promise<object[]> {
-		const {sql, vars} = this.processSQL(query)
-		const {rows} = await dbQuery(sql, vars)
-		return rows
-	}
-
 	SetVar(target:string, data:unknown): FilterContext {
 		const newDataset = (target === "$") ? data : {[target]: data}
 
@@ -93,32 +73,6 @@ class FilterContext {
 
 	Set(newDataset:unknown): FilterContext {
 		return this.copy(newDataset)
-	}
-
-	async AddSQLDatasource(query:string, target:string, single:boolean): Promise<FilterContext> {
-		// @TODO this shouldn't be inside filter_context
-		const rows = await this.RunSQL(query)
-		const newDataset = single ? rows[0] : rows
-
-		return this.SetVar(target, newDataset)
-	}
-
-	private processSQL(sql:string): ProcessedSQL {
-		const vars: unknown[] = []
-		const matches = sql.match(templateRegex)
-		if (! matches) {
-			return {sql, vars}
-		}
-
-		for (let i = 0; i < matches.length; i++) {
-			const match = matches[i]
-			const value = this.getKey(match)
-			vars.push(value)
-
-			sql = sql.replace(match, `$${i+1}`)
-		}
-
-		return {sql, vars}
 	}
 
 	private getLocal(key:string): unknown {
