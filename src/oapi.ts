@@ -228,6 +228,17 @@ function createOpenApiSchema(doc:StarlingDocument): OAPI.OpenAPIObject {
 							schema: form.inputSchema,
 						}
 					}
+				},
+				responses: {
+					"200": {
+						description: "Successful operation",
+					},
+					"400": {
+						description: "Invalid input"
+					},
+					"404": {
+						description: "Target not found"
+					}
 				}
 			}
 		}
