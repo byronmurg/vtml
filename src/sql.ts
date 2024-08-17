@@ -36,7 +36,27 @@ function processSQL(sql:string, ctx:FilterContext): ProcessedSQL {
 
 export
 async function query(q:string, ctx:FilterContext) {
-		const {sql, vars} = processSQL(q, ctx)
-		const {rows} = await dbQuery(sql, vars)
-		return rows
+	const {sql, vars} = processSQL(q, ctx)
+	const {rows} = await dbQuery(sql, vars)
+	return rows
+}
+
+function fromNodeQuery(q:string): string {
+	let i = 1
+	return q.replace(/\?/g, () => `$${i++}`)
+}
+
+async function nodeQuery(nodeQuery:string, vars:unknown[]){
+	const q = fromNodeQuery(nodeQuery)
+	return dbQuery(q, vars)
+}
+async function nodeQueryRow(q:string, vars:unknown[]) {
+	const {rows} = await nodeQuery(q, vars)
+	return rows[0]
+}
+
+
+export const nodeInterface = {
+	query: nodeQuery,
+	queryRow: nodeQueryRow,
 }

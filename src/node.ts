@@ -1,10 +1,12 @@
 import type FilterContext from "./filter_context"
+import {nodeInterface} from "./sql"
 
 // A regex for matching vars in x-nodejs
 const nodeVarRegex = /(?<!\\)\$\w+/g
 
 const inbuiltVars: Record<string, unknown> = {
 	require: require,
+	sql: nodeInterface,
 }
 
 export default

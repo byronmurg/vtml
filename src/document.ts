@@ -14,7 +14,7 @@ class StarlingDocument {
 	public readonly oapiSchema: OAPI.OpenAPIObject
 	private renderDocument: RootFilter
 
-	constructor(public readonly root:HTML.Element[]) {
+	private constructor(public readonly root:HTML.Element[]) {
 		this.forms = this.prepareForms()
 		this.oapiSchema = OAPI.createOpenApiSchema(this)
 		this.renderDocument = FilterRoot(root)
