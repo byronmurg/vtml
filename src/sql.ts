@@ -6,9 +6,14 @@ const debug = Debug("starling:sql")
 
 const db = new Pool()
 
+function slightlyNicerSql(sql:string) {
+	return sql.replace(/\n\s+/g, ' ')
+}
+
 const dbQuery = (sql:string, vars:unknown[]) => {
-	debug("sql", sql, vars)
-	return db.query(sql, vars)
+	const niceSql = slightlyNicerSql(sql)
+	debug(niceSql, vars)
+	return db.query(niceSql, vars)
 }
 
 type ProcessedSQL = {
