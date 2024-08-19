@@ -55,6 +55,7 @@ async function nodeQuery(nodeQuery:string, vars:unknown[]){
 	const q = fromNodeQuery(nodeQuery)
 	return dbQuery(q, vars)
 }
+
 async function nodeQueryRow(q:string, vars:unknown[]) {
 	const {rows} = await nodeQuery(q, vars)
 	return rows[0]
