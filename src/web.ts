@@ -39,6 +39,28 @@ export type exposeOptions = {
 	cliPort?: number
 }
 
+type ResponseError = {
+	code: number
+	msg: string
+}
+
+function createResponseError(e:Error): ResponseError {
+	if (e instanceof ValidationError) {
+		const msg = formatValidationError(e)
+		return { code:400, msg }
+	} else {
+		console.error(e)
+		return { code:400, msg:"Something went wrong" }
+	}
+}
+
+function sendError(res:Express.Response){
+	return (err:Error) => {
+		const e = createResponseError(err)
+		res.status(e.code).send(e.msg)
+	}
+}
+
 export
 function exposeStarlingDocument(starlingDocument:StarlingDocument, options:exposeOptions) {
 
@@ -161,10 +183,11 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument, options:expos
 	for (const path of pages) {
 		debug("page found", path)
 
-		app.all(path, async (req, res) => {
+		app.all(path, (req, res) => {
 			const ctx = createFilterContextFromRequest(req)
-			const html = await starlingDocument.renderLoader(ctx)
-			res.send(html)
+			starlingDocument.renderLoader(ctx)
+				.then((html) => res.send(html))
+				.catch(sendError(res))
 		})
 	}
 
@@ -196,10 +219,11 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument, options:expos
 
 	// This has to be an all as the redirects
 	// preserve the POST method
-	app.all("/", async (req, res) => {
+	app.all("/", (req, res) => {
 		const ctx = createFilterContextFromRequest(req, true)
-		const html = await starlingDocument.renderLoader(ctx)
-		res.send(html)
+		starlingDocument.renderLoader(ctx)
+			.then((html) => res.send(html))
+			.catch(sendError(res))
 	})
 
 
