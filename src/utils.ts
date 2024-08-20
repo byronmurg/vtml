@@ -141,10 +141,13 @@ function findActionForms(el:Element[]): TagElement[] {
 
 export
 function findInputs(el:TagElement): TagElement[] {
+	// @TODO I don't like this being here
 	const inputTypes = ["input", "select", "textarea"]
+	const excludedTypes = ["submit", "reset", "button"]
+
 	return findElement(
 		el.elements,
-		(e) => inputTypes.includes(e.name)
+		(e) => inputTypes.includes(e.name) && !excludedTypes.includes(getAttribute(e, "type"))
 	)
 }
 
