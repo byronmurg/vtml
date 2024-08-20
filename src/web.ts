@@ -97,7 +97,7 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument, options:expos
 				if (formRes.found) {
 					setCookies(res, formRes.ctx)
 					// Return the client to x-return or the referer
-					res.redirect(307, ctxRedirect || form.return || "back")
+					res.redirect(307, ctxRedirect  || "back")
 				} else {
 					res.status(404).send("Not Found")
 				}

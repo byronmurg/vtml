@@ -93,7 +93,6 @@ type FormDescriptor = {
 	oapiPath: string
 
 	element: TagElement
-	return: string
 	inputSchema: SchemaObject
 	parameters: ParameterObject[]
 	execute: (rootDataset:RootDataset, body:Record<string, InputValue>) => Promise<FormResult>
@@ -119,8 +118,6 @@ function prepareForm(postForm:TagElement, preElements:ElementChain[]): FormDescr
 	const oapiPath = expressToOapiPath(path)
 
 	const chain = prepareChain(preElements)
-
-	const xReturn = utils.getAttribute(postForm, "x-return")
 
 	// Create the action filter
 	const filterAction = createFormFilter(postForm)
@@ -175,7 +172,6 @@ function prepareForm(postForm:TagElement, preElements:ElementChain[]): FormDescr
 		oapiPath,
 		parameters,
 
-		return: xReturn,
 		inputSchema,
 		execute,
 		executeFormEncoded,
