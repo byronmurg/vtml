@@ -76,6 +76,10 @@ class FilterContext {
 	}
 
 
+	InError():boolean {
+		return !!this.rootDataset.error 
+	}
+
 
 	Select(token:string): FilterContext {
 		const newDataset = this.getKey(token)

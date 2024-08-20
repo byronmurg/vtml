@@ -24,20 +24,84 @@
 
 		<main class="container" >
 
+			<form x-name="noddy" >
+				<input name="foo" placeholder="foo" type="text" />
+				<input type="submit" value="Go" />
+
+				<x-nodejs-action>
+					throw Error("See me!")
+				</x-nodejs-action>
+			</form>
+			<hr>
+
+			<x-try>
+				<x-nodejs>
+					throw Error("Oh no")
+				</x-nodejs>
+			</x-try>
+
+			<x-catch>
+				<h3>Error</h3>
+				<p>$.error.message</p>
+			</x-catch>
+
+
 			<form method="POST" x-name="select_multi_test" >
 
-				<x-nodejs-body>
-					console.log($body)
-				</x-nodejs-body>
+				<x-nodejs-action>
+					console.log($.body)
+				</x-nodejs-action>
 
-				<select multiple name="test_select" required >
-					<option>Foo</option>
-					<option>Bar</option>
-					<option>Baz</option>
-				</select>
+				<label>time:
+					<input name="time" type="time" required value="10:30:00" />
+				</label>
+
+				<!--
+				<label>date:
+					<input name="date" type="date" required />
+				</label>
+
+				<label>datetime-local:
+					<input name="datetime-local" type="datetime-local" required />
+				</label>
+
+
+				<label>color:
+					<input name="color" type="color" required />
+				</label>
+				-->
 
 				<button type="submit" >Go</button>
 			</form>
+
+
+			<x-page path="/subpage">
+				<form x-name="subform" >
+					<input name="name" value="I'm the sub form" />
+				</form>
+
+
+
+				<x-page path="/subpage/more/:id" >
+
+					<form x-name="grandchild" >
+
+						<x-nodejs-action>
+							console.log($.body)
+						</x-nodejs-action>
+
+						<input name="id" value="$.params.id" />
+
+						<input id="vanilla" type="radio" name="icecream" value="vanilla" />
+						<label for="vanilla" >Vanilla</label>
+
+						<input id="chocolate" type="radio" name="icecream" value="chocolate" />
+						<label for="chocolate" >Chocolate</label>
+
+						<button type="submit" >Go</button>
+					</form>
+				</x-page>
+			</x-page>
 
 		</main>
 	</body>

@@ -7,7 +7,7 @@ import {ValidationError} from "ajv"
 
 import StarlingDocument from "./document"
 import FilterContext from "./filter_context"
-import {RootDataset} from "./types"
+import {RootDataset, ResponseError} from "./types"
 import * as HTML from "./html"
 
 const debug = Debug("starling")
@@ -39,25 +39,20 @@ export type exposeOptions = {
 	cliPort?: number
 }
 
-type ResponseError = {
-	code: number
-	msg: string
-}
-
 function createResponseError(e:Error|unknown): ResponseError {
 	if (e instanceof ValidationError) {
-		const msg = formatValidationError(e)
-		return { code:400, msg }
+		const message = formatValidationError(e)
+		return { code:400, message }
 	} else {
 		console.error(e)
-		return { code:500, msg:"Something went wrong" }
+		return { code:500, message:"Something went wrong" }
 	}
 }
 
 function sendError(res:Express.Response){
 	return (err:Error) => {
 		const e = createResponseError(err)
-		res.status(e.code).send(e.msg)
+		res.status(e.code).send(e.message)
 	}
 }
 
@@ -80,6 +75,38 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument, options:expos
 	app.use(CookieParser())
 
 	//
+	// Basic responses
+	//
+
+	function filterError(req:Express.Request, res:Express.Response, e:Error|unknown) {
+		const err = createResponseError(e)
+		return filterResponseError(req, res, err)
+	}
+
+	function filterResponseError(req:Express.Request, res:Express.Response, err:ResponseError) {
+		const rootDataset = createRootDataset(req)
+
+		const errRoot = { ...rootDataset, error:err }
+		const ctx = FilterContext.Init(errRoot)
+		
+		return starlingDocument.renderLoader(ctx)
+			.then((html) => res.send(html))
+			.catch(sendError(res))
+	}
+
+	function renderLoader(pageNotFound: boolean = false) {
+		return async function(req:Express.Request, res:Express.Response) {
+			try {
+				const ctx = createFilterContextFromRequest(req, pageNotFound)
+				const html = await starlingDocument.renderLoader(ctx)
+				res.send(html)
+			} catch (e) {
+				await filterError(req, res, e)
+			}
+		}
+	}
+
+	//
 	// Expose POST Forms
 	//
 
@@ -89,21 +116,21 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument, options:expos
 
 		debug(`Create action /action${form.path}`)
 		app.post(`/action${form.path}`, async (req, res) => {
+			const rootDataset = createRootDataset(req)
+
 			try {
-				const rootDataset = createRootDataset(req)
 				const formRes = await form.executeFormEncoded(rootDataset, req.body)
 
 				const ctxRedirect = formRes.ctx.GetRedirect()
 				if (formRes.found) {
 					setCookies(res, formRes.ctx)
-					// Return the client to x-return or the referer
 					res.redirect(307, ctxRedirect  || "back")
 				} else {
-					res.status(404).send("Not Found")
+					const err = { code:404, message:"Not Found" }
+					await filterResponseError(req, res, err)
 				}
 		 	} catch (e) {
-				const err = createResponseError(e)
-				res.status(err.code).send(err.msg)
+				await filterError(req, res, e)
 			}
 		})
 
@@ -120,7 +147,7 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument, options:expos
 				}
 			} catch (e) {
 				const err = createResponseError(e)
-				res.status(err.code).send(err.msg)
+				res.status(err.code).send(err.message)
 			}
 		})
 
@@ -137,7 +164,7 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument, options:expos
 				}
 			} catch (e) {
 				const err = createResponseError(e)
-				res.status(err.code).json({ message:err.msg, code:err.code })
+				res.status(err.code).json({ message:err.message, code:err.code })
 			}
 		})
 
@@ -169,13 +196,7 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument, options:expos
 
 	for (const path of pages) {
 		debug("page found", path)
-
-		app.all(path, (req, res) => {
-			const ctx = createFilterContextFromRequest(req)
-			starlingDocument.renderLoader(ctx)
-				.then((html) => res.send(html))
-				.catch(sendError(res))
-		})
+		app.all(path, renderLoader(false))
 	}
 
 	// Exposes
@@ -206,12 +227,7 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument, options:expos
 
 	// This has to be an all as the redirects
 	// preserve the POST method
-	app.all("/", (req, res) => {
-		const ctx = createFilterContextFromRequest(req, true)
-		starlingDocument.renderLoader(ctx)
-			.then((html) => res.send(html))
-			.catch(sendError(res))
-	})
+	app.all("/", renderLoader(true))
 
 
 	// Determine the listen port in order of

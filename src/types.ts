@@ -22,6 +22,7 @@ type RootDataset = {
 	headers: Record<string, string|string[]|undefined>
 	cookies: Record<string, string>
 	pageNotFound: boolean
+	error?: ResponseError
 }
 
 /////////////////////
@@ -102,3 +103,10 @@ type Expose = {
 	contentType?: string
 	src: string
 }
+
+export
+type ResponseError = {
+	code: number
+	message: string
+}
+
