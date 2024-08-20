@@ -44,13 +44,13 @@ type ResponseError = {
 	msg: string
 }
 
-function createResponseError(e:Error): ResponseError {
+function createResponseError(e:Error|unknown): ResponseError {
 	if (e instanceof ValidationError) {
 		const msg = formatValidationError(e)
 		return { code:400, msg }
 	} else {
 		console.error(e)
-		return { code:400, msg:"Something went wrong" }
+		return { code:500, msg:"Something went wrong" }
 	}
 }
 
@@ -60,6 +60,17 @@ function sendError(res:Express.Response){
 		res.status(e.code).send(e.msg)
 	}
 }
+
+function setCookies(res:Express.Response, ctx:FilterContext) {
+	const cookies = ctx.GetCookies()
+
+	for (const k in cookies) {
+		const v = cookies[k]
+		const maxAge = v.maxAge || undefined
+		res.cookie(k, v.value, {maxAge})
+	}
+}
+
 
 export
 function exposeStarlingDocument(starlingDocument:StarlingDocument, options:exposeOptions) {
@@ -74,16 +85,6 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument, options:expos
 
 	const postForms = starlingDocument.forms
 
-	function setCookies(res:Express.Response, ctx:FilterContext) {
-		const cookies = ctx.GetCookies()
-
-		for (const k in cookies) {
-			const v = cookies[k]
-			const maxAge = v.maxAge || undefined
-			res.cookie(k, v.value, {maxAge})
-		}
-	}
-
 	for (const form of postForms) {
 
 		debug(`Create action /action${form.path}`)
@@ -92,21 +93,17 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument, options:expos
 				const rootDataset = createRootDataset(req)
 				const formRes = await form.executeFormEncoded(rootDataset, req.body)
 
+				const ctxRedirect = formRes.ctx.GetRedirect()
 				if (formRes.found) {
 					setCookies(res, formRes.ctx)
 					// Return the client to x-return or the referer
-					res.redirect(307, form.return || "back")
+					res.redirect(307, ctxRedirect || form.return || "back")
 				} else {
 					res.status(404).send("Not Found")
 				}
 		 	} catch (e) {
-				if (e instanceof ValidationError) {
-					const msg = formatValidationError(e)
-					res.status(400).send(msg)
-				} else {
-					console.error(e)
-					res.status(500).send("Something went wrong")
-				}
+				const err = createResponseError(e)
+				res.status(err.code).send(err.msg)
 			}
 		})
 
@@ -122,13 +119,8 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument, options:expos
 					res.status(404).send("Not Found")
 				}
 			} catch (e) {
-				if (e instanceof ValidationError) {
-					const msg = formatValidationError(e)
-					res.status(400).send(msg)
-				} else {
-					console.error(e)
-					res.status(500).send("Something went wrong")
-				}
+				const err = createResponseError(e)
+				res.status(err.code).send(err.msg)
 			}
 		})
 
@@ -144,13 +136,8 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument, options:expos
 					res.status(404).json({ message: "Not Found" })
 				}
 			} catch (e) {
-				if (e instanceof ValidationError) {
-					const msg = formatValidationError(e)
-					res.status(400).json({ message:msg })
-				} else {
-					console.error(e)
-					res.status(500).json({ message: "Something went wrong" })
-				}
+				const err = createResponseError(e)
+				res.status(err.code).json({ message:err.msg, code:err.code })
 			}
 		})
 

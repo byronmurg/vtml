@@ -16,13 +16,23 @@ type Cookie = {
 	maxAge: number
 }
 
+type Globals = {
+	setCookies: Record<string, Cookie>
+	redirect: string
+}
+
+const initGlobals = (): Globals => ({
+	setCookies: {},
+	redirect: "",
+})
+
 export default
 class FilterContext {
 	constructor(
 		public readonly dataset: unknown,
 		public readonly rootDataset: RootDataset,
 		private readonly parent: FilterContext|undefined = undefined,
-		private setCookies: Record<string, Cookie> = {},
+		private globals: Globals = initGlobals(),
 	) {}
 
 	// Initialize a new dataset with only the rootDataset
@@ -34,21 +44,38 @@ class FilterContext {
 
 	// Initialize a copy with a new dataset
 	private copy(dataset:unknown): FilterContext {
-		return new FilterContext(dataset, this.rootDataset, this, this.setCookies)
+		return new FilterContext(dataset, this.rootDataset, this, this.globals)
 	}
+
+	//
+	// Globals
+	//
 
 	SetCookie(key:string, value:string, maxAge:number) {
 		const realValue = this.templateString(value)
 		// Never set an empty cookie
 		if (realValue) {
-			this.setCookies[key] = { value:realValue, maxAge }
+			this.globals.setCookies[key] = { value:realValue, maxAge }
 		}
 		return this
 	}
 
-	GetCookies() {
-		return {...this.setCookies}
+	SetRedirect(path:string) {
+		const realValue = this.templateString(path)
+		this.globals.redirect = realValue
+
+		return this
 	}
+
+	GetCookies() {
+		return {...this.globals.setCookies}
+	}
+
+	GetRedirect() {
+		return this.globals.redirect
+	}
+
+
 
 	Select(token:string): FilterContext {
 		const newDataset = this.getKey(token)
