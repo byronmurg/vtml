@@ -5,10 +5,10 @@ import {escapeHtml} from "./html"
 //////////////////////////////////////////////
 // Big special template regex
 //////////////////////////////////////////////
-const templateRegex = /(?<!\\)\$[^{(][$\w[\].-]*/g
+const templateRegex = /(?<!\\)\$(?!\{|\()[$\w[\].-]*/g
 //                     ^^^^^^^ Cannot come after a backslash (for escaping
 //                            ^^ Match the $ dollar sign
-//                              ^^^^^ Cannot be followed by '{' or '(' (messes with js templates in scripts)
+//                              ^^^^^^^^ Cannot be followed by '{' or '(' (messes with js templates in scripts)
 //                                   ^^^^^^^^^^^ Match legal characters A-z,0-9,[,],.,-
 
 type Globals = {
