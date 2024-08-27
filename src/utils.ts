@@ -57,6 +57,19 @@ function requireAttribute(el:TagElement, attr:string): string {
 }
 
 export
+function requireNumAttribute(el:TagElement, attr:string): number {
+	const strValue = requireAttribute(el, attr)
+
+	const value = parseInt(strValue)
+
+	if (isNaN(value)) {
+		error(el, `${attr} is not a number`)
+	}
+
+	return value
+}
+
+export
 function getSource(el:TagElement) {
 	return getAttribute(el, "source") || "$"
 }

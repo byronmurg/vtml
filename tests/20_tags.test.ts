@@ -252,3 +252,15 @@ test(`select`, async () => {
 	expect(output).toBe(`<select value="foo"><option selected="yes">foo</option><option>bar</option></select>`)
 })
 
+test(`x-return-code`, async () => {
+	const exampleHTML = `
+		<x-return-code code="403" />
+	`
+
+	const doc = StarlingDocument.LoadFromString(exampleHTML)
+
+	const res = await doc.renderDocument(ctx)
+
+	expect(res.status).toBe(403)
+})
+

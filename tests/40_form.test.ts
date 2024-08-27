@@ -30,7 +30,7 @@ test("form", async () => {
 
 	const outOk = await form.execute(rootDataset, { name:"foo" })
 
-	expect(outOk.found).toBe(true)
+	expect(outOk.status).toBe(200)
 })
 
 test("form not found", async () => {
@@ -57,7 +57,7 @@ test("form not found", async () => {
 
 	const outOk = await form.execute(rootDataset, { name:"foo" })
 
-	expect(outOk.found).toBe(false)
+	expect(outOk.status).toBe(404)
 })
 
 test("duplicate forms throw errors", async () => {
@@ -72,4 +72,69 @@ test("duplicate forms throw errors", async () => {
 	}
 
 	expect(innerTest).toThrow("Duplicate x-name in form (<string>:33)")
+})
+
+
+test("form sets return code successfully", async () => {
+	const exampleHTML = `
+		<form x-name="foo" >
+			<x-return-code-action code="401" />
+			<input name="bar" />
+		</form>
+
+	`
+
+	const doc = StarlingDocument.LoadFromString(exampleHTML)
+
+	const response = await doc.executeFormByName("foo", rootDataset, { bar:"bar" })
+
+	expect(response.status).toBe(401)
+})
+
+test("form not executed on non-success chain", async () => {
+	const exampleHTML = `
+		<x-return-code code="400" />
+		<form x-name="foo" >
+			<input name="bar" />
+		</form>
+
+	`
+
+	const doc = StarlingDocument.LoadFromString(exampleHTML)
+
+	const response = await doc.executeFormByName("foo", rootDataset, { bar:"bar" })
+
+	expect(response.status).toBe(400)
+})
+
+test("form redirects correctly", async () => {
+	const exampleHTML = `
+		<form x-name="foo" >
+			<input name="bar" />
+			<x-redirect-action path="/foo" />
+		</form>
+
+	`
+
+	const doc = StarlingDocument.LoadFromString(exampleHTML)
+
+	const response = await doc.executeFormByName("foo", rootDataset, { bar:"bar" })
+
+	expect(response.redirect).toBe("/foo")
+})
+
+test("form sets cookie correctly", async () => {
+	const exampleHTML = `
+		<form x-name="foo" >
+			<input name="bar" />
+			<x-setcookie-action name="foo" value="baz" />
+		</form>
+
+	`
+
+	const doc = StarlingDocument.LoadFromString(exampleHTML)
+
+	const response = await doc.executeFormByName("foo", rootDataset, { bar:"bar" })
+
+	expect(response.cookies["foo"]).toEqual({ value:"baz", maxAge:0 })
 })

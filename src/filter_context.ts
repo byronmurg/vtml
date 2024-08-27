@@ -1,5 +1,5 @@
 import get from "lodash/get"
-import type {RootDataset} from "./types"
+import type {RootDataset, Cookie} from "./types"
 import {escapeHtml} from "./html"
 
 //////////////////////////////////////////////
@@ -11,19 +11,16 @@ const templateRegex = /(?<!\\)\$(?!{)[$\w[\].-]*/g
 //                              ^^^^^ Cannot be preceeded by { (messes with js templates in scripts)
 //                                   ^^^^^^^^^^^ Match legal characters A-z,0-9,[,],.,-
 
-type Cookie = {
-	value: string
-	maxAge: number
-}
-
 type Globals = {
 	setCookies: Record<string, Cookie>
 	redirect: string
+	returnCode: number
 }
 
 const initGlobals = (): Globals => ({
 	setCookies: {},
 	redirect: "",
+	returnCode: 200,
 })
 
 export default
@@ -52,10 +49,9 @@ class FilterContext {
 	//
 
 	SetCookie(key:string, value:string, maxAge:number) {
-		const realValue = this.templateString(value)
 		// Never set an empty cookie
-		if (realValue) {
-			this.globals.setCookies[key] = { value:realValue, maxAge }
+		if (value) {
+			this.globals.setCookies[key] = { value, maxAge }
 		}
 		return this
 	}
@@ -67,12 +63,21 @@ class FilterContext {
 		return this
 	}
 
+	SetReturnCode(returnCode:number) {
+		this.globals.returnCode = returnCode
+		return this
+	}
+
 	GetCookies() {
 		return {...this.globals.setCookies}
 	}
 
 	GetRedirect() {
 		return this.globals.redirect
+	}
+
+	GetReturnCode() {
+		return this.globals.returnCode
 	}
 
 

@@ -3,11 +3,11 @@ import BodyParser from "body-parser"
 import CookieParser from "cookie-parser"
 import Debug from "debug"
 import SwaggerUiExpress from "swagger-ui-express"
-import {ValidationError} from "ajv"
+import DefaultError from "./default_errors"
 
 import StarlingDocument from "./document"
 import FilterContext from "./filter_context"
-import {RootDataset, ResponseError} from "./types"
+import {RootDataset, RenderResponse, ResponseError, CookieMap} from "./types"
 import * as HTML from "./html"
 
 const debug = Debug("starling")
@@ -30,39 +30,26 @@ const createFilterContextFromRequest = (req:Express.Request, pageNotFound:boolea
 	createRootDataset(req, pageNotFound),
 )
 
-function formatValidationError(e:ValidationError): string {
-	return e.message +" : "+ e.errors[0].message
-}
-
 export type exposeOptions = {
 	cliListen?: string
 	cliPort?: number
 }
 
-function createResponseError(e:Error|unknown): ResponseError {
-	if (e instanceof ValidationError) {
-		const message = formatValidationError(e)
-		return { code:400, message }
-	} else {
-		console.error(e)
-		return { code:500, message:"Something went wrong" }
-	}
-}
-
-function sendError(res:Express.Response){
-	return (err:Error) => {
-		const e = createResponseError(err)
-		res.status(e.code).send(e.message)
-	}
-}
-
-function setCookies(res:Express.Response, ctx:FilterContext) {
-	const cookies = ctx.GetCookies()
+function setCookies(res:Express.Response, cookies:CookieMap) {
 
 	for (const k in cookies) {
 		const v = cookies[k]
 		const maxAge = v.maxAge || undefined
 		res.cookie(k, v.value, {maxAge})
+	}
+}
+
+function sendCatchError(res:Express.Response) {
+	// What to send when an error is throw inside
+	// error context.
+	return (e:unknown) => {
+		console.error(e)
+		res.status(500).send(DefaultError(500))
 	}
 }
 
@@ -78,12 +65,11 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument, options:expos
 	// Basic responses
 	//
 
-	function filterError(req:Express.Request, res:Express.Response, e:Error|unknown) {
-		const err = createResponseError(e)
-		return filterResponseError(req, res, err)
-	}
-
-	function filterResponseError(req:Express.Request, res:Express.Response, err:ResponseError) {
+	function filterResponseError(req:Express.Request, res:Express.Response, response:RenderResponse) {
+		const err: ResponseError = {
+			code: response.status,
+			message: response.error || DefaultError(response.status),
+		}
 		const rootDataset = createRootDataset(req)
 
 		const errRoot = { ...rootDataset, error:err }
@@ -91,17 +77,26 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument, options:expos
 		
 		return starlingDocument.renderLoader(ctx)
 			.then((html) => res.send(html))
-			.catch(sendError(res))
+			.catch(sendCatchError(res))
 	}
 
 	function renderLoader(pageNotFound: boolean = false) {
 		return async function(req:Express.Request, res:Express.Response) {
-			try {
-				const ctx = createFilterContextFromRequest(req, pageNotFound)
-				const html = await starlingDocument.renderLoader(ctx)
-				res.send(html)
-			} catch (e) {
-				await filterError(req, res, e)
+			debug("render loader")
+
+			const ctx = createFilterContextFromRequest(req, pageNotFound)
+			const response = await starlingDocument.renderLoaderHTML(ctx)
+
+			debug("response", response.status)
+			if (response.redirect) {
+				debug("response redirect", response.redirect)
+				res.redirect(307, response.redirect)
+			} else if (response.status < 400) {
+				debug("response ok")
+				res.status(response.status).send("<!DOCTYPE html>"+response.html)
+			} else {
+				debug("response error")
+				await filterResponseError(req, res, response)
 			}
 		}
 	}
@@ -118,53 +113,43 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument, options:expos
 		app.post(`/action${form.path}`, async (req, res) => {
 			const rootDataset = createRootDataset(req)
 
-			try {
-				const formRes = await form.executeFormEncoded(rootDataset, req.body)
+			const formRes = await form.executeFormEncoded(rootDataset, req.body)
 
-				const ctxRedirect = formRes.ctx.GetRedirect()
-				if (formRes.found) {
-					setCookies(res, formRes.ctx)
-					res.redirect(307, ctxRedirect  || "back")
-				} else {
-					const err = { code:404, message:"Not Found" }
-					await filterResponseError(req, res, err)
-				}
-		 	} catch (e) {
-				await filterError(req, res, e)
+			if (formRes.status < 400) {
+				setCookies(res, formRes.cookies)
+				res.redirect(307, formRes.redirect  || "back")
+			} else {
+				await filterResponseError(req, res, formRes)
 			}
 		})
 
 		app.post(`/ajax${form.path}`, async (req, res) => {
-			try {
-				const rootDataset = createRootDataset(req)
-				const formRes = await form.executeFormEncoded(rootDataset, req.body)
-				if (formRes.found) {
-					setCookies(res, formRes.ctx)
-					const html = HTML.serialize(formRes.elements)
-					res.send(html)
-				} else {
-					res.status(404).send("Not Found")
-				}
-			} catch (e) {
-				const err = createResponseError(e)
-				res.status(err.code).send(err.message)
+
+			const rootDataset = createRootDataset(req)
+
+			const formRes = await form.executeFormEncoded(rootDataset, req.body)
+
+			if (formRes.status < 400) {
+				setCookies(res, formRes.cookies)
+				const html = HTML.serialize(formRes.elements)
+				res.status(formRes.status).send(html)
+			} else {
+				await filterResponseError(req, res, formRes)
 			}
 		})
 
 		app.post(`/api${form.path}`, Express.json(), async (req, res) => {
-			try {
-				const rootDataset = createRootDataset(req)
-				const formRes = await form.execute(rootDataset, req.body)
-				if (formRes.found) {
-					setCookies(res, formRes.ctx)
-					// @NOTE okay sends an empty response
-					res.json({})
-				} else {
-					res.status(404).json({ message: "Not Found" })
-				}
-			} catch (e) {
-				const err = createResponseError(e)
-				res.status(err.code).json({ message:err.message, code:err.code })
+			const rootDataset = createRootDataset(req)
+
+			const formRes = await form.execute(rootDataset, req.body)
+
+			if (formRes.status < 400) {
+				setCookies(res, formRes.cookies)
+				res.status(formRes.status).json({})
+			} else {
+				res.status(formRes.status).json({
+					message: formRes.error
+				})
 			}
 		})
 
@@ -182,8 +167,8 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument, options:expos
 	if (debug.enabled) {
 		app.get("/debug", async (req, res) => {
 			const ctx = createFilterContextFromRequest(req)
-			const clientDocument = await starlingDocument.renderElements(ctx)
-			res.json(clientDocument)
+			const response = await starlingDocument.renderDocument(ctx)
+			res.json(response)
 		})
 
 		app.get("/root", async (req, res) => {

@@ -8,7 +8,8 @@ export const XRedirectAction: Tag = {
 	action(el) {
 		const path = utils.requireAttribute(el, "path")
 		return async (ctx) => {
-			ctx = ctx.SetRedirect(path)
+			const realPath = ctx.templateStringSafe(path)
+			ctx = ctx.SetRedirect(realPath)
 			return filterPass(ctx)
 		}
 	},

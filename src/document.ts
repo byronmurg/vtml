@@ -3,7 +3,7 @@ import * as OAPI from "./oapi"
 import preLoad from "./pre_load"
 
 import FilterContext from "./filter_context"
-import {RootFilter, Expose} from "./types"
+import {RootFilter, Expose, RenderHTMLResponse, RootDataset, RenderResponse, BodyType} from "./types"
 import FilterRoot from "./filter"
 import * as utils from "./utils"
 import PrepareForm, {FormDescriptor} from "./form"
@@ -12,12 +12,12 @@ export default
 class StarlingDocument {
 	public readonly forms: FormDescriptor[]
 	public readonly oapiSchema: OAPI.OpenAPIObject
-	private renderDocument: RootFilter
+	private _renderDocument: RootFilter
 
 	private constructor(public readonly root:HTML.Element[]) {
 		this.forms = this.prepareForms()
 		this.oapiSchema = OAPI.createOpenApiSchema(this)
-		this.renderDocument = FilterRoot(root)
+		this._renderDocument = FilterRoot(root)
 	}
 
 	get title() {
@@ -64,19 +64,41 @@ class StarlingDocument {
 		}))
 	}
 
-	renderElements(ctx:FilterContext) {
-		return this.renderDocument(ctx)
+	renderDocument(ctx:FilterContext) {
+		return this._renderDocument(ctx)
+	}
+
+	async renderLoaderHTML(ctx:FilterContext): Promise<RenderHTMLResponse> {
+		const response = await this.renderDocument(ctx)
+		const html = HTML.serialize(response.elements)
+		return {
+			html,
+			elements: response.elements,
+			status: response.status,
+			cookies: response.cookies,
+		}
 	}
 
 	async renderLoaderMl(ctx:FilterContext): Promise<string> {
-		const html = await this.renderElements(ctx)
-		return HTML.serialize(html)
+		const {elements} = await this.renderDocument(ctx)
+		return HTML.serialize(elements)
 	}
 
 	async renderLoader(ctx:FilterContext): Promise<string> {
 		const html = await this.renderLoaderMl(ctx)
 		return "<!DOCTYPE html>"+ html
 	}
+
+	async executeFormByName(name:string, rootDataset:RootDataset, body:BodyType): Promise<RenderResponse> {
+		const form = this.forms.find((form) => form.name === name)
+
+		if (! form) {
+			return { status:404, elements:[], cookies:{} }
+		}
+
+		return form.execute(rootDataset, body)
+	}
+
 
 	static LoadFromString(html:string) {
 		const document = HTML.parse(html, "<string>")

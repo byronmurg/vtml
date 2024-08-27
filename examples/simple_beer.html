@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+
+		<title>Simple beer example</title>
+
+		<link href="https://cdn.jsdelivr.net/npm/beercss@3.6.13/dist/cdn/beer.min.css" rel="stylesheet">
+
+		<script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.6.13/dist/cdn/beer.min.js"></script>
+
+		<script type="module" src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.2/dist/cdn/material-dynamic-colors.min.js"></script>
+
+		<style>
+			:root, body.dark {
+			--primary:#9ecaff;
+			--on-primary:#003258;
+			--primary-container:#00497d;
+			--on-primary-container:#d1e4ff;
+			--secondary:#bbc7db;
+			--on-secondary:#253140;
+			--secondary-container:#3b4858;
+			--on-secondary-container:#d7e3f7;
+			--tertiary:#d6bee4;
+			--on-tertiary:#3b2948;
+			--tertiary-container:#523f5f;
+			--on-tertiary-container:#f2daff;
+			--error:#ffb4ab;
+			--on-error:#690005;
+			--error-container:#93000a;
+			--on-error-container:#ffb4ab;
+			--background:#1a1c1e;
+			--on-background:#e2e2e6;
+			--surface:#121316;
+			--on-surface:#e2e2e6;
+			--surface-variant:#43474e;
+			--on-surface-variant:#c3c7cf;
+			--outline:#8d9199;
+			--outline-variant:#43474e;
+			--shadow:#000000;
+			--scrim:#000000;
+			--inverse-surface:#e2e2e6;
+			--inverse-on-surface:#2f3033;
+			--inverse-primary:#0061a4;
+			--surface-dim:#121316;
+			--surface-bright:#38393c;
+			--surface-container-lowest:#0d0e11;
+			--surface-container-low:#1a1c1e;
+			--surface-container:#1e2022;
+			--surface-container-high:#282a2d;
+			--surface-container-highest:#333538;
+			}
+		</style>
+
+	</head>
+	<body class="dark" >
+
+		<header>
+			<nav>
+				<header>
+					<h5 class="max" >Starling beer test</h5>
+				</header>
+			</nav>
+		</header>
+
+		<main class="responsive" >
+
+			<article>
+			<!-- create form -->
+			<form x-name="create_todo" method="POST" >
+				<x-sql-action>
+					insert into simple.todos (text) values ($body.text)
+				</x-sql-action>
+				<div class="max grid no-space" >
+					<div class="field suffix border left-round s11" >
+						<input name="text" type="text" autofocus="yes" maxlength="128" required />
+					</div>
+					<button type="submit" class="circle right-round large s1" ><i>add</i></button>
+				</div>
+			</form>
+
+			</article>
+
+			<!-- Get the todos -->
+			<x-sql target="todos" >
+				select * from simple.todos where $.query.showdone::boolean is not null or done = false order by c desc
+			</x-sql>
+
+			<x-nodejs target="ntodos" >
+				return $todos.length
+			</x-nodejs>
+
+			<p>There are $ntodos todos</p>
+
+			<!-- Loop through the todos -->
+			<x-for-each source="$todos" >
+
+				<!-- Form to update the text -->
+				<form method="POST" x-name="edit_todo" >
+					<x-sql-action>
+						update simple.todos set text = $body.text where _id = $.body.id
+					</x-sql-action>
+					<input type="hidden" name="id" value="$_id" />
+
+					<div class="grid no-space" >
+						<div class="field small border large left-round s11" >
+							<input name="text" value="$text" maxlength="128" disabled />
+						</div>
+						<button form="delete-todo-$_id" type="submit" class="circle right-round extra" ><i>delete</i></button>
+					</div>
+
+				</form>
+
+				<!-- Hidden form to delete -->
+				<form id="delete-todo-$_id" method="POST" x-name="delete_todo" >
+					<x-sql-action>
+						delete from simple.todos where _id = $.body.id
+					</x-sql-action>
+					<input type="hidden" name="id" value="$_id" />
+				</form>
+
+			</x-for-each>
+		</main>
+	</body>
+
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+
+		<title>Not Found</title>
+
+		<link
+		  rel="stylesheet"
+		  href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"
+		/>
+		<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+
+	</head>
+	<body>
+
+		<header class="container" >
+			<nav>
+				<ul>
+					<li><b>Not found test</b></li>
+				</ul>
+			</nav>
+		</header>
+
+		<main class="container" >
+
+			<x-try>
+				<x-return-code code="404" />
+			</x-try>
+
+			<x-catch>
+				<h6>$.error.message</h6>
+			</x-catch>
+
+		</main>
+	</body>
+
+</html>

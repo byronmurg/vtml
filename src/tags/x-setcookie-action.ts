@@ -17,7 +17,9 @@ export const XSetcookieAction: Tag = {
 		const maxAge = (seconds * 1000) + (minutes * 60000) + (hours * 60000 * 60) + (days * 60000 * 60 * 24)
 
 		return async (ctx) => {
-			ctx = ctx.SetCookie(name, value, maxAge)
+			const realName = ctx.templateStringSafe(name)
+			const realValue = ctx.templateStringSafe(value)
+			ctx = ctx.SetCookie(realName, realValue, maxAge)
 			return filterPass(ctx)
 		}
 	},

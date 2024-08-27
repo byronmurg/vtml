@@ -161,9 +161,25 @@ function CreateRootFilter(els:Element[], extractor:Extractor): RootFilter {
 	const cascade = CreateCascade(extractor)
 	const childs = cascade.childs(els)
 
-	return async (ctx:FilterContext) => {
-		const children = await childs(ctx)
-		return children.elements
+	return async (initCtx:FilterContext) => {
+		try {
+			const {ctx, elements} = await childs(initCtx)
+
+			return {
+				status: ctx.GetReturnCode(),
+				cookies: ctx.GetCookies(),
+				elements,
+			}
+		} catch (e) {
+			const error = (e instanceof Error)? e.message : "Something went wrong"
+
+			return {
+				status: 500,
+				cookies: {},
+				elements: [],
+				error,
+			}
+		}
 	}
 }
 

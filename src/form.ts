@@ -1,9 +1,9 @@
 import {createPostFormApiSchema, SchemaObject, ParameterObject, createPathParameters, expressToOapiPath} from "./oapi"
-import type {RootDataset, InputValue, ElementChain, FormResult} from "./types"
+import type {RootDataset, InputValue, BodyType, ElementChain, FormResult} from "./types"
 import pathLib from "path"
 import type {TagElement} from "./html"
 import * as utils from "./utils"
-import Ajv from "ajv"
+import Ajv, {ValidationError} from "ajv"
 import AjvFormats from "ajv-formats"
 
 import FilterContext from "./filter_context"
@@ -12,7 +12,19 @@ import {prepareChain, createFormFilter} from "./filter"
 const ajv = new Ajv()
 AjvFormats(ajv)
 
+function formatValidationError(e:ValidationError): string {
+	return e.message +" : "+ e.errors[0].message
+}
+
 function simpleToTime(timeStr:string): string {
+	// This function is neccesary due to the slightly different
+	// ways that browsers can shorten "time" input values.
+	//
+	// They can come out as 
+	// - 00:00
+	// --- or ---
+	// - 00:00:00
+
 	if (timeStr.length < 6) {
 		timeStr += ":00"
 	}
@@ -60,8 +72,8 @@ function parseFormField(value:string, field:TagElement): InputValue {
 	}
 }
 
-function parseFormFields(body:Record<string, string>, formFields:TagElement[]): Record<string, InputValue> {
-	const newBody: Record<string, InputValue> = {}
+function parseFormFields(body:Record<string, string>, formFields:TagElement[]): BodyType {
+	const newBody: BodyType = {}
 
 	for (const field of formFields) {
 		const name = utils.getAttribute(field, "name")
@@ -95,7 +107,7 @@ type FormDescriptor = {
 	element: TagElement
 	inputSchema: SchemaObject
 	parameters: ParameterObject[]
-	execute: (rootDataset:RootDataset, body:Record<string, InputValue>) => Promise<FormResult>
+	execute: (rootDataset:RootDataset, body:BodyType) => Promise<FormResult>
 	executeFormEncoded: (rootDataset:RootDataset, body:Record<string, string>) => Promise<FormResult>
 }
 
@@ -137,23 +149,83 @@ function prepareForm(postForm:TagElement, preElements:ElementChain[]): FormDescr
 	/*
 	 * Create an executor to call this form with a parsed (but not validated) body
 	 */
-	async function execute(rootDataset:RootDataset, body:Record<string, InputValue>): Promise<FormResult> {
-		await validator(body)
-		rootDataset.body = body
+	async function execute(rootDataset:RootDataset, body:BodyType): Promise<FormResult> {
+		try {
 
-		const preCtx = FilterContext.Init(rootDataset)
+			// Run the validator. This will throw an error on failure.
+			await validator(body)
 
-		const chainResult = await chain(preCtx)
+			// Set the body in the root dataset
+			rootDataset.body = body
 
-		if (! chainResult.found) {
-			return { ctx:preCtx, found:false, elements:[] }
+			const preCtx = FilterContext.Init(rootDataset)
+
+			// Execute the chain, which is all elements above or
+			// preceeding this form.
+			const chainResult = await chain(preCtx)
+
+			// If the form would otherwise not be rendered by the
+			// loader then it is in a 'not found' state and therefore
+			// should return 404.
+			if (! chainResult.found) {
+				const cookies = chainResult.ctx.GetCookies()
+				return { status:404, cookies, elements:[] }
+			}
+
+			// If any elements in the chain set the return code to
+			// a non-success code then we should assume that the form
+			// would otherwise not be available.
+			const chainCode = chainResult.ctx.GetReturnCode()
+			if (chainCode >= 400) {
+				return {
+					status: chainCode,
+					cookies: {},
+					elements: [],
+				}
+			}
+
+			// If the chain Would otherwise redirect before rendering
+			// the form we must assume that it is not visible and return
+			// the redirect.
+			//
+			// This would be for things such as redirecting to a login
+			// page when a session has expired.
+			const chainRedirect = chainResult.ctx.GetRedirect()
+			if (chainRedirect) {
+				return {
+					status: 307,
+					cookies: {},
+					elements: [],
+					redirect: chainRedirect,
+				}
+			}
+
+
+			// Finally we execute the action with the filter context
+			// of the preceeding chain.
+			const {ctx, elements} = await filterAction(chainResult.ctx)
+			
+			// Extract globals from the Context and create a RenderResponse
+			const cookies = ctx.GetCookies()
+			const status = ctx.GetReturnCode()
+			const redirect = ctx.GetRedirect()
+
+			return { status, cookies, elements, redirect }
+
+		} catch (e:unknown) {
+			console.error(e)
+
+			if (e instanceof ValidationError) {
+				// ValidationError is thrown by the validator and should
+				// be assumed to be a 400 error
+				const error = formatValidationError(e)
+				return { status:400, cookies:{}, elements:[], error }
+			} else {
+				// Otherwise we assume a 500 error and just return it.
+				const error = (e instanceof Error) ? e.message : ""
+				return { status:500, cookies:{}, elements:[], error }
+			}
 		}
-
-		const ctx = chainResult.ctx
-
-		const output = await filterAction(ctx)
-
-		return {ctx:output.ctx, found:true, elements:output.elements}
 	}
 
 	/*

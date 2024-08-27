@@ -3,6 +3,7 @@
   arguments:
   - default: $
     name: source
+    templated: true
   description: |
     Include content block if variable is truthy. Sets the variable of children to the target if it is supplied.
 
@@ -26,22 +27,29 @@
 - tag: x-use
   arguments:
   - name: source
+    templated: true
   description: Set the current var to be 'source' for all children.
 
 - tag: x-if/x-unless
   arguments:
   - name: eq
     optional: true
+    templated: true
   - name: lt
     optional: true
+    templated: true
   - name: lte
     optional: true
+    templated: true
   - name: gt
     optional: true
+    templated: true
   - name: gte
     optional: true
+    templated: true
   - default: $
     name: source
+    templated: true
   description: Logic and stuff.
 
 - tag: x-json
@@ -123,8 +131,17 @@
   form-ony: true
   arguments:
   - name: name
+    templated: true
   - name: value
-  description: Set a response cookie inside an action.
+    templated: true
+  - name: max-seconds
+  - name: max-minutes
+  - name: max-hours
+  - name: max-days
+  description: |
+    Set a response cookie inside an action.
+
+    The maximum cookie age will be set to the sum of the max-* attribute values.
 
 - tag: x-include
   description: Include an external siskin-xml file. This tag is processed before anything
@@ -153,3 +170,29 @@
       <x-json target="foo" >22</x-json>
     </x-pass>
     out:$foo
+
+- tag: x-catch
+  description: |
+    Rendered when an error has occured. The root variables `$.error.code` and `$.error.message`
+    will be available to display.
+
+- tag: x-try
+  description: |
+    Rendered when no error has occured. Useful when a section may result in an error.
+
+- tag: x-return-code
+  actionVariant: true
+  arguments:
+  - name: code
+    description: "Return code to send. Must be numeric."
+    templated: true
+  description: |
+    Set the return code. If the code is a HTTP error code then you may enter the error filter.
+
+- tag: x-redirect-action
+  arguments:
+  - name: path
+    description: "Path to redirect to"
+    templated: true
+  description:
+    Redirect the client to the specied path.

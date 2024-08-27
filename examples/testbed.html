@@ -28,10 +28,9 @@
 				<input name="foo" placeholder="foo" type="text" />
 				<input type="submit" value="Go" />
 
-				<x-nodejs-action>
-					throw Error("See me!")
-				</x-nodejs-action>
+				<x-return-code code="404" />
 			</form>
+
 			<hr>
 
 			<x-try>

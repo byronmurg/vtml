@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-	<x-hint-port port="3001" />
 
 	<head>
 		<meta charset="utf-8" />
@@ -62,10 +61,14 @@
 		</style>
 	</head>
 	<body>
-		<header>
+		<header class="container" >
 			<nav style="padding-left: 1rem">
 				<ul>
-					<li><h4>Starling docs</h4></li>
+					<li><h5>Starling docs</h5></li>
+				</ul>
+				<ul>
+					<li><a href="/tutorial/intro" >Tutorial</a></li>
+					<li><a href="/reference" >Reference</a></li>
 				</ul>
 			</nav>
 			<hr />
@@ -145,6 +148,7 @@
 												<tr>
 													<th scope="col">name</th>
 													<th scope="col">default</th>
+													<th scope="col">templated</th>
 												</tr>
 											</thead>
 											<tbody>
@@ -161,6 +165,13 @@
 															<x-unless source="$optional">
 																<td><b>required</b></td>
 															</x-unless>
+														</x-unless>
+
+														<x-if source="$templated" >
+															<td>yes</td>
+														</x-if>
+														<x-unless source="$templated" >
+															<td>no</td>
 														</x-unless>
 													</tr>
 												</x-for-each>

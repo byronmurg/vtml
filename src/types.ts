@@ -4,6 +4,8 @@ import type FilterContext from "./filter_context"
 
 export type InputValue = string|string[]|number|boolean
 
+export type BodyType = Record<string, InputValue>
+
 export
 type ElementChain = {
 	element: TagElement
@@ -24,6 +26,35 @@ type RootDataset = {
 	pageNotFound: boolean
 	error?: ResponseError
 }
+
+export
+type Cookie = {
+	value: string
+	maxAge: number
+}
+
+export type CookieMap = Record<string, Cookie>
+
+
+
+/////////////////////
+// Render
+/////////////////////
+
+export
+type RenderResponse = {
+	elements: Element[]
+	status: number
+	cookies: CookieMap
+	redirect?: string
+	error?: string
+}
+
+export
+type RenderHTMLResponse = RenderResponse & {
+	html: string
+}
+
 
 /////////////////////
 // Tag
@@ -66,10 +97,10 @@ type Cascade = {
 }
 
 export
-type RootFilter = (ctx:FilterContext) => Promise<Element[]>
+type Filter = (ctx:FilterContext) => Promise<Branch>
 
 export
-type Filter = (ctx:FilterContext) => Promise<Branch>
+type RootFilter = (ctx:FilterContext) => Promise<RenderResponse>
 
 export
 type TagFilter = (el:TagElement, cascade:Cascade) => Filter
@@ -92,10 +123,7 @@ type ChainResult = {
 }
 
 export
-type FormResult = ChainResult & {
-	elements: Element[]
-}
-
+type FormResult = RenderResponse
 
 export
 type Expose = {

@@ -74,8 +74,6 @@ test("x-nodejs invalid", async () => {
 })
 
 test("x-nodejs throw", async () => {
-	expect.assertions(1)
-
 	const exampleHTML = `
 		<x-nodejs target="foo" >
 			throw Error("See me")
@@ -84,13 +82,9 @@ test("x-nodejs throw", async () => {
 		<p>$foo</p>
 	`
 
-	try {
-		const doc = StarlingDocument.LoadFromString(exampleHTML)
-		await doc.renderLoaderMl(ctx)
-	} catch (err) {
-		const e = err as Error
-		expect(e.message).toMatch(`Error in x-node : See me`)
-	}
+	const doc = StarlingDocument.LoadFromString(exampleHTML)
+	const res = await doc.renderDocument(ctx)
+	expect(res.error).toMatch(`Error in x-node : See me`)
 })
 
 test("x-nodejs throw with id", async () => {
@@ -104,11 +98,7 @@ test("x-nodejs throw with id", async () => {
 		<p>$foo</p>
 	`
 
-	try {
-		const doc = StarlingDocument.LoadFromString(exampleHTML)
-		await doc.renderLoaderMl(ctx)
-	} catch (err) {
-		const e = err as Error
-		expect(e.message).toMatch(`Error in x-node (id seeme): See me`)
-	}
+	const doc = StarlingDocument.LoadFromString(exampleHTML)
+	const res = await doc.renderDocument(ctx)
+	expect(res.error).toMatch(`Error in x-node (id seeme): See me`)
 })
