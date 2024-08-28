@@ -7,15 +7,18 @@ import {RootFilter, Expose, RenderHTMLResponse, RootDataset, RenderResponse, Bod
 import FilterRoot from "./filter"
 import * as utils from "./utils"
 import PrepareForm, {FormDescriptor} from "./form"
+import PreparePortal, {PortalDescriptor} from "./portal"
 
 export default
 class StarlingDocument {
 	public readonly forms: FormDescriptor[]
+	public readonly portals: PortalDescriptor[]
 	public readonly oapiSchema: OAPI.OpenAPIObject
 	private _renderDocument: RootFilter
 
 	private constructor(public readonly root:HTML.Element[]) {
 		this.forms = this.prepareForms()
+		this.portals = this.preparePortals()
 		this.oapiSchema = OAPI.createOpenApiSchema(this)
 		this._renderDocument = FilterRoot(root)
 	}
@@ -44,6 +47,28 @@ class StarlingDocument {
 		}
 
 		return forms
+	}
+
+	preparePortals(): PortalDescriptor[] {
+		const actionForms = utils.findPortals(this.root)
+
+		const portals = actionForms.map((portal) => {
+			const preElements = utils.getPrecedingElements(this.root, portal)
+			return PreparePortal(portal, preElements)
+		})
+
+		const portalPaths:Record<string, true> = {}
+
+		for (const portal of portals) {
+
+			if (portalPaths[portal.path]) {
+				utils.error(portal.element, `Duplicate portal path`)
+			}
+
+			portalPaths[portal.path] = true
+		}
+
+		return portals
 	}
 
 	findHint(tag:string, attr:string): string|undefined {

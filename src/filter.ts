@@ -193,3 +193,9 @@ function createFormFilter(el:TagElement): Filter {
 	const cascade = CreateCascade(actionExtract)
 	return cascade.childs(el.elements)
 }
+
+export
+function createPortalFilter(el:TagElement): Filter {
+	const cascade = CreateCascade(renderExtract)
+	return cascade.childs(el.elements)
+}

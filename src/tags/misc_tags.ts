@@ -12,6 +12,11 @@ export const XExpose: Tag = {
 	render: stripFilter,
 }
 
+export const XPortal: Tag = {
+	name: "x-portal",
+	render: passthroughFilter,
+}
+
 export const XPass: Tag = {
 	name: "x-pass",
 	render: passthroughFilter

@@ -86,18 +86,6 @@ function parseFormFields(body:Record<string, string>, formFields:TagElement[]): 
 	return newBody
 }
 
-function getPagePath(preElements:ElementChain[]): string {
-	const elements = preElements.map((chain) => chain.element).reverse()
-	const pages = utils.findPagesInChain(elements)
-
-	if (pages.length) {
-		const page = pages[0]
-		return utils.getAttribute(page, "path")
-	} else {
-		return "/"
-	}
-}
-
 export
 type FormDescriptor = {
 	name: string
@@ -121,7 +109,7 @@ function prepareForm(postForm:TagElement, preElements:ElementChain[]): FormDescr
 	}
 
 	// Get the path of the nearest page
-	const pagePath = getPagePath(preElements)
+	const pagePath = utils.getPagePath(preElements)
 
 	// Figure out the form path suffix
 	const path = pathLib.posix.join(pagePath, xName)

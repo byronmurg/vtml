@@ -158,6 +158,29 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument, options:expos
 		})
 	}
 
+	//
+	// Expose portals
+	//
+
+	for (const portal of starlingDocument.portals) {
+		debug("Create portal", portal.path)
+
+		app.get(portal.path, async (req, res) => {
+			const rootDataset = createRootDataset(req)
+	
+			const portalRes = await portal.load(rootDataset)
+
+			
+			if (portalRes.status < 400) {
+				setCookies(res, portalRes.cookies)
+				const html = HTML.serialize(portalRes.elements)
+				res.status(portalRes.status).send(html)
+			} else {
+				await filterResponseError(req, res, portalRes)
+			}
+		})
+	}
+
 	// Expose api docs
 	app.use("/api-docs", SwaggerUiExpress.serve, SwaggerUiExpress.setup(starlingDocument.oapiSchema))
 	app.use("/api/_schema.json", (_, res) => res.json(starlingDocument.oapiSchema))

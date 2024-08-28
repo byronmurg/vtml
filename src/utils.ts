@@ -153,6 +153,14 @@ function findActionForms(el:Element[]): TagElement[] {
 }
 
 export
+function findPortals(el:Element[]): TagElement[] {
+	return findElement(
+		el,
+		(e) => e.name === "x-portal"
+	)
+}
+
+export
 function findInputs(el:TagElement): TagElement[] {
 	// @TODO I don't like this being here
 	const inputTypes = ["input", "select", "textarea"]
@@ -245,3 +253,15 @@ export function error(el:TagElement, message:string): never {
 	}
 }
 
+export
+function getPagePath(preElements:ElementChain[]): string {
+	const elements = preElements.map((chain) => chain.element).reverse()
+	const pages = findPagesInChain(elements)
+
+	if (pages.length) {
+		const page = pages[0]
+		return getAttribute(page, "path")
+	} else {
+		return "/"
+	}
+}

@@ -40,10 +40,10 @@ export const FormTag:Tag = {
 				const actionPath = "/action" +fullPath
 				const ajaxPath = "/ajax" +fullPath
 
-				ctx = ctx.SetVar('__form_action', actionPath)
+				const subCtx = ctx.SetVar('__form_action', actionPath)
 					.SetVar('__form_ajax', ajaxPath)
 
-				const outputAttributes = templateAttributes(el.attributes, ctx)
+				const outputAttributes = templateAttributes(el.attributes, subCtx)
 
 				if (xAjax) {
 					outputAttributes.onsubmit ||= "return false"
@@ -52,7 +52,7 @@ export const FormTag:Tag = {
 					outputAttributes.action ||= actionPath
 				}
 
-				const children = await childs(ctx)
+				const children = await childs(subCtx)
 
 				const resp = {
 					...el,

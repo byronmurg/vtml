@@ -126,6 +126,9 @@ export
 type FormResult = RenderResponse
 
 export
+type PortalResult = RenderResponse
+
+export
 type Expose = {
 	path: string
 	contentType?: string
