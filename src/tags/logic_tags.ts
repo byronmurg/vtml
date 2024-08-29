@@ -18,7 +18,7 @@ function elementCheck(el:TagElement) {
 
 
 export const XIf: Tag = {
-	name: "x-if",
+	name: "v-if",
 	render(el, cascade) {
 		const check = elementCheck(el)
 		const childs = cascade.childs(el.elements)
@@ -55,7 +55,7 @@ export const XIf: Tag = {
 
 
 export const XUnless: Tag = {
-	name: "x-unless",
+	name: "v-unless",
 	render(el, cascade) {
 		const check = elementCheck(el)
 		const childs = cascade.childs(el.elements)

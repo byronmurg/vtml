@@ -1,4 +1,4 @@
-import StarlingDocument from "../src/document"
+import VtmlDocument from "../src/document"
 
 // Just an example context
 const rootDataset = {
@@ -15,12 +15,12 @@ const rootDataset = {
 test("form", async () => {
 
 	const exampleHTML = `
-		<form x-name="test1" >
+		<form v-name="test1" >
 			<input name="name" type="text" />
 		</form>
 	`
 
-	const doc = StarlingDocument.LoadFromString(exampleHTML)
+	const doc = VtmlDocument.LoadFromString(exampleHTML)
 
 	const forms = doc.forms
 
@@ -36,18 +36,18 @@ test("form", async () => {
 test("form not found", async () => {
 
 	const exampleHTML = `
-		<x-nodejs target="foo" >
+		<v-nodejs target="foo" >
 			return false
-		</x-nodejs>
-		<x-if source="$foo" >
-			<form x-name="test1" >
+		</v-nodejs>
+		<v-if source="$foo" >
+			<form v-name="test1" >
 				<input name="name" type="text" />
 			</form>
-		</x-if>
+		</v-if>
 
 	`
 
-	const doc = StarlingDocument.LoadFromString(exampleHTML)
+	const doc = VtmlDocument.LoadFromString(exampleHTML)
 
 	const forms = doc.forms
 
@@ -63,28 +63,28 @@ test("form not found", async () => {
 test("duplicate forms throw errors", async () => {
 
 	const exampleHTML = `
-		<form x-name="foo" ></form>
-		<form x-name="foo" ></form>
+		<form v-name="foo" ></form>
+		<form v-name="foo" ></form>
 	`
 
 	function innerTest() {
-		return StarlingDocument.LoadFromString(exampleHTML)
+		return VtmlDocument.LoadFromString(exampleHTML)
 	}
 
-	expect(innerTest).toThrow("Duplicate x-name in form (<string>:33)")
+	expect(innerTest).toThrow("Duplicate v-name in form (<string>:33)")
 })
 
 
 test("form sets return code successfully", async () => {
 	const exampleHTML = `
-		<form x-name="foo" >
-			<x-return-code-action code="401" />
+		<form v-name="foo" >
+			<v-return-code-action code="401" />
 			<input name="bar" />
 		</form>
 
 	`
 
-	const doc = StarlingDocument.LoadFromString(exampleHTML)
+	const doc = VtmlDocument.LoadFromString(exampleHTML)
 
 	const response = await doc.executeFormByName("foo", rootDataset, { bar:"bar" })
 
@@ -93,14 +93,14 @@ test("form sets return code successfully", async () => {
 
 test("form not executed on non-success chain", async () => {
 	const exampleHTML = `
-		<x-return-code code="400" />
-		<form x-name="foo" >
+		<v-return-code code="400" />
+		<form v-name="foo" >
 			<input name="bar" />
 		</form>
 
 	`
 
-	const doc = StarlingDocument.LoadFromString(exampleHTML)
+	const doc = VtmlDocument.LoadFromString(exampleHTML)
 
 	const response = await doc.executeFormByName("foo", rootDataset, { bar:"bar" })
 
@@ -109,14 +109,14 @@ test("form not executed on non-success chain", async () => {
 
 test("form redirects correctly", async () => {
 	const exampleHTML = `
-		<form x-name="foo" >
+		<form v-name="foo" >
 			<input name="bar" />
-			<x-redirect-action path="/foo" />
+			<v-redirect-action path="/foo" />
 		</form>
 
 	`
 
-	const doc = StarlingDocument.LoadFromString(exampleHTML)
+	const doc = VtmlDocument.LoadFromString(exampleHTML)
 
 	const response = await doc.executeFormByName("foo", rootDataset, { bar:"bar" })
 
@@ -125,14 +125,14 @@ test("form redirects correctly", async () => {
 
 test("form sets cookie correctly", async () => {
 	const exampleHTML = `
-		<form x-name="foo" >
+		<form v-name="foo" >
 			<input name="bar" />
-			<x-setcookie-action name="foo" value="baz" />
+			<v-setcookie-action name="foo" value="baz" />
 		</form>
 
 	`
 
-	const doc = StarlingDocument.LoadFromString(exampleHTML)
+	const doc = VtmlDocument.LoadFromString(exampleHTML)
 
 	const response = await doc.executeFormByName("foo", rootDataset, { bar:"bar" })
 

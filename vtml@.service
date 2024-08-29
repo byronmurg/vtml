@@ -1,0 +1,13 @@
+[Unit]
+Description=VTML server %i
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=byron
+Group=byron
+Environment="NODE_ENV=production"
+ExecStart=vtml /srv/vtml/%i/index.html
+
+[Install]
+WantedBy=multi-user.target

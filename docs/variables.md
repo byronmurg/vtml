@@ -48,7 +48,7 @@ We can also use `$` to set the current frame to a variable.
 
 ### Using variables
 
-In starling variables always cascade **down in inwards**. At the begining of our document we have what we call the `root-dataset` and each time we add new data or select existing data we create a new `data-frame`.
+In vtml variables always cascade **down in inwards**. At the begining of our document we have what we call the `root-dataset` and each time we add new data or select existing data we create a new `data-frame`.
 
 Take the following example:
 

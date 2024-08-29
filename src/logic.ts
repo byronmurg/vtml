@@ -1,7 +1,7 @@
 import Debug from "debug"
 import type {TagElement} from "./html"
 
-const debug = Debug("starling:logic")
+const debug = Debug("vtml:logic")
 
 
 type LogicOperator = {

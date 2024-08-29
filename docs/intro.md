@@ -2,6 +2,6 @@
 
 So, you need some HTML
 
-## What is Starling?
+## What is Vtml?
 
-Starling is a way of quickly creating simple server-rendered we applications.
+Vtml is a way of quickly creating simple server-rendered we applications.

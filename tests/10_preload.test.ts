@@ -1,4 +1,4 @@
-import StarlingDocument from "../src/document"
+import VtmlDocument from "../src/document"
 import type {TagElement} from "../src/html"
 import {InitCtx} from "./test_lib"
 
@@ -9,9 +9,9 @@ function trimAll(str:string): string {
 	return str.split("\n").map((s) => s.trim()).join("")
 }
 
-test("x-include", async () => {
+test("v-include", async () => {
 
-	const doc = StarlingDocument.LoadFromFile("./tests/test_assets/parent.html")
+	const doc = VtmlDocument.LoadFromFile("./tests/test_assets/parent.html")
 
 	const output = await doc.renderLoaderMl(ctx)
 

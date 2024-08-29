@@ -30,7 +30,7 @@
 		<header class="container" >
 			<nav>
 				<ul>
-					<li><b>Starling test</b></li>
+					<li><b>Vtml test</b></li>
 				</ul>
 			</nav>
 		</header>
@@ -38,10 +38,10 @@
 		<main class="container" >
 
 			<!-- create form -->
-			<form x-name="create_todo" method="POST" >
-				<x-sql-action>
+			<form v-name="create_todo" method="POST" >
+				<v-sql-action>
 					insert into simple.todos (text) values ($body.text)
-				</x-sql-action>
+				</v-sql-action>
 				<fieldset role="group" >
 					<input name="text" type="text" autofocus="yes" maxlength="128" required />
 					<button type="submit" class="material-icons" >add</button>
@@ -51,24 +51,24 @@
 			<hr/>
 
 			<!-- Get the todos -->
-			<x-sql target="todos" >
+			<v-sql target="todos" >
 				select * from simple.todos where $.query.showdone::boolean is not null or done = false order by c desc
-			</x-sql>
+			</v-sql>
 
-			<x-nodejs target="ntodos" >
+			<v-nodejs target="ntodos" >
 				return $todos.length
-			</x-nodejs>
+			</v-nodejs>
 
 			<p>There are $ntodos todos</p>
 
 			<!-- Loop through the todos -->
-			<x-for-each source="$todos" >
+			<v-for-each source="$todos" >
 
 				<!-- Form to update the text -->
-				<form method="POST" x-name="edit_todo" >
-					<x-sql-action>
+				<form method="POST" v-name="edit_todo" >
+					<v-sql-action>
 						update simple.todos set text = $body.text where _id = $.body.id
-					</x-sql-action>
+					</v-sql-action>
 					<fieldset role="group" >
 
 						<input name="text" value="$text" maxlength="128" disabled />
@@ -79,14 +79,14 @@
 				</form>
 
 				<!-- Hidden form to delete -->
-				<form id="delete-todo-$_id" method="POST" x-name="delete_todo" >
-					<x-sql-action>
+				<form id="delete-todo-$_id" method="POST" v-name="delete_todo" >
+					<v-sql-action>
 						delete from simple.todos where _id = $.body.id
-					</x-sql-action>
+					</v-sql-action>
 					<input type="hidden" name="id" value="$_id" />
 				</form>
 
-			</x-for-each>
+			</v-for-each>
 		</main>
 	</body>
 

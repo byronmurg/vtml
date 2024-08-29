@@ -118,7 +118,7 @@ Finally there is the `x-ajax` attribute which disabled the usual added attribute
 
 ### GET forms
 
-Starling only searches for forms with an x-name attribute. Therefore if we want to create a GET form that just adds search parameters to the url we can just omit the `x-name` attribute.
+Vtml only searches for forms with an x-name attribute. Therefore if we want to create a GET form that just adds search parameters to the url we can just omit the `x-name` attribute.
 
 ```
 <form>

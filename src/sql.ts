@@ -2,7 +2,7 @@ import {Pool} from "pg"
 import Debug from "debug"
 import FilterContext from "./filter_context"
 
-const debug = Debug("starling:sql")
+const debug = Debug("vtml:sql")
 
 const db = new Pool()
 

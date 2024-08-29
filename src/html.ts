@@ -26,9 +26,9 @@ const singleTags = ["hr", "br", "link", "meta"]
 
 const emptyTags: Record<string, string[]> = {
 	input: ["required", "disabled"],
-	form: ["x-ajax"],
-	"x-sql": ["single-row"],
-	"x-sql-action": ["single-row"],
+	form: ["v-ajax"],
+	"v-sql": ["single-row"],
+	"v-sql-action": ["single-row"],
 }
 
 const neverClose = [

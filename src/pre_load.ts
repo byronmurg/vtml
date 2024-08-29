@@ -5,10 +5,10 @@ import path from "node:path"
 import * as utils from "./utils"
 
 const srcElements = [
-	"x-expose",
-	"x-json",
-	"x-yaml",
-	"x-markdown",
+	"v-expose",
+	"v-json",
+	"v-yaml",
+	"v-markdown",
 ]
 
 const isSrcElement = (el:TagElement) => srcElements.includes(el.name)
@@ -28,7 +28,7 @@ function preFilterElements(elements:Element[], dir:string): Element[] {
 	return elements.flatMap((child) => {
 		if (child.type === "text") {
 			return child
-		} else if (child.name === "x-include") {
+		} else if (child.name === "v-include") {
 			const src = utils.requireAttribute(child, "src")
 			return preLoadInclude(path.posix.join(dir, src))
 		} else if (isSrcElement(child)) {

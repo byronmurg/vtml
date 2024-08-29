@@ -148,7 +148,7 @@ export
 function findActionForms(el:Element[]): TagElement[] {
 	return findElement(
 		el,
-		(e) => (e.name === "form") && (!!getAttribute(e, 'x-name'))
+		(e) => (e.name === "form") && (!!getAttribute(e, 'v-name'))
 	)
 }
 
@@ -156,7 +156,7 @@ export
 function findPortals(el:Element[]): TagElement[] {
 	return findElement(
 		el,
-		(e) => e.name === "x-portal"
+		(e) => e.name === "v-portal"
 	)
 }
 
@@ -223,17 +223,17 @@ function isTagElement(el:Element): el is TagElement {
 
 export
 function findPagesInChain(el:Element[]): TagElement[] {
-	return el.filter(isTagElement).filter((e) => e.name === "x-page")
+	return el.filter(isTagElement).filter((e) => e.name === "v-page")
 }
 
 export
 function findPages(el:Element[]): TagElement[] {
-	return findElementByName(el, "x-page")
+	return findElementByName(el, "v-page")
 }
 
 export
 function findExposes(el:Element[]): TagElement[] {
-	return findElementByName(el, "x-expose")
+	return findElementByName(el, "v-expose")
 }
 
 export function bodyOrSrc(el:TagElement): string {

@@ -24,58 +24,58 @@
 					<li><a href="/" >products</a></li>
 				</ul>
 				<ul>
-					<li><b>Starling shop</b></li>
+					<li><b>Vtml shop</b></li>
 				</ul>
 
-				<x-sql target="basket_summary" >
+				<v-sql target="basket_summary" >
 					select sum(p.price * ub.amount) as total from shop.user_basket ub, shop.products p where p._id = ub.product ;
-				</x-sql>
+				</v-sql>
 
-				<x-with source="$basket_summary.0" >
+				<v-with source="$basket_summary.0" >
 					<ul>
 						<li>total £$total</li>
 					</ul>
-				</x-with>
+				</v-with>
 			</nav>
 		</header>
 
 		<main class="container" >
-			<x-page path="/" >
-				<x-sql target="products" >
+			<v-page path="/" >
+				<v-sql target="products" >
 					select p.*, ub.amount from shop.products p left join shop.user_basket ub on p._id = ub.product order by p._id
-				</x-sql>
+				</v-sql>
 
 
-				<x-for-each source="$products" >
+				<v-for-each source="$products" >
 					<article>
 						<header>
 							<p>$name</p>
 						</header>
 						<p>£$price</p>
 
-						<x-with source="$amount" >
+						<v-with source="$amount" >
 							<p>$ in basket</p>
-						</x-with>
+						</v-with>
 
-						<form method="POST" x-name="add_to_basket" >
-							<x-sql-body>
+						<form method="POST" v-name="add_to_basket" >
+							<v-sql-body>
 								insert into shop.user_basket as ub (product, amount)
 								values ($.body.product_id, 1)
 								on conflict (product) do update set amount = (ub.amount +1)
-							</x-sql-body>
-							<x-dump />
+							</v-sql-body>
+							<v-dump />
 							<input name="product_id" type="hidden" value="$_id" />
 							<button>add to basket</button>
 						</form>
 					</article>
-				</x-for-each>
+				</v-for-each>
 
-			</x-page>
+			</v-page>
 
 
-			<x-default-page>
+			<v-default-page>
 				<h3>Not found :(</h3>
-			</x-default-page>
+			</v-default-page>
 
 		</main>
 	</body>

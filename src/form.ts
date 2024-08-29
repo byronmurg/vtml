@@ -102,10 +102,10 @@ type FormDescriptor = {
 export default
 function prepareForm(postForm:TagElement, preElements:ElementChain[]): FormDescriptor {
 	
-	const xName = utils.getAttribute(postForm, "x-name")
+	const xName = utils.getAttribute(postForm, "v-name")
 
 	if (! xName) {
-		utils.error(postForm, `No x-name set`)
+		utils.error(postForm, `No v-name set`)
 	}
 
 	// Get the path of the nearest page

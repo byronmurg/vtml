@@ -1,15 +1,16 @@
 {
-  "name": "starling",
+  "name": "vtml",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "private": true,
   "scripts": {
     "test": "node_modules/.bin/jest . --coverage",
     "lint": "node_modules/.bin/eslint src/**",
-    "build": "bun build src/starling.ts --compile --outfile=starling"
+    "build": "bun build src/cli.ts --compile --outfile=vtml"
   },
   "bin": {
-    "starling": "./build/src/starling.js"
+    "vtml": "./build/src/cli.js"
   },
   "author": "",
   "license": "UNLICENSED",
@@ -39,7 +40,7 @@
     "@types/lodash": "^4.17.0",
     "@types/pg": "^8.11.5",
     "@types/swagger-ui-express": "^4.1.6",
-    "eslint": "^9.8.0",
+    "eslint": "^9.9.1",
     "globals": "^15.9.0",
     "jest": "^29.7.0",
     "openapi3-ts": "^4.3.1",

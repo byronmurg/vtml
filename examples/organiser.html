@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-	<x-hint-port port="3001" />
+	<v-hint-port port="3001" />
 
 	<head>
 		<link
@@ -29,7 +29,7 @@
 		<header class="container" >
 			<nav>
 				<ul>
-					<li><b>Starling test</b></li>
+					<li><b>Vtml test</b></li>
 				</ul>
 				<ul>
 					<li><a href="/" >home</a></li>
@@ -41,30 +41,30 @@
 
 		<main class="container" >
 
-			<x-with source="$.headers.x-user" >
+			<v-with source="$.headers.v-user" >
 				<p>Hi $</p>
-			</x-with>
+			</v-with>
 
-			<x-page path="/" >
-				<x-include src="./organiser_home.html" />
-			</x-page>
+			<v-page path="/" >
+				<v-include src="./organiser_home.html" />
+			</v-page>
 
-			<x-page path="/coffee" >
-				<x-include src="./coffee.html" />
-			</x-page>
+			<v-page path="/coffee" >
+				<v-include src="./coffee.html" />
+			</v-page>
 
-			<x-page path="/people" >
+			<v-page path="/people" >
 
-				<x-sql target="people" >
+				<v-sql target="people" >
 					select * from people order by c desc
-				</x-sql>
+				</v-sql>
 
-				<x-for-each source="$people" >
+				<v-for-each source="$people" >
 					<article>
-						<form x-name="edit_person" method="POST" >
-							<x-sql-body>
+						<form v-name="edit_person" method="POST" >
+							<v-sql-body>
 								update people set name = $.body.name, alive = $.body.alive, species = $.body.species where _id = $.body._id
-							</x-sql-body>
+							</v-sql-body>
 
 							<input type="hidden" name="_id" value="$_id" />
 							<input name="name" value="$name" maxlength="128" />
@@ -82,20 +82,20 @@
 
 						</form>
 					</article>
-				</x-for-each>
+				</v-for-each>
 
-			</x-page>
+			</v-page>
 
 			<!-- page todo {{{ -->
-			<x-page path="/todo" >
+			<v-page path="/todo" >
 
 				<!-- Controls -->
 				<article>
 					<!-- create form -->
-					<form x-name="create_todo" method="POST" >
-						<x-sql-body>
+					<form v-name="create_todo" method="POST" >
+						<v-sql-body>
 							insert into todos (text) values ($body.text)
-						</x-sql-body>
+						</v-sql-body>
 						<fieldset role="group" >
 							<input name="text" type="text" autofocus="yes" />
 							<button type="submit" >create</button>
@@ -105,75 +105,75 @@
 					<footer>
 						<!-- search options -->
 						<form>
-							<x-if source="$.query.showdone" >
+							<v-if source="$.query.showdone" >
 								<button style="width:10rem" type="submit" class="secondary" >hide done</button>
-							</x-if>
-							<x-if source="$.query.showdone" eq="" >
+							</v-if>
+							<v-if source="$.query.showdone" eq="" >
 								<input type="hidden" name="showdone" value="on" />
 								<button style="width:10rem" type="submit" >show done</button>
-							</x-if>
+							</v-if>
 						</form>
 
 					</footer>
 
 				</article>
 
-				<x-sql target="todos" >
+				<v-sql target="todos" >
 					select * from todos where $.query.showdone::boolean is not null or done = false order by c desc
-				</x-sql>
+				</v-sql>
 
-				<x-for-each source="$todos" >
+				<v-for-each source="$todos" >
 
-					<x-json target="styles" >
+					<v-json target="styles" >
 						{
 							"button": "width:6rem;"
 						}
-					</x-json>
+					</v-json>
 
-					<form method="POST" x-name="edit_todo" >
-						<x-sql-body>
+					<form method="POST" v-name="edit_todo" >
+						<v-sql-body>
 							update todos set text = $body.text where _id = $.body.id
-						</x-sql-body>
+						</v-sql-body>
 						<fieldset role="group" >
 							<input type="hidden" name="id" value="$_id" />
 
-							<x-if source="$done" eq="false" >
+							<v-if source="$done" eq="false" >
 								<input name="text" value="$text" maxlength="128" />
 								<button type="submit" style="$styles.button" class="material-icons"  >save</button>
 								<button form="toggle-done-$_id" type="submit" style="$styles.button" class="contrast material-icons" >radio_button_unchecked</button>
-							</x-if>
-							<x-if source="$done" >
+							</v-if>
+							<v-if source="$done" >
 								<input name="text" value="$text" maxlength="128" disabled="yes" />
 								<button form="delete-todo-$_id" type="submit" style="$styles.button" class="contrast material-icons" >delete</button>
 								<button form="toggle-done-$_id" type="submit" style="$styles.button" class="material-icons" >check_circle</button>
-							</x-if>
+							</v-if>
 
 						</fieldset>
 					</form>
 
-					<form id="delete-todo-$_id" method="POST" x-name="delete_todo" >
-						<x-sql-body>
+					<form id="delete-todo-$_id" method="POST" v-name="delete_todo" >
+						<v-sql-body>
 							delete from todos where _id = $.body.id
-						</x-sql-body>
+						</v-sql-body>
 						<input type="hidden" name="id" value="$_id" />
 					</form>
 
-					<form id="toggle-done-$_id" method="POST" x-name="toggle_todo_done" >
-						<x-sql-body>
+					<form id="toggle-done-$_id" method="POST" v-name="toggle_todo_done" >
+						<v-sql-body>
 							update todos set done = not done where _id = $.body.id
-						</x-sql-body>
+						</v-sql-body>
 						<input type="hidden" name="id" value="$_id" />
 					</form>
 
-					<!-- <x-dump style="padding:1rem;" /> -->
+					<!-- <v-dump style="padding:1rem;" /> -->
 
-				</x-for-each>
-			</x-page>
+				</v-for-each>
+			</v-page>
 			<!-- end todo page }}} -->
 
-			<x-default-page>
+			<v-default-page>
 				<h3>Not found :(</h3>
-			</x-default-page>
+			</v-default-page>
 
 		</main>
 	</body>

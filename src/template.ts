@@ -20,12 +20,12 @@ const starterTemplate = (name:string) => `
 	<body>
 		<h1>${name}</h1>
 
-		<form x-name="print" >
+		<form v-name="print" >
 			<input name="message" type="string" />
 
-			<x-nodejs-action>
+			<v-nodejs-action>
 				console.log($.body.message)
-			</x-nodejs-action>
+			</v-nodejs-action>
 		</form>
 
 	</body>

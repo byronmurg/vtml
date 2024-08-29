@@ -1,4 +1,4 @@
-import StarlingDocument from "../src/document"
+import VtmlDocument from "../src/document"
 import {InitCtx} from "./test_lib"
 
 // Just an example context
@@ -9,198 +9,198 @@ function trimAll(str:string): string {
 }
 
 test("Unknown tags throw an error", () => {
-	const exampleHTML = `<x-dunnome/>`
+	const exampleHTML = `<v-dunnome/>`
 
-	const func = () => StarlingDocument.LoadFromString(exampleHTML)
+	const func = () => VtmlDocument.LoadFromString(exampleHTML)
 
-	expect(func).toThrow(`Unknown x- tag in x-dunnome`)
+	expect(func).toThrow(`Unknown v- tag in v-dunnome`)
 })
 
-test("x-with", async () => {
+test("v-with", async () => {
 
 	const exampleHTML = `
-		<x-json target="vars" >
+		<v-json target="vars" >
 			"Hi there"
-		</x-json>
+		</v-json>
 
-		<x-with source="$vars">
+		<v-with source="$vars">
 			<p>$</p>
-		</x-with>
+		</v-with>
 
-		<x-with source="$notexist">
+		<v-with source="$notexist">
 			<p>Shouldn't see me</p>
-		</x-with>
+		</v-with>
 	`
 
-	const doc = StarlingDocument.LoadFromString(exampleHTML)
+	const doc = VtmlDocument.LoadFromString(exampleHTML)
 
 	const output = await doc.renderLoaderMl(ctx)
 
 	expect(output).toBe(`<p>Hi there</p>`)
 })
 
-test("x-use", async () => {
+test("v-use", async () => {
 
 	const exampleHTML = `
-		<x-json target="vars" >
+		<v-json target="vars" >
 			"Hi there"
-		</x-json>
+		</v-json>
 
-		<x-use source="$vars">
+		<v-use source="$vars">
 			<p>$</p>
-		</x-use>
+		</v-use>
 
-		<x-use source="$notexist">
+		<v-use source="$notexist">
 			<p>Should still see me</p>
-		</x-use>
+		</v-use>
 	`
 
-	const doc = StarlingDocument.LoadFromString(exampleHTML)
+	const doc = VtmlDocument.LoadFromString(exampleHTML)
 
 	const output = await doc.renderLoaderMl(ctx)
 
 	expect(output).toBe(`<p>Hi there</p><p>Should still see me</p>`)
 })
 
-test("x-hint-port", async () => {
+test("v-hint-port", async () => {
 
 	const exampleHTML = `
-		<x-hint-port port="1337" />
+		<v-hint-port port="1337" />
 	`
 
-	const doc = StarlingDocument.LoadFromString(exampleHTML)
+	const doc = VtmlDocument.LoadFromString(exampleHTML)
 
-	const port = await doc.findHint("x-hint-port", "port")
+	const port = await doc.findHint("v-hint-port", "port")
 
 	expect(port).toBe(`1337`)
 })
 
-test("x-if", async () => {
+test("v-if", async () => {
 
 	async function testIf(tag:string) {
 		const exampleHTML = `
-			<x-json target="var" >
+			<v-json target="var" >
 				22
-			</x-json>
+			</v-json>
 
 			${tag}
 		`
 
-		const doc = StarlingDocument.LoadFromString(exampleHTML)
+		const doc = VtmlDocument.LoadFromString(exampleHTML)
 
 		return trimAll(await doc.renderLoaderMl(ctx))
 	}
 
 	const truthyOut = await testIf(`
-		<x-if source="$var" >truthy</x-if>
+		<v-if source="$var" >truthy</v-if>
 	`)
 	expect(truthyOut).toBe(`truthy`)
 
 	const eqOut = await testIf(`
-		<x-if source="$var" eq="22" >true</x-if>
+		<v-if source="$var" eq="22" >true</v-if>
 	`)
 
 	expect(eqOut).toBe(`true`)
 
 	const gteOut = await testIf(`
-		<x-if source="$var" gte="22" >true</x-if>
+		<v-if source="$var" gte="22" >true</v-if>
 	`)
 
 	expect(gteOut).toBe(`true`)
 
 
 	const allOut = await testIf(`
-		<x-if source="$var" eq="22" >
+		<v-if source="$var" eq="22" >
 			(eq 22)
-		</x-if>
-		<x-if source="$var" gt="10" >
+		</v-if>
+		<v-if source="$var" gt="10" >
 			(gt 10)
-		</x-if>
-		<x-if source="$var" lt="100" >
+		</v-if>
+		<v-if source="$var" lt="100" >
 			(lt 100)
-		</x-if>
+		</v-if>
 	`)
 
 	expect(allOut).toBe("(eq 22)(gt 10)(lt 100)")
 
 	const everyOut = await testIf(`
-		<x-if source="$var" eq="22" gt="10" lt="100" >
+		<v-if source="$var" eq="22" gt="10" lt="100" >
 			Every selector matches
-		</x-if>
+		</v-if>
 	`)
 
 	expect(everyOut).toBe("Every selector matches")
 
 	const oneNotOut = await testIf(`
-		<x-if source="$var" eq="22" gt="10" lte="10" >
+		<v-if source="$var" eq="22" gt="10" lte="10" >
 			One doesn't match
-		</x-if>
+		</v-if>
 	`)
 
 	expect(oneNotOut).toBe("")
 })
 
 
-test("x-unless", async () => {
+test("v-unless", async () => {
 
 	const exampleHTML = `
-		<x-json target="foo" >"bar"</x-json>
-		<x-unless source="$foo" eq="bar" >
+		<v-json target="foo" >"bar"</v-json>
+		<v-unless source="$foo" eq="bar" >
 			Shouldn't see me
-		</x-unless>
+		</v-unless>
 	`
 
-	const doc = StarlingDocument.LoadFromString(exampleHTML)
+	const doc = VtmlDocument.LoadFromString(exampleHTML)
 
 	const output = await doc.renderLoaderMl(ctx)
 
 	expect(output).toBe("")
 })
 
-test("x-for-each", async () => {
+test("v-for-each", async () => {
 
 	const exampleHTML = `
-		<x-json target="vars" >
+		<v-json target="vars" >
 			[
 				"foo", "bar"
 			]
-		</x-json>
+		</v-json>
 
-		<x-for-each source="$vars">
+		<v-for-each source="$vars">
 			<p>$</p>
-		</x-for-each>
+		</v-for-each>
 	`
 
-	const doc = StarlingDocument.LoadFromString(exampleHTML)
+	const doc = VtmlDocument.LoadFromString(exampleHTML)
 
 	const output = await doc.renderLoaderMl(ctx)
 
 	expect(output).toBe(`<p>foo</p><p>bar</p>`)
 })
 
-test("x-dump", async () => {
+test("v-dump", async () => {
 	const exampleHTML = `
-		<x-json target="foo" >"bar"</x-json>
-		<x-with source="$foo" >
-			<x-dump />
-		<x-with>
+		<v-json target="foo" >"bar"</v-json>
+		<v-with source="$foo" >
+			<v-dump />
+		<v-with>
 	`
 
-	const doc = StarlingDocument.LoadFromString(exampleHTML)
+	const doc = VtmlDocument.LoadFromString(exampleHTML)
 
 	const output = await doc.renderLoaderMl(ctx)
 
 	expect(output).toBe(`<pre>"bar"</pre>`)
 })
 
-test("x-page", async () => {
+test("v-page", async () => {
 	const exampleHTML = `
-		<x-page path="/foo" >
+		<v-page path="/foo" >
 			Foo
-		</x-page>
-		<x-page path="/bar" >
+		</v-page>
+		<v-page path="/bar" >
 			Bar
-		</x-page>
+		</v-page>
 	`
 
 	const fooCtx = InitCtx({
@@ -208,20 +208,20 @@ test("x-page", async () => {
 		matchedPath: "/foo",
 	})
 
-	const doc = StarlingDocument.LoadFromString(exampleHTML)
+	const doc = VtmlDocument.LoadFromString(exampleHTML)
 
 	const fooOut = await doc.renderLoaderMl(fooCtx)
 	expect(trimAll(fooOut)).toBe(`Foo`)
 })
 
-test("x-default-page", async () => {
+test("v-default-page", async () => {
 	const exampleHTML = `
-		<x-page path="/bar" >
+		<v-page path="/bar" >
 			Bar
-		</x-page>
-		<x-default-page>
+		</v-page>
+		<v-default-page>
 			Foo
-		</x-default-page>
+		</v-default-page>
 	`
 
 	const fooCtx = InitCtx({
@@ -230,7 +230,7 @@ test("x-default-page", async () => {
 		pageNotFound: true,
 	})
 
-	const doc = StarlingDocument.LoadFromString(exampleHTML)
+	const doc = VtmlDocument.LoadFromString(exampleHTML)
 
 	const fooOut = await doc.renderLoaderMl(fooCtx)
 	expect(trimAll(fooOut)).toBe(`Foo`)
@@ -238,26 +238,26 @@ test("x-default-page", async () => {
 
 test(`select`, async () => {
 	const exampleHTML = `
-		<x-json target="foo" >"foo"</x-json>
+		<v-json target="foo" >"foo"</v-json>
 		<select value="$foo" >
 			<option>foo</option>
 			<option>bar</option>
 		</select>
 	`
 
-	const doc = StarlingDocument.LoadFromString(exampleHTML)
+	const doc = VtmlDocument.LoadFromString(exampleHTML)
 
 	const output = await doc.renderLoaderMl(ctx)
 
 	expect(output).toBe(`<select value="foo"><option selected="yes">foo</option><option>bar</option></select>`)
 })
 
-test(`x-return-code`, async () => {
+test(`v-return-code`, async () => {
 	const exampleHTML = `
-		<x-return-code code="403" />
+		<v-return-code code="403" />
 	`
 
-	const doc = StarlingDocument.LoadFromString(exampleHTML)
+	const doc = VtmlDocument.LoadFromString(exampleHTML)
 
 	const res = await doc.renderDocument(ctx)
 

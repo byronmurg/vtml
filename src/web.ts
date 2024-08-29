@@ -5,12 +5,12 @@ import Debug from "debug"
 import SwaggerUiExpress from "swagger-ui-express"
 import DefaultError from "./default_errors"
 
-import StarlingDocument from "./document"
+import VtmlDocument from "./document"
 import FilterContext from "./filter_context"
 import {RootDataset, RenderResponse, ResponseError, CookieMap} from "./types"
 import * as HTML from "./html"
 
-const debug = Debug("starling")
+const debug = Debug("vtml")
 
 const matchSearch = (url:string) => (url.match(/\?(.+)/)||[])[1]
 
@@ -55,7 +55,7 @@ function sendCatchError(res:Express.Response) {
 
 
 export
-function exposeStarlingDocument(starlingDocument:StarlingDocument, options:exposeOptions) {
+function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 
 	const app = Express()
 	app.use(BodyParser.urlencoded({ extended:true }))
@@ -75,7 +75,7 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument, options:expos
 		const errRoot = { ...rootDataset, error:err }
 		const ctx = FilterContext.Init(errRoot)
 		
-		return starlingDocument.renderLoader(ctx)
+		return vtmlDocument.renderLoader(ctx)
 			.then((html) => res.send(html))
 			.catch(sendCatchError(res))
 	}
@@ -85,7 +85,7 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument, options:expos
 			debug("render loader")
 
 			const ctx = createFilterContextFromRequest(req, pageNotFound)
-			const response = await starlingDocument.renderLoaderHTML(ctx)
+			const response = await vtmlDocument.renderLoaderHTML(ctx)
 
 			debug("response", response.status)
 			if (response.redirect) {
@@ -105,7 +105,7 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument, options:expos
 	// Expose POST Forms
 	//
 
-	const postForms = starlingDocument.forms
+	const postForms = vtmlDocument.forms
 
 	for (const form of postForms) {
 
@@ -162,7 +162,7 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument, options:expos
 	// Expose portals
 	//
 
-	for (const portal of starlingDocument.portals) {
+	for (const portal of vtmlDocument.portals) {
 		debug("Create portal", portal.path)
 
 		app.get(portal.path, async (req, res) => {
@@ -182,25 +182,25 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument, options:expos
 	}
 
 	// Expose api docs
-	app.use("/api-docs", SwaggerUiExpress.serve, SwaggerUiExpress.setup(starlingDocument.oapiSchema))
-	app.use("/api/_schema.json", (_, res) => res.json(starlingDocument.oapiSchema))
+	app.use("/api-docs", SwaggerUiExpress.serve, SwaggerUiExpress.setup(vtmlDocument.oapiSchema))
+	app.use("/api/_schema.json", (_, res) => res.json(vtmlDocument.oapiSchema))
 
 
 	// @NOTE for debuging
 	if (debug.enabled) {
 		app.get("/debug", async (req, res) => {
 			const ctx = createFilterContextFromRequest(req)
-			const response = await starlingDocument.renderDocument(ctx)
+			const response = await vtmlDocument.renderDocument(ctx)
 			res.json(response)
 		})
 
 		app.get("/root", async (req, res) => {
-			res.json(starlingDocument.root)
+			res.json(vtmlDocument.root)
 		})
 	}
 
 
-	const pages = starlingDocument.findPages()
+	const pages = vtmlDocument.findPages()
 
 	for (const path of pages) {
 		debug("page found", path)
@@ -209,7 +209,7 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument, options:expos
 
 	// Exposes
 
-	for (const expose of starlingDocument.exposes) {
+	for (const expose of vtmlDocument.exposes) {
 		app.get(expose.path, async (req, res) => {
 			const rootDataset = createRootDataset(req)
 			const exposeResult = await expose.load(rootDataset)
@@ -251,7 +251,7 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument, options:expos
 	// - env
 	// - hint
 	// - default (3000)
-	const portStr = options.cliPort?.toString() || process.env.PORT || starlingDocument.findHint("x-hint-port", "port") || "3000"
+	const portStr = options.cliPort?.toString() || process.env.PORT || vtmlDocument.findHint("v-hint-port", "port") || "3000"
 	const port = parseInt(portStr)
 
 	if (isNaN(port)) {

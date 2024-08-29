@@ -61,7 +61,7 @@
 		<header>
 			<nav>
 				<header>
-					<h5 class="max" >Starling beer test</h5>
+					<h5 class="max" >Vtml beer test</h5>
 				</header>
 			</nav>
 		</header>
@@ -70,10 +70,10 @@
 
 			<article>
 			<!-- create form -->
-			<form x-name="create_todo" id="create_todo_form" >
-				<x-sql-action>
+			<form v-name="create_todo" id="create_todo_form" >
+				<v-sql-action>
 					insert into simple.todos (text) values ($body.text)
-				</x-sql-action>
+				</v-sql-action>
 				<div class="max grid no-space" >
 					<div class="field suffix border left-round s11" >
 						<input name="text" type="text" autofocus="yes" maxlength="128" required />
@@ -85,52 +85,52 @@
 			</article>
 
 			<!-- Get the todos -->
-			<x-sql target="todos" loader-only >
+			<v-sql target="todos" loader-only >
 				select * from simple.todos where $.query.showdone::boolean is not null or done = false order by c desc
-			</x-sql>
+			</v-sql>
 
-			<x-nodejs target="ntodos" loader-only >
+			<v-nodejs target="ntodos" loader-only >
 				return $todos.length
-			</x-nodejs>
+			</v-nodejs>
 
 			<p>There are $ntodos todos</p>
 
 			<!-- Loop through the todos -->
-			<x-for-each source="$todos" >
+			<v-for-each source="$todos" >
 
 				<!-- Form to update the text -->
-				<form x-name="edit_todo"
-					x-ajax
+				<form v-name="edit_todo"
+					v-ajax
 					id="edit-todo-$_id"
 					hx-boost="false"
 					hx-post="$__form_ajax"
 					hx-trigger="focusout"
 				>
-					<x-sql-action>
+					<v-sql-action>
 						update simple.todos set text = $body.text where _id = $.body.id
-					</x-sql-action>
+					</v-sql-action>
 					<input type="hidden" name="id" value="$_id" />
 
-					<x-use source="$.body" >
+					<v-use source="$.body" >
 					<div class="grid no-space" >
 						<div class="field small border large left-round s11" >
 							<input name="text" value="$text" maxlength="128" />
 						</div>
 						<button form="delete-todo-$_id" type="submit" class="circle right-round extra" ><i>delete</i></button>
 					</div>
-					</x-use>
+					</v-use>
 
 				</form>
 
 				<!-- Hidden form to delete -->
-				<form id="delete-todo-$_id" method="POST" x-name="delete_todo" >
-					<x-sql-action>
+				<form id="delete-todo-$_id" method="POST" v-name="delete_todo" >
+					<v-sql-action>
 						delete from simple.todos where _id = $.body.id
-					</x-sql-action>
+					</v-sql-action>
 					<input type="hidden" name="id" value="$_id" />
 				</form>
 
-			</x-for-each>
+			</v-for-each>
 		</main>
 	</body>
 

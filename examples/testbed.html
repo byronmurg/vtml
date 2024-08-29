@@ -3,7 +3,7 @@
 
 	<head>
 
-		<title>Starling testbed</title>
+		<title>Vtml testbed</title>
 
 		<link
 		  rel="stylesheet"
@@ -14,46 +14,46 @@
 	</head>
 	<body>
 
-		<x-if source="$foo" eq="bar" >
-			<x-expose path="/sql" src="coffee.sql" />
-		</x-if>
+		<v-if source="$foo" eq="bar" >
+			<v-expose path="/sql" src="coffee.sql" />
+		</v-if>
 
 		<header class="container" >
 			<nav>
 				<ul>
-					<li><b>Starling testbed</b></li>
+					<li><b>Vtml testbed</b></li>
 				</ul>
 			</nav>
 		</header>
 
 		<main class="container" >
 
-			<form x-name="noddy" >
+			<form v-name="noddy" >
 				<input name="foo" placeholder="foo" type="text" />
 				<input type="submit" value="Go" />
 
-				<x-return-code code="404" />
+				<v-return-code code="404" />
 			</form>
 
 			<hr>
 
-			<x-try>
-				<x-nodejs>
+			<v-try>
+				<v-nodejs>
 					throw Error("Oh no")
-				</x-nodejs>
-			</x-try>
+				</v-nodejs>
+			</v-try>
 
-			<x-catch>
+			<v-catch>
 				<h3>Error</h3>
 				<p>$.error.message</p>
-			</x-catch>
+			</v-catch>
 
 
-			<form method="POST" x-name="select_multi_test" >
+			<form method="POST" v-name="select_multi_test" >
 
-				<x-nodejs-action>
+				<v-nodejs-action>
 					console.log($.body)
-				</x-nodejs-action>
+				</v-nodejs-action>
 
 				<label>time:
 					<input name="time" type="time" required value="10:30:00" />
@@ -78,20 +78,20 @@
 			</form>
 
 
-			<x-page path="/subpage">
-				<form x-name="subform" >
+			<v-page path="/subpage">
+				<form v-name="subform" >
 					<input name="name" value="I'm the sub form" />
 				</form>
 
 
 
-				<x-page path="/subpage/more/:id" >
+				<v-page path="/subpage/more/:id" >
 
-					<form x-name="grandchild" >
+					<form v-name="grandchild" >
 
-						<x-nodejs-action>
+						<v-nodejs-action>
 							console.log($.body)
-						</x-nodejs-action>
+						</v-nodejs-action>
 
 						<input name="id" value="$.params.id" />
 
@@ -103,8 +103,8 @@
 
 						<button type="submit" >Go</button>
 					</form>
-				</x-page>
-			</x-page>
+				</v-page>
+			</v-page>
 
 		</main>
 	</body>

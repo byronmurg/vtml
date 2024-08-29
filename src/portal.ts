@@ -15,10 +15,10 @@ type PortalDescriptor = {
 export default
 function preparePortal(portalTag:TagElement, preElements:ElementChain[]): PortalDescriptor {
 
-	const xName = utils.getAttribute(portalTag, "x-name")
+	const xName = utils.getAttribute(portalTag, "v-name")
 
 	if (! xName) {
-		utils.error(portalTag, `No x-name set`)
+		utils.error(portalTag, `No v-name set`)
 	}
 
 	// Get the path of the nearest page

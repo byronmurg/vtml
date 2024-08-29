@@ -26,12 +26,12 @@ function getFullPath(xName:string, ctx:FilterContext): string {
 export const FormTag:Tag = {
 	name: "form",
 	render(el, cascade) {
-		const xName = utils.requireAttribute(el, 'x-name')
+		const xName = utils.requireAttribute(el, 'v-name')
 		// If it's not an action I don't care
 		if (!xName) {
 			return justReturnFilter(el, cascade)
 		} else {
-			const xAjax = utils.getBoolAttribute(el, 'x-ajax')
+			const xAjax = utils.getBoolAttribute(el, 'v-ajax')
 			const childs = cascade.childs(el.elements)
 
 			return async (ctx:FilterContext) => {

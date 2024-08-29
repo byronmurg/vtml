@@ -1,5 +1,5 @@
 import type { TagElement } from "./html"
-import type StarlingDocument from "./document"
+import type VtmlDocument from "./document"
 import * as OAPI from "openapi3-ts/oas31"
 import * as utils from "./utils"
 export * from "openapi3-ts/oas31"
@@ -203,8 +203,8 @@ function expressToOapiPath(path:string): string {
 }
 
 export
-function createOpenApiSchema(doc:StarlingDocument): OAPI.OpenAPIObject {
-	const title = doc.title || "Starling"
+function createOpenApiSchema(doc:VtmlDocument): OAPI.OpenAPIObject {
+	const title = doc.title || "Vtml"
 	
 	const apiPaths: OAPI.OpenAPIObject["paths"] = {}
 	const apiSpec: OAPI.OpenAPIObject = {

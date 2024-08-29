@@ -27,65 +27,65 @@
 	</head>
 	<body>
 
-		<x-sql target="user" >
+		<v-sql target="user" >
 			select * from simple.users where session_key = $.cookies.skey
-		</x-sql>
+		</v-sql>
 
 
 		<header class="container" >
 			<nav>
 				<ul>
-					<li><b>Starling test</b></li>
+					<li><b>Vtml test</b></li>
 				</ul>
-				<x-with source="$user.0" >
+				<v-with source="$user.0" >
 					<ul>
 						<li>$name</li>
 					</ul>
-				</x-with>
+				</v-with>
 			</nav>
 		</header>
 
 		<main class="container" >
 
-			<x-unless source="$user.0" >
+			<v-unless source="$user.0" >
 
-				<form x-name="login" method="POST" >
+				<form v-name="login" method="POST" >
 
 					<input type="text" name="username" />
 					<input type="password" name="password" />
 					<button type="submit" >login</button>
 
-					<x-nodejs-action target="password_hash" >
+					<v-nodejs-action target="password_hash" >
 						var crypto = require('crypto');
 
 						const password = $.body.password
 
 						return crypto.createHash('md5').update(password).digest('hex');
-					</x-nodejs-action>
+					</v-nodejs-action>
 
-					<x-nodejs-action target="noddy" >
+					<v-nodejs-action target="noddy" >
 						console.log($password_hash)
-					</x-nodejs-action>
+					</v-nodejs-action>
 
-					<x-sql-action target="user" >
+					<v-sql-action target="user" >
 						update simple.users set session_key = uuid()
 						where name = $.body.username and password_hash = $password_hash
 						returning *
-					</x-sql-action>
+					</v-sql-action>
 
-					<x-setcookie-action name="skey" value="$user.0.session_key" />
+					<v-setcookie-action name="skey" value="$user.0.session_key" />
 				</form>
 
-			</x-unless>
+			</v-unless>
 
-			<x-if source="$user.0" >
+			<v-if source="$user.0" >
 
 				<!-- create form -->
-				<!-- <form x-name="create_todo" method="POST" hx-trigger="submit" hx-post="$__form_ajax" > -->
-				<form x-name="create_todo" method="POST" >
-					<x-sql-action>
+				<!-- <form v-name="create_todo" method="POST" hx-trigger="submit" hx-post="$__form_ajax" > -->
+				<form v-name="create_todo" method="POST" >
+					<v-sql-action>
 						insert into simple.todos (text) values ($body.text)
-					</x-sql-action>
+					</v-sql-action>
 					<fieldset role="group" >
 						<input name="text" type="text" autofocus="yes" maxlength="128" required />
 						<button type="submit" class="material-icons" >add</button>
@@ -97,73 +97,73 @@
 					<summary class="material-icons" >settings</summary>
 						
 					<form>
-						<x-if source="$.query.showdone" >
+						<v-if source="$.query.showdone" >
 							<button style="width:10rem" type="submit" class="secondary" >hide done</button>
-						</x-if>
-						<x-if source="$.query.showdone" eq="" >
+						</v-if>
+						<v-if source="$.query.showdone" eq="" >
 							<input type="hidden" name="showdone" value="on" />
 							<button style="width:10rem" type="submit" >show done</button>
-						</x-if>
+						</v-if>
 					</form>
 				</details>
 
 				<hr/>
 
 				<!-- Get the todos -->
-				<x-sql target="todos" >
+				<v-sql target="todos" >
 					select * from simple.todos where $.query.showdone::boolean is not null or done = false order by c desc
-				</x-sql>
+				</v-sql>
 
-				<x-nodejs target="ntodos" >
+				<v-nodejs target="ntodos" >
 					return $todos.length
-				</x-nodejs>
+				</v-nodejs>
 
 				<p>There are $ntodos todos</p>
 
 				<!-- Loop through the todos -->
-				<x-for-each source="$todos" >
+				<v-for-each source="$todos" >
 
 					<!-- Form to update the text -->
-					<form method="POST" x-name="edit_todo" >
-						<x-sql-action>
+					<form method="POST" v-name="edit_todo" >
+						<v-sql-action>
 							update simple.todos set text = $body.text where _id = $.body.id
-						</x-sql-action>
+						</v-sql-action>
 						<fieldset role="group" >
 							<input type="hidden" name="id" value="$_id" />
 
-							<x-if source="$done" eq="false" >
+							<v-if source="$done" eq="false" >
 								<input name="text" value="$text" maxlength="128" />
 								<button type="submit" class="ctrl-button material-icons"  >save</button>
 								<button form="toggle-done-$_id" type="submit" class="ctrl-button contrast material-icons" >radio_button_unchecked</button>
-							</x-if>
-							<x-if source="$done" >
+							</v-if>
+							<v-if source="$done" >
 								<input name="text" value="$text" maxlength="128" disabled />
 								<button form="delete-todo-$_id" type="submit" class="ctrl-button contrast material-icons" >delete</button>
 								<button form="toggle-done-$_id" type="submit" class="ctrl-button material-icons" >check_circle</button>
-							</x-if>
+							</v-if>
 
 						</fieldset>
 					</form>
 
 					<!-- Hidden form to delete -->
-					<form id="delete-todo-$_id" method="POST" x-name="delete_todo" >
-						<x-sql-action>
+					<form id="delete-todo-$_id" method="POST" v-name="delete_todo" >
+						<v-sql-action>
 							delete from simple.todos where _id = $.body.id
-						</x-sql-action>
+						</v-sql-action>
 						<input type="hidden" name="id" value="$_id" />
 					</form>
 
 					<!-- Hidden form to toggle done -->
-					<form id="toggle-done-$_id" method="POST" x-name="toggle_todo_done" >
-						<x-sql-action>
+					<form id="toggle-done-$_id" method="POST" v-name="toggle_todo_done" >
+						<v-sql-action>
 							update simple.todos set done = not done where _id = $.body.id
-						</x-sql-action>
+						</v-sql-action>
 						<input type="hidden" name="id" value="$_id" />
 					</form>
 
-				</x-for-each>
+				</v-for-each>
 
-			</x-if>
+			</v-if>
 
 		</main>
 	</body>

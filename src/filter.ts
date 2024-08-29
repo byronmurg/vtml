@@ -7,7 +7,7 @@ import templateAttributes from "./attributes"
 import * as utils from "./utils"
 
 import Debug from "debug"
-const debug = Debug("starling:filter")
+const debug = Debug("vtml:filter")
 
 const tags = Object.values(TagMap)
 
@@ -186,8 +186,8 @@ function findTagIfX(el:Element): Tag|undefined {
 	}
 
 	const tag = findTag(el)
-	if ((!tag) && el.name?.startsWith("x-")) {
-		utils.error(el, `Unknown x- tag`)
+	if ((!tag) && el.name?.startsWith("v-")) {
+		utils.error(el, `Unknown v- tag`)
 	}
 	return tag
 }

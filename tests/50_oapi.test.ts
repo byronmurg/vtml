@@ -1,15 +1,15 @@
-import StarlingDocument from "../src/document"
+import VtmlDocument from "../src/document"
 
 
 test("form basic", async () => {
 
 	const exampleHTML = `
-		<form method="POST" x-name="foo" >
+		<form method="POST" v-name="foo" >
 			<input name="bar" type="text" required />
 		</form>
 	`
 
-	const doc = StarlingDocument.LoadFromString(exampleHTML)
+	const doc = VtmlDocument.LoadFromString(exampleHTML)
 
 	const schema = doc.oapiSchema
 

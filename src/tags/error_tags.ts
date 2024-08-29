@@ -2,11 +2,11 @@ import type { Tag } from "../types"
 import {filterPass } from "../tag_utils"
 import Debug from "debug"
 
-const tryDebug = Debug("starling:tags:x-try")
-const catchDebug = Debug("starling:tags:x-catch")
+const tryDebug = Debug("vtml:tags:v-try")
+const catchDebug = Debug("vtml:tags:v-catch")
 
 export const XTry:Tag = {
-	name: "x-try",
+	name: "v-try",
 	render(el, cascade) {
 		const childs = cascade.childs(el.elements)
 
@@ -23,7 +23,7 @@ export const XTry:Tag = {
 }
 
 export const XCatch:Tag = {
-	name: "x-catch",
+	name: "v-catch",
 	render(el, cascade) {
 		const childs = cascade.childs(el.elements)
 

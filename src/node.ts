@@ -1,7 +1,7 @@
 import type FilterContext from "./filter_context"
 import {nodeInterface} from "./sql"
 
-// A regex for matching vars in x-nodejs
+// A regex for matching vars in v-nodejs
 const nodeVarRegex = /(?<!\\)\$\w+/g
 
 const inbuiltVars: Record<string, unknown> = {
@@ -24,7 +24,7 @@ function prepare(body:string, idAttr:string) {
 			return new Function("$", ...inbuiltKeys, ...injectVars, `return (async () => {\n ${body} \n})()`)
 		} catch (err) {
 			const e = err as Error
-			throw Error(`Syntax error in x-node ${extra}: ${e.message}`)
+			throw Error(`Syntax error in v-node ${extra}: ${e.message}`)
 		}
 	}
 
@@ -50,7 +50,7 @@ function prepare(body:string, idAttr:string) {
 			return await fnc(...args)
 		} catch (err) {
 			const e = err as Error
-			throw Error(`Error in x-node ${extra}: ${e.message}`)
+			throw Error(`Error in v-node ${extra}: ${e.message}`)
 		}
 	}
 }

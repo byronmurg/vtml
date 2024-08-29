@@ -3,8 +3,8 @@ import FilterContext from "./filter_context"
 
 // Attributes that are stripped out
 const protectedAttributes = [
-	"x-name",
-	"x-ajax",
+	"v-name",
+	"v-ajax",
 ]
 
 // Attributes that cannot be templated

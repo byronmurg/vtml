@@ -1,23 +1,23 @@
 import type { Tag } from "../types"
 import {stripFilter, passthroughFilter} from "../tag_utils"
 
-// x-hints are just stripped here
+// v-hints are just stripped here
 export const XHintPort: Tag = {
-	name: "x-hint-port",
+	name: "v-hint-port",
 	render: stripFilter,
 }
 
 export const XExpose: Tag = {
-	name: "x-expose",
+	name: "v-expose",
 	render: stripFilter,
 }
 
 export const XPortal: Tag = {
-	name: "x-portal",
+	name: "v-portal",
 	render: passthroughFilter,
 }
 
 export const XPass: Tag = {
-	name: "x-pass",
+	name: "v-pass",
 	render: passthroughFilter
 }

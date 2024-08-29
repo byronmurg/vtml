@@ -11,7 +11,7 @@ import PreparePortal, {PortalDescriptor} from "./portal"
 import PrepareExpose, {ExposeDescriptor} from "./expose"
 
 export default
-class StarlingDocument {
+class VtmlDocument {
 	public readonly forms: FormDescriptor[]
 	public readonly portals: PortalDescriptor[]
 	public readonly exposes: ExposeDescriptor[]
@@ -38,15 +38,15 @@ class StarlingDocument {
 			return PrepareForm(form, preElements)
 		})
 
-		// Check for duplicate x-name(s). Even though the full path may be
-		// different for each form the x-name must be unique.
+		// Check for duplicate v-name(s). Even though the full path may be
+		// different for each form the v-name must be unique.
 
 		const formNames:Record<string, true> = {}
 
 		for (const form of forms) {
 
 			if (formNames[form.name]) {
-				utils.error(form.element, `Duplicate x-name`)
+				utils.error(form.element, `Duplicate v-name`)
 			}
 
 			formNames[form.name] = true
