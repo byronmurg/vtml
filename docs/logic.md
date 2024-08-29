@@ -71,7 +71,7 @@ In a simple sense `v-with` is almost exactly equivilent to nesting `v-use` and `
 </v-use>
 <!-- OR -->
 <v-if source="$foo" >
-    <v-use source="foo" >
+    <v-use source="$foo" >
         <p>foo = $</p>
     </v-use>
 </v-if>
