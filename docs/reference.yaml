@@ -1,5 +1,5 @@
 ---
-- tag: x-with
+- tag: v-with
   arguments:
   - default: $
     name: source
@@ -7,30 +7,30 @@
   description: |
     Include content block if variable is truthy. Sets the variable of children to the target if it is supplied.
 
-    x-with can be thought of as a shorthand for x-use together with x-if.
+    v-with can be thought of as a shorthand for v-use together with v-if.
 
   example: |
-    <x-json target="dog" >
+    <v-json target="dog" >
       {
         "name": "Freddy"
       }
-    </x-json>
+    </v-json>
 
-    <x-with source="name" >
+    <v-with source="name" >
       <p>This will display the name : $ </p>
-    </x-with>
+    </v-with>
 
-    <x-with source="phone_number" >
+    <v-with source="phone_number" >
       <p>This would not display anything</p>
-    </x-with>
+    </v-with>
 
-- tag: x-use
+- tag: v-use
   arguments:
   - name: source
     templated: true
   description: Set the current var to be 'source' for all children.
 
-- tag: x-if/x-unless
+- tag: v-if/v-unless
   arguments:
   - name: eq
     optional: true
@@ -52,14 +52,14 @@
     templated: true
   description: Logic and stuff.
 
-- tag: x-json
+- tag: v-json
   arguments:
   - name: target
   - name: src
     optional: true
   description: Create a new variable at target from a json body or using the src argument
 
-- tag: x-yaml
+- tag: v-yaml
   arguments:
   - name: target
   - name: src
@@ -68,7 +68,7 @@
 
     Cannot use a body due to confusing indenting.
 
-- tag: x-markdown
+- tag: v-markdown
   arguments:
   - name: src
   description: |
@@ -76,7 +76,7 @@
 
     This is currently not templated at all.
 
-- tag: x-sql
+- tag: v-sql
   arguments:
   - name: target
   - name: single-row
@@ -85,7 +85,7 @@
     optional: true
   description: Execute sql query and set a new variable at target
 
-- tag: x-sql-action
+- tag: v-sql-action
   form-ony: true
   arguments:
   - name: target
@@ -94,28 +94,28 @@
   description: Execute sql query inside a form action. When rendering the page this
     statement is skipped.
 
-- tag: x-nodejs
+- tag: v-nodejs
   arguments:
   - name: target
   - name: loader-only
     optional: true
   description: Embed a nodejs function and set target to the return value
 
-- tag: x-dump
+- tag: v-dump
   description: Dump the current variable as json inside a pre tag
 
-- tag: x-hint-port
+- tag: v-hint-port
   arguments:
   - default: "3000"
     name: port
   description: A hint to the siskin engine to listen on this port
 
-- tag: x-page
+- tag: v-page
   arguments:
   - name: path
   description: Define a page within the document.
 
-- tag: x-expose
+- tag: v-expose
   arguments:
   - name: path
   - name: content-type
@@ -125,9 +125,9 @@
   special: true
 
 - description: The default content to show when no other page has been matched.
-  tag: x-default-page
+  tag: v-default-page
 
-- tag: x-setcookie-action
+- tag: v-setcookie-action
   form-ony: true
   arguments:
   - name: name
@@ -143,44 +143,44 @@
 
     The maximum cookie age will be set to the sum of the max-* attribute values.
 
-- tag: x-include
+- tag: v-include
   description: Include an external siskin-xml file. This tag is processed before anything
     else.
   pre-process: true
 
 - tag: form
   arguments:
-  - name: x-name
+  - name: v-name
     description: "The endpoint name to create for this action"
-  - name: x-ajax
+  - name: v-ajax
     description: "Strip out the method and action for this form"
   description: |
     Although form is an inbuilt tag we do alter it's behaviour. Defining a form with
-    method="POST" and an x-name attribute will create an action endpoint.
+    method="POST" and an v-name attribute will create an action endpoint.
 
-- tag: x-pass
+- tag: v-pass
   description: |
     This tag allows you to pass-over a value context to avoid executing loader
     actions inside the chain of a form. Also stops any variables declared inside
     from leaking out.
 
-    In the exmaple only `out:` would be renderered as the $foo value is scoped to the x-pass.
+    In the exmaple only `out:` would be renderered as the $foo value is scoped to the v-pass.
   example: |
-    <x-pass>
-      <x-json target="foo" >22</x-json>
-    </x-pass>
+    <v-pass>
+      <v-json target="foo" >22</v-json>
+    </v-pass>
     out:$foo
 
-- tag: x-catch
+- tag: v-catch
   description: |
     Rendered when an error has occured. The root variables `$.error.code` and `$.error.message`
     will be available to display.
 
-- tag: x-try
+- tag: v-try
   description: |
     Rendered when no error has occured. Useful when a section may result in an error.
 
-- tag: x-return-code
+- tag: v-return-code
   actionVariant: true
   arguments:
   - name: code
@@ -189,7 +189,7 @@
   description: |
     Set the return code. If the code is a HTTP error code then you may enter the error filter.
 
-- tag: x-redirect-action
+- tag: v-redirect-action
   arguments:
   - name: path
     description: "Path to redirect to"

@@ -28,20 +28,20 @@ Some tags can set or alter the current data-frame.
 
 When setting key variables we don't use the `$` token as we can only set variables in the current frame.
 
-Here is an example that uses `<x-json>` which parses it's body and sets the variable in the `target` attribute
+Here is an example that uses `<v-json>` which parses it's body and sets the variable in the `target` attribute
 ```
-<x-json target="foo" >
+<v-json target="foo" >
 { "bar":22 }
-</x-json>
+</v-json>
 
 <!-- Now our frame is {"foo": { "bar":22 }} -->
 ```
 
 We can also use `$` to set the current frame to a variable.
 ```
-<x-json target="$" >
+<v-json target="$" >
 22
-</x-json>
+</v-json>
 
 <!-- Now our frame is 22 -->
 ```
@@ -53,7 +53,7 @@ In vtml variables always cascade **down in inwards**. At the begining of our doc
 Take the following example:
 
 ```
-<x-json target="foo" >22</x-json> <!-- Here we set $foo to 22 -->
+<v-json target="foo" >22</v-json> <!-- Here we set $foo to 22 -->
 <p>$foo</p>                       <!-- And here we use the variable -->
 ```
 
@@ -63,14 +63,14 @@ All is well as the variable foo was declared and then used in the next element.
 We cannot use a variable before it is set.
 ```
 <p>$foo</p>                         <!-- BAD: The variable has not been set yet -->
-<x-json target="baz" >"Wut?"</x-json>
+<v-json target="baz" >"Wut?"</v-json>
 ```
 
 
 A variable cannot be used from a higher frame.
 ```
 <div>                                    <!-- An ordinary div that will be rendered by the page -->
-    <x-json target="bar" >"Woo"</x-json> <!-- Set $bar to "Woo" indide the div -->
+    <v-json target="bar" >"Woo"</v-json> <!-- Set $bar to "Woo" indide the div -->
     <p>$bar</p>                          <!-- OK: Here we can use the variable -->
 </div>
 <p>$bar</p>                        <!-- BAD: $bar was scoped to the div so we cannot see it now -->
@@ -80,7 +80,7 @@ Note that in the `<p>` tag, as with all other html tags, when we try to access a
 
 ### Where can I use variables
 
-For all inbult HTML tags (and any tags not starting with x-) all attributes and the body can use variables.
+For all inbult HTML tags (and any tags not starting with v-) all attributes and the body can use variables.
 
 e.g.
 ```
@@ -96,7 +96,7 @@ e.g.
 There are some exceptions to this rule around templating.
 
 
-For `x-` tags you may need to refer to the [reference page](/reference) as some attributes and bodies can be templated and some can not. Also there are a few tags with special templating rules like [x-nodejs](/reference#x-nodejs).
+For `v-` tags you may need to refer to the [reference page](/reference) as some attributes and bodies can be templated and some can not. Also there are a few tags with special templating rules like [v-nodejs](/reference#v-nodejs).
 
 
 **Warning**
@@ -113,14 +113,14 @@ See the [forms](/tutorial/forms) page for more information
 When we try to access a variable and the returned value is undefined, the context then checks the frame before.
 
 ```
-<x-json target="foo" >
+<v-json target="foo" >
 "bar"
-</x-json>
+</v-json>
 <!-- Now our frame is now { foo:"bar" } -->
 
-<x-json target="$" >
+<v-json target="$" >
 22
-</x-json>
+</v-json>
 <!-- Now our frame is 22 -->
 
 $     <!-- This resolved as 22 -->
@@ -163,7 +163,7 @@ Variables can also be used as keys for other unrelated variables.
 This allow for simple _lookup_ functionality.
 
 ```
-<x-json target="calendar" >
+<v-json target="calendar" >
     {
         "daysofweek": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
         "entries": [
@@ -171,19 +171,19 @@ This allow for simple _lookup_ functionality.
             { "dow":3, "weather":"Rainy" }
         ]
     }
-</x-json>
+</v-json>
 
 <table>
     <thead>
         <tr><th>Day</th><th>Weather</th></tr>
     </thead>
     <tbody>
-    <x-for-each source="$calendar.entries" > <!-- Loop through the entries -->
+    <v-for-each source="$calendar.entries" > <!-- Loop through the entries -->
         <tr>
             <td>$daysofweek.$dow</td>        <!-- Here I'm using the dow var to key daysofweek -->
             <td>$weather</td>
         </tr>
-    </x-for-each>
+    </v-for-each>
     </tbody>
 </table>
 ```

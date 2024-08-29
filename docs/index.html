@@ -64,7 +64,7 @@
 		<header class="container" >
 			<nav style="padding-left: 1rem">
 				<ul>
-					<li><h5>Vtml docs</h5></li>
+					<li><h5>VTML docs</h5></li>
 				</ul>
 				<ul>
 					<li><a href="/tutorial/intro" >Tutorial</a></li>
@@ -75,7 +75,7 @@
 		</header>
 
 		<main class="container" >
-			<x-yaml src="./reference.yaml" target="tags" />
+			<v-yaml src="./reference.yaml" target="tags" />
 
 			<div class="docs-area">
 				<aside class="docs-sidebar">
@@ -95,54 +95,54 @@
 
 						<h5>Reference</h5>
 						<ul>
-							<x-for-each source="$tags">
+							<v-for-each source="$tags">
 								<li><a href="/reference#$tag">$tag</a></li>
-							</x-for-each>
+							</v-for-each>
 						</ul>
 
 					</nav>
 				</aside>
 				<div class="docs-main">
 
-					<x-page path="/tutorial/intro" >
-						<x-markdown src="./intro.md" />
-					</x-page>
+					<v-page path="/tutorial/intro" >
+						<v-markdown src="./intro.md" />
+					</v-page>
 
-					<x-page path="/tutorial/getting_started" >
-						<x-markdown src="./getting_started.md" />
-					</x-page>
+					<v-page path="/tutorial/getting_started" >
+						<v-markdown src="./getting_started.md" />
+					</v-page>
 
-					<x-page path="/tutorial/variables" >
-						<x-markdown src="./variables.md" />
-					</x-page>
+					<v-page path="/tutorial/variables" >
+						<v-markdown src="./variables.md" />
+					</v-page>
 
-					<x-page path="/tutorial/logic" >
-						<x-markdown src="./logic.md" />
-					</x-page>
+					<v-page path="/tutorial/logic" >
+						<v-markdown src="./logic.md" />
+					</v-page>
 
-					<x-page path="/tutorial/pages" >
-						<x-markdown src="./pages.md" />
-					</x-page>
+					<v-page path="/tutorial/pages" >
+						<v-markdown src="./pages.md" />
+					</v-page>
 
-					<x-page path="/tutorial/forms" >
-						<x-markdown src="./forms.md" />
-					</x-page>
+					<v-page path="/tutorial/forms" >
+						<v-markdown src="./forms.md" />
+					</v-page>
 
-					<x-page path="/reference">
-							<x-for-each source="$tags">
+					<v-page path="/reference">
+							<v-for-each source="$tags">
 								<section>
 									<a id="$tag" href="#$tag"><h2>$tag</h2></a>
 
-									<x-with source="$pre-process">
+									<v-with source="$pre-process">
 										<span class="tag">pre-process</span>
-									</x-with>
-									<x-with source="$form-only">
+									</v-with>
+									<v-with source="$form-only">
 										<span class="tag">form-only</span>
-									</x-with>
+									</v-with>
 
 									<p>$description</p>
 
-									<x-with source="$arguments">
+									<v-with source="$arguments">
 										<table>
 											<thead>
 												<tr>
@@ -152,39 +152,39 @@
 												</tr>
 											</thead>
 											<tbody>
-												<x-for-each>
+												<v-for-each>
 													<tr>
 														<th scope="row">$name</th>
-														<x-with source="$default">
+														<v-with source="$default">
 															<td>$</td>
-														</x-with>
-														<x-unless source="$default">
-															<x-if source="$optional">
+														</v-with>
+														<v-unless source="$default">
+															<v-if source="$optional">
 																<td><i>optional</i></td>
-															</x-if>
-															<x-unless source="$optional">
+															</v-if>
+															<v-unless source="$optional">
 																<td><b>required</b></td>
-															</x-unless>
-														</x-unless>
+															</v-unless>
+														</v-unless>
 
-														<x-if source="$templated" >
+														<v-if source="$templated" >
 															<td>yes</td>
-														</x-if>
-														<x-unless source="$templated" >
+														</v-if>
+														<v-unless source="$templated" >
 															<td>no</td>
-														</x-unless>
+														</v-unless>
 													</tr>
-												</x-for-each>
+												</v-for-each>
 											</tbody>
 										</table>
-									</x-with>
+									</v-with>
 
-									<x-with source="$example">
+									<v-with source="$example">
 										<pre class="language-html"><code>$</code></pre>
-									</x-with>
+									</v-with>
 								</section>
-							</x-for-each>
-					</x-page>
+							</v-for-each>
+					</v-page>
 				</div>
 			</div>
 		</main>

@@ -2,19 +2,19 @@
 
 Creating server-side interactions is as simple as creating a form.
 
-Whenever we define a form with `x-name="name-here"` we automatically create the server-side routes.
+Whenever we define a form with `v-name="name-here"` we automatically create the server-side routes.
 
 Let's start with an example.
 ```
 <html><body>
     <title>Say hi example</title>
 
-    <form x-name="say_hi" >
+    <form v-name="say_hi" >
         <input name="myname" type="text" placeholder="Your name is..." />
 
-        <x-nodejs-action>
+        <v-nodejs-action>
             console.log("Hello", $.body.myname)
-        </x-nodejs-action>
+        </v-nodejs-action>
 
         <button type="submit" >Greet</button>
     </form>
@@ -86,8 +86,8 @@ form
 
 | Prefix            | Description                         | Input type        | Output                |
 |-------------------|-------------------------------------|-------------------|-----------------------|
-| /action           | The default form behaviour          | x-formencoded     | Re-renders whole page |
-| /ajax             | For perfoming isolated actions      | x-formencoded     | Render only form      |
+| /action           | The default form behaviour          | v-formencoded     | Re-renders whole page |
+| /ajax             | For perfoming isolated actions      | v-formencoded     | Render only form      |
 | /api              | Only machine input                  | application/json  | None                  |
 
 
@@ -95,8 +95,8 @@ Here's an example using HTMX to handle the ajax.
 
 ```
 <form
-    x-name="update_text"
-    x-ajax
+    v-name="update_text"
+    v-ajax
 	hx-trigger="focusout"
     hx-post="$__form_ajax"
 >
@@ -108,31 +108,31 @@ Here's an example using HTMX to handle the ajax.
 There's alot here so let's break it down
 
 The basic attributes
-- x-name: We always need an x-name.
+- v-name: We always need an v-name.
 
 And some HTMX specific ones which I will give a brief explanation of.
 - hx-trigger: Trigger on a focusout event (when the focus leaves this form)
 - hx-post: POST to this address. We're using `$__form_ajax` which is a special variable attached to all forms. It simply resolves to the ajax route which in this case would be `/ajax/update_text`.
 
-Finally there is the `x-ajax` attribute which disabled the usual added attributes.
+Finally there is the `v-ajax` attribute which disabled the usual added attributes.
 
 ### GET forms
 
-Vtml only searches for forms with an x-name attribute. Therefore if we want to create a GET form that just adds search parameters to the url we can just omit the `x-name` attribute.
+Vtml only searches for forms with an v-name attribute. Therefore if we want to create a GET form that just adds search parameters to the url we can just omit the `v-name` attribute.
 
 ```
 <form>
     <input name="q" />
 </form>
 
-<x-sql target="todos" >
+<v-sql target="todos" >
     -- I'm being a bit lazy here and having the DB check if q is null
     select * from todos where $.search.q is null or text like $.search.q
-</x-sql>
+</v-sql>
 
-<x-for-each source="todos" >
+<v-for-each source="todos" >
     ...
-</x-for-each>
+</v-for-each>
 ```
 
 
@@ -141,17 +141,17 @@ Vtml only searches for forms with an x-name attribute. Therefore if we want to c
 Any page parameter can be used by referencing the `params` root variable.
 
 ```
-<x-page path="/todos/:id" >
-    <form x-name="update_text" >
-        <x-sql-action>
+<v-page path="/todos/:id" >
+    <form v-name="update_text" >
+        <v-sql-action>
             update todos set text = $.body.text where id = $.params.id
-        </x-sql-action>
+        </v-sql-action>
 
         <input type="text" maxlength="128" required />
 
         <button type="submit" >Update</button>
     </form>
-</x-page>
+</v-page>
 ```
 
 

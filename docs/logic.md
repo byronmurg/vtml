@@ -4,77 +4,77 @@ Several of our tags can be classed as _logic_ tags in that they conditionally re
 
 Here we will have a closer look at a few of them.
 
-## x-if/x-unless
+## v-if/v-unless
 
-The most literal of the logic tags is `x-if`.
+The most literal of the logic tags is `v-if`.
 
-`x-unless` works in exactly the same way as `x-if` but inverses the logic so that the expression must be false (or falsey).
+`v-unless` works in exactly the same way as `v-if` but inverses the logic so that the expression must be false (or falsey).
 
-In it's most basic usage `x-if` just checks if the variable at target is truthy:
+In it's most basic usage `v-if` just checks if the variable at target is truthy:
 ```
-<x-json target="foo" >"bar"</x-json>
+<v-json target="foo" >"bar"</v-json>
 
-<x-if source="$foo" >foo is truthy</x-if>   <!-- will render -->
-<x-if source="$bar" >bar is truthy</x-if>   <!-- will not render as bar is undefined -->
+<v-if source="$foo" >foo is truthy</v-if>   <!-- will render -->
+<v-if source="$bar" >bar is truthy</v-if>   <!-- will not render as bar is undefined -->
 ```
 
-And of course `x-unless` does the opposite.
+And of course `v-unless` does the opposite.
 ```
-<x-json target="foo" >"foo"</x-json>
+<v-json target="foo" >"foo"</v-json>
 
-<x-unless source="$foo" >foo is truthy</x-unless>   <!-- will not render as foo is truthy -->
-<x-unless source="$bar" >bar is truthy</x-unless>   <!-- will render as bar is undefined -->
+<v-unless source="$foo" >foo is truthy</v-unless>   <!-- will not render as foo is truthy -->
+<v-unless source="$bar" >bar is truthy</v-unless>   <!-- will render as bar is undefined -->
 ```
 
 We can also check if a variable is equal to either a litteral or another variable
 ```
-<x-json target="foo" >"foo"</x-json>
-<x-json target="foo_again" >"foo"</x-json>
+<v-json target="foo" >"foo"</v-json>
+<v-json target="foo_again" >"foo"</v-json>
 
-<x-if source="$foo" eq="foo" >matches litteral</x-if>
-<x-if source="$foo" eq="$foo_again" >matches litteral</x-if>
+<v-if source="$foo" eq="foo" >matches litteral</v-if>
+<v-if source="$foo" eq="$foo_again" >matches litteral</v-if>
 ```
 
 
 But we can also do some more complex numeric comparisons.
 
 ```
-<x-json target="foo" >22</x-json>
+<v-json target="foo" >22</v-json>
 
-<x-if source="$foo" gt="20" >is greater than 10</x-if>
-<x-if source="$foo" lt="100" >is less than 10</x-if>
+<v-if source="$foo" gt="20" >is greater than 10</v-if>
+<v-if source="$foo" lt="100" >is less than 10</v-if>
 ```
 
-## x-with
+## v-with
 
-`x-with` will display it's contents if the `source` reference is truthy. But it will also set the current frame to be the target variable.
+`v-with` will display it's contents if the `source` reference is truthy. But it will also set the current frame to be the target variable.
 
 ```
-<x-with source="$name" >
+<v-with source="$name" >
     <p>name = $</p>
-</x-with>
+</v-with>
 ```
 
-In a simple sense `x-with` is almost exactly equivilent to nesting `x-use` and `x-if`
+In a simple sense `v-with` is almost exactly equivilent to nesting `v-use` and `v-if`
 
 ```
-<x-with source="$foo" >
+<v-with source="$foo" >
     <p>foo = $</p>
-</x-with>
+</v-with>
 
 <!-- Is the same as ... -->
 
-<x-use source="$foo" >
-    <x-if>
+<v-use source="$foo" >
+    <v-if>
         <p>foo = $</p>
-    </x-if>
-</x-use>
+    </v-if>
+</v-use>
 <!-- OR -->
-<x-if source="$foo" >
-    <x-use source="foo" >
+<v-if source="$foo" >
+    <v-use source="foo" >
         <p>foo = $</p>
-    </x-use>
-</x-if>
+    </v-use>
+</v-if>
 
 ```
 
