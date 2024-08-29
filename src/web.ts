@@ -176,7 +176,7 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument, options:expos
 				const html = HTML.serialize(portalRes.elements)
 				res.status(portalRes.status).send(html)
 			} else {
-				await filterResponseError(req, res, portalRes)
+				res.status(portalRes.status).send(portalRes.error || DefaultError(portalRes.status))
 			}
 		})
 	}
