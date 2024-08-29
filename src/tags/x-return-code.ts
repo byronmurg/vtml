@@ -1,17 +1,22 @@
 import type { Tag } from "../types"
+import type {TagElement} from "../html"
+import type FilterContext from "../filter_context"
 import { filterPass, stripFilter } from "../tag_utils"
 import * as utils from "../utils"
 import Debug from "debug"
 
 const debug = Debug("startling:tags:x-return-code")
 
+function preceed(el:TagElement) {
+	const code = utils.requireNumAttribute(el, "code")
+	return async (ctx:FilterContext) => ctx.SetReturnCode(code)
+}
+
 export const XReturnCode: Tag = {
 	name: "x-return-code",
 
-	actionPreceeds(el) {
-		const code = utils.requireNumAttribute(el, "code")
-		return async (ctx) => ctx.SetReturnCode(code)
-	},
+	portalPreceeds: preceed,
+	actionPreceeds: preceed,
 
 	render(el) {
 		const code = utils.requireNumAttribute(el, "code")

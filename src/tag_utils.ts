@@ -1,6 +1,6 @@
 import type FilterContext from "./filter_context"
 import type { Element } from "./html"
-import type {Branch, TagFilter, ActionPreceeds} from "./types"
+import type {Branch, TagFilter, ChainPreceeds} from "./types"
 import * as utils from "./utils"
 import {filterHTML} from "./filter"
 
@@ -30,7 +30,7 @@ export const loaderOnlyFilter = (def:TagFilter): TagFilter => {
 	}
 }
 
-export const loaderOnlyPreceeds = (def:ActionPreceeds): ActionPreceeds => {
+export const loaderOnlyPreceeds = (def:ChainPreceeds): ChainPreceeds => {
 	/*
 	 * When preceeding an Action only call this ActionPreceeds if
 	 * the loader-only flag has not been set.

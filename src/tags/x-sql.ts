@@ -26,6 +26,9 @@ function passSQL(el:TagElement) {
 export const XSQL: Tag = {
 	name: "x-sql",
 	render: passSQL,
+
+	portalPreceeds: runSQL,
+
 	action: loaderOnlyFilter(passSQL),
 	actionPreceeds: loaderOnlyPreceeds(runSQL),
 }

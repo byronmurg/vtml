@@ -7,7 +7,7 @@ import Ajv, {ValidationError} from "ajv"
 import AjvFormats from "ajv-formats"
 
 import FilterContext from "./filter_context"
-import {prepareChain, createFormFilter} from "./filter"
+import {prepareActionChain, createFormFilter} from "./filter"
 
 const ajv = new Ajv()
 AjvFormats(ajv)
@@ -117,7 +117,7 @@ function prepareForm(postForm:TagElement, preElements:ElementChain[]): FormDescr
 	// The oapi path is slightly different
 	const oapiPath = expressToOapiPath(path)
 
-	const chain = prepareChain(preElements)
+	const chain = prepareActionChain(preElements)
 
 	// Create the action filter
 	const filterAction = createFormFilter(postForm)

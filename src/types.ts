@@ -67,8 +67,11 @@ type Tag = {
 	render: TagFilter
 	action?: TagFilter
 
-	actionPreceeds?: ActionPreceeds
-	actionContains?: ActionContains
+	portalPreceeds?: ChainPreceeds
+	portalContains?: ChainContains
+
+	actionPreceeds?: ChainPreceeds
+	actionContains?: ChainContains
 }
 
 /////////////////////
@@ -111,10 +114,10 @@ type TagFilter = (el:TagElement, cascade:Cascade) => Filter
 /////////////////////
 
 export
-type ActionPreceeds = (el:TagElement) => (ctx:FilterContext) => Promise<FilterContext>
+type ChainPreceeds = (el:TagElement) => (ctx:FilterContext) => Promise<FilterContext>
 
 export
-type ActionContains = (el:TagElement) => (ctx:FilterContext) => ChainResult
+type ChainContains = (el:TagElement) => (ctx:FilterContext) => ChainResult
 
 export
 type ChainResult = {

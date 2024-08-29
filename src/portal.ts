@@ -1,7 +1,7 @@
 import type {RootDataset, ElementChain, PortalResult} from "./types"
 import type {TagElement} from "./html"
 import * as utils from "./utils"
-import {prepareChain, createPortalFilter} from "./filter"
+import {preparePortalChain, createPortalFilter} from "./filter"
 import FilterContext from "./filter_context"
 import pathLib from "path"
 
@@ -28,7 +28,7 @@ function preparePortal(portalTag:TagElement, preElements:ElementChain[]): Portal
 	// Figure out the form path suffix
 	const path = pathLib.posix.join(pagePath, xName)
 
-	const chain = prepareChain(preElements)
+	const chain = preparePortalChain(preElements)
 
 	const portalFilter = createPortalFilter(portalTag)
 
