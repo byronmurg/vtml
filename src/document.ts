@@ -3,22 +3,25 @@ import * as OAPI from "./oapi"
 import preLoad from "./pre_load"
 
 import FilterContext from "./filter_context"
-import {RootFilter, Expose, RenderHTMLResponse, RootDataset, RenderResponse, BodyType} from "./types"
+import {RootFilter, RenderHTMLResponse, RootDataset, RenderResponse, BodyType} from "./types"
 import FilterRoot from "./filter"
 import * as utils from "./utils"
 import PrepareForm, {FormDescriptor} from "./form"
 import PreparePortal, {PortalDescriptor} from "./portal"
+import PrepareExpose, {ExposeDescriptor} from "./expose"
 
 export default
 class StarlingDocument {
 	public readonly forms: FormDescriptor[]
 	public readonly portals: PortalDescriptor[]
+	public readonly exposes: ExposeDescriptor[]
 	public readonly oapiSchema: OAPI.OpenAPIObject
 	private _renderDocument: RootFilter
 
 	private constructor(public readonly root:HTML.Element[]) {
 		this.forms = this.prepareForms()
 		this.portals = this.preparePortals()
+		this.exposes = this.prepareExposes()
 		this.oapiSchema = OAPI.createOpenApiSchema(this)
 		this._renderDocument = FilterRoot(root)
 	}
@@ -34,6 +37,9 @@ class StarlingDocument {
 			const preElements = utils.getPrecedingElements(this.root, form)
 			return PrepareForm(form, preElements)
 		})
+
+		// Check for duplicate x-name(s). Even though the full path may be
+		// different for each form the x-name must be unique.
 
 		const formNames:Record<string, true> = {}
 
@@ -57,6 +63,8 @@ class StarlingDocument {
 			return PreparePortal(portal, preElements)
 		})
 
+		// Check that no two portal paths are the same.
+
 		const portalPaths:Record<string, true> = {}
 
 		for (const portal of portals) {
@@ -71,6 +79,15 @@ class StarlingDocument {
 		return portals
 	}
 
+	prepareExposes(): ExposeDescriptor[] {
+		const exposes = utils.findExposes(this.root)
+
+		return exposes.map((expose) => {
+			const preElements = utils.getPrecedingElements(this.root, expose)
+			return PrepareExpose(expose, preElements)
+		})
+	}
+
 	findHint(tag:string, attr:string): string|undefined {
 		return utils.findHint(this.root, tag, attr)
 	}
@@ -78,15 +95,6 @@ class StarlingDocument {
 	findPages(): string[] {
 		const pages = utils.findPages(this.root)
 		return pages.map((page) => utils.requireAttribute(page, 'path'))
-	}
-
-	findExposes(): Expose[] {
-		const exposes = utils.findExposes(this.root)
-		return exposes.map((el) => ({
-			path: utils.requireAttribute(el, "path"),
-			contentType: utils.getAttribute(el, "content-type"),
-			src: utils.requireAttribute(el, "src"),
-		}))
 	}
 
 	renderDocument(ctx:FilterContext) {

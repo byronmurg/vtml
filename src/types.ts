@@ -67,8 +67,8 @@ type Tag = {
 	render: TagFilter
 	action?: TagFilter
 
-	portalPreceeds?: ChainPreceeds
-	portalContains?: ChainContains
+	loaderPreceeds?: ChainPreceeds
+	loaderContains?: ChainContains
 
 	actionPreceeds?: ChainPreceeds
 	actionContains?: ChainContains
@@ -132,10 +132,14 @@ export
 type PortalResult = RenderResponse
 
 export
-type Expose = {
-	path: string
+type ExposeResult = {
+	sendFile: string
 	contentType?: string
-	src: string
+
+	status: number
+	cookies: CookieMap
+	redirect?: string
+	error?: string
 }
 
 export

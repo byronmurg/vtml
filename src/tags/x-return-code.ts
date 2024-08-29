@@ -15,7 +15,7 @@ function preceed(el:TagElement) {
 export const XReturnCode: Tag = {
 	name: "x-return-code",
 
-	portalPreceeds: preceed,
+	loaderPreceeds: preceed,
 	actionPreceeds: preceed,
 
 	render(el) {

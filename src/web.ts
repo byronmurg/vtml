@@ -209,29 +209,37 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument, options:expos
 
 	// Exposes
 
-	const exposes = starlingDocument.findExposes()
+	for (const expose of starlingDocument.exposes) {
+		app.get(expose.path, async (req, res) => {
+			const rootDataset = createRootDataset(req)
+			const exposeResult = await expose.load(rootDataset)
 
-	for (const expose of exposes) {
-		app.get(expose.path, (req, res) => {
-			if (expose.contentType) {
-				res.setHeader("Content-Type", expose.contentType)
+			// Redirect if required
+			if (exposeResult.redirect) {
+				debug("response redirect", exposeResult.redirect)
+				res.redirect(307, exposeResult.redirect)
+
+			} else if (exposeResult.status < 400) {
+				// Set the contentType if one was provided
+				if (exposeResult.contentType) {
+					res.setHeader("Content-Type", exposeResult.contentType)
+				}
+				res.sendFile(exposeResult.sendFile, {
+					root: process.cwd(),
+				})
+
+			} else {
+				// Send basic error
+
+				res.status(exposeResult.status)
+					.send(exposeResult.error || DefaultError(exposeResult.status))
 			}
-			res.sendFile(expose.src, {
-				root: process.cwd(),
-			})
+
 		})
 	}
 
-	// A fallback for favicon to avoid the whole page rendering
+	// A fallback for favicon to avoid the whole page rendering @TODO don't think needed now
 	app.get("/favicon.ico", (_, res) => res.status(404).send("Not found"))
-
-	// This has to be an all as the redirects
-	// preserve the POST method
-	//app.all("/*", async (req, res) => {
-	//	const ctx = createFilterContextFromRequest(req, true)
-	//	const html = await starlingDocument.renderLoader(ctx)
-	//	res.send(html)
-	//})
 
 	// This has to be an all as the redirects
 	// preserve the POST method

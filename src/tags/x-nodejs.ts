@@ -32,7 +32,7 @@ function passNode(el:TagElement) {
 export const XNodejs: Tag = {
 	name: "x-nodejs",
 	render: loaderOnlyFilter(passNode),
-	portalPreceeds: runNode,
+	loaderPreceeds: runNode,
 	actionPreceeds: loaderOnlyPreceeds(runNode),
 }
 

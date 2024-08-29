@@ -27,7 +27,7 @@ export const XSQL: Tag = {
 	name: "x-sql",
 	render: passSQL,
 
-	portalPreceeds: runSQL,
+	loaderPreceeds: runSQL,
 
 	action: loaderOnlyFilter(passSQL),
 	actionPreceeds: loaderOnlyPreceeds(runSQL),

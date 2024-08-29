@@ -17,7 +17,7 @@ export const XWithTag: Tag = {
 			}
 		}
 	},
-	portalContains(el) {
+	loaderContains(el) {
 		const source = utils.getSource(el)
 
 		return (ctx) => {

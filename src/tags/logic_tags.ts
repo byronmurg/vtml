@@ -16,6 +16,7 @@ function elementCheck(el:TagElement) {
 	}
 }
 
+
 export const XIf: Tag = {
 	name: "x-if",
 	render(el, cascade) {
@@ -33,7 +34,7 @@ export const XIf: Tag = {
 		}
 	},
 
-	portalContains(el) {
+	loaderContains(el) {
 		const check = elementCheck(el)
 
 		return (ctx) => {
@@ -70,7 +71,7 @@ export const XUnless: Tag = {
 		}
 	},
 
-	portalContains(el) {
+	loaderContains(el) {
 		const check = elementCheck(el)
 
 		return (ctx) => {

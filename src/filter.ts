@@ -103,7 +103,7 @@ const noMutation = async (ctx:FilterContext) => ctx
 const alwaysPass = (ctx:FilterContext) => ({ ctx, found:true })
 
 export
-function preparePortalChain(chainLinks:ElementChain[]) {
+function prepareLoaderChain(chainLinks:ElementChain[]) {
 	const chainTags:ChainPair[] = []
 
 	for (const link of chainLinks) {
@@ -112,8 +112,8 @@ function preparePortalChain(chainLinks:ElementChain[]) {
 		const tag = findTagIfX(el)
 
 		if (tag) {
-			const mutateCtx = tag.portalPreceeds ? tag.portalPreceeds(el) : noMutation
-			const accessCtx = tag.portalContains ? tag.portalContains(el) : alwaysPass
+			const mutateCtx = tag.loaderPreceeds ? tag.loaderPreceeds(el) : noMutation
+			const accessCtx = tag.loaderContains ? tag.loaderContains(el) : alwaysPass
 
 			chainTags.push({ tag, link, mutateCtx, accessCtx })
 		}
