@@ -26,6 +26,7 @@ const singleTags = ["hr", "br", "link", "meta"]
 
 const emptyTags: Record<string, string[]> = {
 	input: ["required", "disabled"],
+	details: ["open"],
 	form: ["v-ajax"],
 	"v-sql": ["single-row"],
 	"v-sql-action": ["single-row"],
