@@ -17,6 +17,15 @@ export const XWithTag: Tag = {
 			}
 		}
 	},
+	portalContains(el) {
+		const source = utils.getSource(el)
+
+		return (ctx) => {
+			ctx = ctx.Select(source)
+			const found = !!ctx.dataset
+			return { ctx, found }
+		}
+	},
 	actionContains(el) {
 		const source = utils.getSource(el)
 

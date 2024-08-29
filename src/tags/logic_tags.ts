@@ -33,6 +33,15 @@ export const XIf: Tag = {
 		}
 	},
 
+	portalContains(el) {
+		const check = elementCheck(el)
+
+		return (ctx) => {
+			const found = check(ctx)
+			return { ctx, found }
+		}
+	},
+
 	actionContains(el) {
 		const check = elementCheck(el)
 
@@ -61,6 +70,14 @@ export const XUnless: Tag = {
 		}
 	},
 
+	portalContains(el) {
+		const check = elementCheck(el)
+
+		return (ctx) => {
+			const found = !check(ctx)
+			return { ctx, found }
+		}
+	},
 	actionContains(el) {
 		const check = elementCheck(el)
 
