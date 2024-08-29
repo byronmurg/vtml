@@ -2,17 +2,23 @@ import type FilterContext from "../filter_context"
 import type { Tag } from "../types"
 import * as utils from "../utils"
 import type {TagElement} from "../html"
+import templateAttributes from "../attributes"
+import Debug from "debug"
 
 import { filterPass } from "../tag_utils"
 import doesLogicSelectorMatch from "../logic"
 
+const debug = Debug("vtml:logic_tags")
+
 function elementCheck(el:TagElement) {
-	const attributes = utils.getAllAttributes(el)
 	const source = utils.getSource(el)
 
 	return (ctx:FilterContext) => {
+		const attributes = templateAttributes(el.attributes, ctx)
 		const subCtx = ctx.Select(source)
-		return doesLogicSelectorMatch(subCtx.dataset, attributes)
+		const match = doesLogicSelectorMatch(subCtx.dataset, attributes)
+		debug(el.name, match, attributes)
+		return match
 	}
 }
 

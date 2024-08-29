@@ -1,8 +1,4 @@
-import Debug from "debug"
 import type {TagElement} from "./html"
-
-const debug = Debug("vtml:logic")
-
 
 type LogicOperator = {
 	key: string
@@ -45,7 +41,6 @@ function doesLogicSelectorMatch(value:unknown, attributes:TagElement["attributes
 		return true
 	} else if (attributes.eq !== undefined) {
 		// If 'eq' is specified then it must match the value as a string
-		debug("test equality", value, attributes.eq)
 		if (value === undefined) value = ""
 		const str = `${value}`
 		return str === attributes.eq
