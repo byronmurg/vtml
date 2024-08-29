@@ -134,7 +134,7 @@ function exposeStarlingDocument(starlingDocument:StarlingDocument, options:expos
 				const html = HTML.serialize(formRes.elements)
 				res.status(formRes.status).send(html)
 			} else {
-				await filterResponseError(req, res, formRes)
+				res.status(formRes.status).send(formRes.error || DefaultError(formRes.status))
 			}
 		})
 
