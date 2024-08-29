@@ -14,6 +14,10 @@
 	</head>
 	<body>
 
+		<x-if source="$foo" eq="bar" >
+			<x-expose path="/sql" src="coffee.sql" />
+		</x-if>
+
 		<header class="container" >
 			<nav>
 				<ul>

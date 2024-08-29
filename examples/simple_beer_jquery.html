@@ -119,6 +119,8 @@
 			<!-- Loop through the todos -->
 			<x-for-each source="$todos" >
 
+				<div id="todo-$_id" >
+
 				<!-- Form to update the text -->
 				<form method="POST" x-name="edit_todo" >
 					<x-sql-action>
@@ -136,12 +138,30 @@
 				</form>
 
 				<!-- Hidden form to delete -->
-				<form id="delete-todo-$_id" method="POST" x-name="delete_todo" >
+				<form id="delete-todo-$_id" x-ajax x-name="delete_todo" class="todo_delete_form" >
 					<x-sql-action>
 						delete from simple.todos where _id = $.body.id
 					</x-sql-action>
 					<input type="hidden" name="id" value="$_id" />
+
+				<script>
+					{
+						const ajaxPath = $__form_ajax
+						const id = $_id
+						$(`#delete-todo-${id}`).on("submit", (e) => {
+							jQuery.post(ajaxPath, { id }, () => {
+								console.log("After delete")
+								$(`#todo-${id}`).remove()
+							})
+
+							return false
+						})
+					}
+				</script>
+
 				</form>
+
+				</div>
 
 			</x-for-each>
 

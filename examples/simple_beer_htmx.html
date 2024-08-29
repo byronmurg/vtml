@@ -5,6 +5,8 @@
 
 		<title>Simple beer example</title>
 
+		  <script src="https://unpkg.com/htmx.org@2.0.2"></script>
+
 		<link href="https://cdn.jsdelivr.net/npm/beercss@3.6.13/dist/cdn/beer.min.css" rel="stylesheet">
 
 		<script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.6.13/dist/cdn/beer.min.js"></script>
@@ -50,10 +52,11 @@
 			--surface-container-high:#282a2d;
 			--surface-container-highest:#333538;
 			}
+
 		</style>
 
 	</head>
-	<body class="dark" >
+	<body class="dark" id="_body"  hx-boost="true" >
 
 		<header>
 			<nav>
@@ -63,11 +66,11 @@
 			</nav>
 		</header>
 
-		<main class="responsive" >
+		<main class="responsive" id="main_area" >
 
 			<article>
 			<!-- create form -->
-			<form x-name="create_todo" method="POST" >
+			<form x-name="create_todo" id="create_todo_form" >
 				<x-sql-action>
 					insert into simple.todos (text) values ($body.text)
 				</x-sql-action>
@@ -82,11 +85,11 @@
 			</article>
 
 			<!-- Get the todos -->
-			<x-sql target="todos" >
+			<x-sql target="todos" loader-only >
 				select * from simple.todos where $.query.showdone::boolean is not null or done = false order by c desc
 			</x-sql>
 
-			<x-nodejs target="ntodos" >
+			<x-nodejs target="ntodos" loader-only >
 				return $todos.length
 			</x-nodejs>
 
@@ -96,18 +99,26 @@
 			<x-for-each source="$todos" >
 
 				<!-- Form to update the text -->
-				<form method="POST" x-name="edit_todo" >
+				<form x-name="edit_todo"
+					x-ajax
+					id="edit-todo-$_id"
+					hx-boost="false"
+					hx-post="$__form_ajax"
+					hx-trigger="focusout"
+				>
 					<x-sql-action>
 						update simple.todos set text = $body.text where _id = $.body.id
 					</x-sql-action>
 					<input type="hidden" name="id" value="$_id" />
 
+					<x-use source="$.body" >
 					<div class="grid no-space" >
 						<div class="field small border large left-round s11" >
-							<input name="text" value="$text" maxlength="128" disabled />
+							<input name="text" value="$text" maxlength="128" />
 						</div>
 						<button form="delete-todo-$_id" type="submit" class="circle right-round extra" ><i>delete</i></button>
 					</div>
+					</x-use>
 
 				</form>
 
