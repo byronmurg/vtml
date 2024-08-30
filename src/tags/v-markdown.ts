@@ -7,6 +7,7 @@ import { readFileSync } from "fs"
 
 export const XMarkdown: Tag = {
 	name: "v-markdown",
+	relativeAttributes: ["src"],
 	render(el) {
 		const mdSrc = utils.requireAttribute(el, "src")
 		const md = readFileSync(mdSrc, "utf8")

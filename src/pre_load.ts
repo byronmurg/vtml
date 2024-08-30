@@ -1,17 +1,27 @@
-import type { TagElement, Element } from "./html"
+import type { Element } from "./html"
 import * as HTML from "./html"
 import {readFileSync} from "node:fs"
 import path from "node:path"
 import * as utils from "./utils"
+import {findTag} from "./filter"
 
-const srcElements = [
-	"v-expose",
-	"v-json",
-	"v-yaml",
-	"v-markdown",
-]
+/*
+const relativeAttrs: Record<string, string[]> = {
+	"v-expose":["src"],
+	"v-json":["src"],
+	"v-yaml":["src"],
+	"v-markdown":["src"],
+}
+*/
 
-const isSrcElement = (el:TagElement) => srcElements.includes(el.name)
+function getRelativeAttrs(el:Element): string[] {
+	if (el.type === "element") {
+		const tag = findTag(el)
+		return tag?.relativeAttributes || []
+	} else {
+		return []
+	}
+}
 
 function preFilter(el:Element, dir:string): Element {
 	if (el.type === "text") return el
@@ -26,18 +36,23 @@ function preFilter(el:Element, dir:string): Element {
 
 function preFilterElements(elements:Element[], dir:string): Element[] {
 	return elements.flatMap((child) => {
+		const relativeAttrs = getRelativeAttrs(child)
+
 		if (child.type === "text") {
 			return child
 		} else if (child.name === "v-include") {
 			const src = utils.requireAttribute(child, "src")
 			return preLoadInclude(path.posix.join(dir, src))
-		} else if (isSrcElement(child)) {
-			// If the element has a src attribute make sure
-			// that it is relative to the file.
-			if (child.attributes.src){
-				const src = child.attributes.src.toString()
-				child.attributes.src = path.posix.join(dir, src)
+		} else if (relativeAttrs.length) {
+			// If the tag has a relative attribute join it
+			// with the current dir.
+			for (const attr of relativeAttrs) {
+				const value = child.attributes[attr]
+				if (value) {
+					child.attributes[attr] = path.posix.join(dir, value.toString())
+				}
 			}
+
 			return child
 		} else {
 			return preFilter(child, dir)

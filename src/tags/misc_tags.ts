@@ -9,6 +9,7 @@ export const XHintPort: Tag = {
 
 export const XExpose: Tag = {
 	name: "v-expose",
+	relativeAttributes: ["src"],
 	render: stripFilter,
 }
 

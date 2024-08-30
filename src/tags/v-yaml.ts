@@ -6,6 +6,7 @@ import { readFileSync } from "fs"
 
 export const XYaml: Tag = {
 	name: "v-yaml",
+	relativeAttributes: ["src"],
 	render(el) {
 		const yamlSrc = utils.requireAttribute(el, "src")
 		const yaml = readFileSync(yamlSrc, "utf8")

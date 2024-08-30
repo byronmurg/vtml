@@ -4,6 +4,7 @@ import * as utils from "../utils"
 
 export const XJson: Tag = {
 	name: "v-json",
+	relativeAttributes: ["src"],
 	render(el) {
 		const json = utils.bodyOrSrc(el)
 		const targetAttr = utils.requireTargetAttribute(el)

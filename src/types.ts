@@ -59,6 +59,8 @@ export
 type Tag = {
 	name: string
 
+	relativeAttributes?: string[]
+
 	render: TagFilter
 	action?: TagFilter
 
