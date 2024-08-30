@@ -50,11 +50,6 @@ type RenderResponse = {
 	error?: string
 }
 
-export
-type RenderHTMLResponse = RenderResponse & {
-	html: string
-}
-
 
 /////////////////////
 // Tag

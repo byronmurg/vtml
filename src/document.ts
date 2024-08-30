@@ -3,12 +3,26 @@ import * as OAPI from "./oapi"
 import preLoad from "./pre_load"
 
 import FilterContext from "./filter_context"
-import {RootFilter, RenderHTMLResponse, RootDataset, RenderResponse, BodyType} from "./types"
+import {RootFilter, RootDataset, RenderResponse, BodyType} from "./types"
 import FilterRoot from "./filter"
 import * as utils from "./utils"
 import PrepareForm, {FormDescriptor} from "./form"
+import  {Readable, PassThrough} from "stream"
 import PreparePortal, {PortalDescriptor} from "./portal"
 import PrepareExpose, {ExposeDescriptor} from "./expose"
+
+async function streamToString(stream:Readable): Promise<string> {
+    // lets have a ReadableStream as a stream variable
+    const chunks = [];
+
+    for await (const chunk of stream) {
+        chunks.push(Buffer.from(chunk));
+    }
+
+    return Buffer.concat(chunks).toString("utf-8");
+}
+
+
 
 export default
 class VtmlDocument {
@@ -101,26 +115,11 @@ class VtmlDocument {
 		return this._renderDocument(ctx)
 	}
 
-	async renderLoaderHTML(ctx:FilterContext): Promise<RenderHTMLResponse> {
-		const response = await this.renderDocument(ctx)
-		const html = HTML.serialize(response.elements)
-		return {
-			html,
-			elements: response.elements,
-			status: response.status,
-			cookies: response.cookies,
-			error: response.error,
-		}
-	}
-
 	async renderLoaderMl(ctx:FilterContext): Promise<string> {
+		const s = new PassThrough()
 		const {elements} = await this.renderDocument(ctx)
-		return HTML.serialize(elements)
-	}
-
-	async renderLoader(ctx:FilterContext): Promise<string> {
-		const html = await this.renderLoaderMl(ctx)
-		return "<!DOCTYPE html>"+ html
+		HTML.serialize(elements, s)
+		return streamToString(s)
 	}
 
 	async executeFormByName(name:string, rootDataset:RootDataset, body:BodyType): Promise<RenderResponse> {

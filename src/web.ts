@@ -75,8 +75,11 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 		const errRoot = { ...rootDataset, error:err }
 		const ctx = FilterContext.Init(errRoot)
 		
-		return vtmlDocument.renderLoader(ctx)
-			.then((html) => res.send(html))
+		return vtmlDocument.renderDocument(ctx)
+			.then((response) => {
+				res.status(response.status)
+				HTML.serializeHTML(response.elements, res)
+			})
 			.catch(sendCatchError(res))
 	}
 
@@ -85,7 +88,7 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 			debug("render loader")
 
 			const ctx = createFilterContextFromRequest(req, pageNotFound)
-			const response = await vtmlDocument.renderLoaderHTML(ctx)
+			const response = await vtmlDocument.renderDocument(ctx)
 
 			debug("response", response.status)
 			if (response.redirect) {
@@ -93,7 +96,8 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 				res.redirect(307, response.redirect)
 			} else if (response.status < 400) {
 				debug("response ok")
-				res.status(response.status).send("<!DOCTYPE html>"+response.html)
+				res.status(response.status)
+				HTML.serializeHTML(response.elements, res)
 			} else {
 				debug("response error", response.error)
 				await filterResponseError(req, res, response)
@@ -131,8 +135,8 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 
 			if (formRes.status < 400) {
 				setCookies(res, formRes.cookies)
-				const html = HTML.serialize(formRes.elements)
-				res.status(formRes.status).send(html)
+				res.status(formRes.status)
+				HTML.serialize(formRes.elements, res)
 			} else {
 				res.status(formRes.status).send(formRes.error || DefaultError(formRes.status))
 			}
@@ -173,8 +177,8 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 			
 			if (portalRes.status < 400) {
 				setCookies(res, portalRes.cookies)
-				const html = HTML.serialize(portalRes.elements)
-				res.status(portalRes.status).send(html)
+				res.status(portalRes.status)
+				HTML.serialize(portalRes.elements, res)
 			} else {
 				res.status(portalRes.status).send(portalRes.error || DefaultError(portalRes.status))
 			}

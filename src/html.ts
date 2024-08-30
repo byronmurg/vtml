@@ -1,5 +1,6 @@
 import * as htmlparser2 from "htmlparser2"
 import type { Document, ChildNode, Element as DomElement } from "domhandler"
+import type {Writable} from "stream"
 
 export
 type TextElement = {
@@ -144,27 +145,39 @@ function serializeAttributes(el: TagElement): string {
 	}
 }
 
-function stringifyEl(el: Element): string {
+function stringifyEl(el: Element, io:Writable): void {
 	if (el.type === "text") {
-		return el.text
+		io.write(el.text)
 	} else {
 		const name = el.name
 		const attrStr = serializeAttributes(el)
 		if (singleTags.includes(name)) {
-			return `<${el.name}${attrStr}>`
+			io.write(`<${el.name}${attrStr}>`)
 		} else {
 			const nElements = el.elements?.length || 0
 			if ((nElements > 0) || shouldNeverClose(name)) {
-				const content = serialize(el.elements || [])
-				return `<${el.name}${attrStr}>${content}</${el.name}>`
+				io.write(`<${el.name}${attrStr}>`)
+				serializeDoc(el.elements, io)
+				io.write(`</${el.name}>`)
 			} else {
-				return `<${el.name}${attrStr} />`
+				io.write(`<${el.name}${attrStr}/>`)
 			}
 		}
 	}
 }
 
-export
-function serialize(doc: Element[]): string {
-	return doc.map(stringifyEl).join("")
+function serializeDoc(doc: Element[], io:Writable) {
+	doc.forEach((el) => stringifyEl(el, io))
+}
+
+export 
+function serialize(doc: Element[], io:Writable) {
+	serializeDoc(doc, io)
+	io.end()
+}
+
+export 
+function serializeHTML(doc: Element[], io:Writable) {
+	io.write("<!DOCTYPE html>")
+	serialize(doc, io)
 }
