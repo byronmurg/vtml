@@ -95,7 +95,7 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 				debug("response ok")
 				res.status(response.status).send("<!DOCTYPE html>"+response.html)
 			} else {
-				debug("response error")
+				debug("response error", response.error)
 				await filterResponseError(req, res, response)
 			}
 		}

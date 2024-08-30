@@ -109,6 +109,7 @@ class VtmlDocument {
 			elements: response.elements,
 			status: response.status,
 			cookies: response.cookies,
+			error: response.error,
 		}
 	}
 
