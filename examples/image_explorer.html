@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<v-expose path="/images/:name" src="./images/$.params.name" />
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="color-scheme" content="light dark" />
+
+		<title>Image explorer</title>
+
+		<!-- HTMX for Ajax -->
+		<script src="https://unpkg.com/htmx.org@2.0.2"></script>
+
+		<!-- Beer JS material design -->
+		<link href="https://cdn.jsdelivr.net/npm/beercss@3.6.13/dist/cdn/beer.min.css" rel="stylesheet">
+		<script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.6.13/dist/cdn/beer.min.js"></script>
+		<script type="module" src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.2/dist/cdn/material-dynamic-colors.min.js"></script>
+
+		<!-- Code highlighting -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+	</head>
+	<body hx-boost="true" >
+
+		<v-try>
+			<nav class="bottom row scroll" >
+				<v-fs-readdir target="files" path="./images/" />
+
+				<v-nodejs target="images" >
+					return $files.filter((f) => f.endsWith(".jpg"))
+				</v-nodejs>
+
+					<v-for-each source="$images" >
+						<a href="/view/$">
+							<img class="medium" src="/images/$" />
+						</a>
+					</v-for-each>
+			</nav>
+
+
+			<main class="responsive" >
+
+				<v-page path="/view/:imgName" >
+					<div class="center-align" >
+					<img src="/images/$.params.imgName" style="max-height:80vh" class="middle-align;margin:auto;" />
+					</div>
+				</v-page>
+
+				<v-default-page>
+					<h5>Image explorer</h5>
+				</v-default-page>
+
+			</main>
+		</v-try>
+		<v-catch>$.error.message</v-catch>
+	</body>
+</html>
