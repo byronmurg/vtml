@@ -1,0 +1,56 @@
+<v-yaml src="./reference.yaml" target="tags" />
+
+<v-for-each source="$tags">
+	<article class="border" style="margin-bottom: 2rem">
+		<a id="$tag" href="#$tag"><h3>$tag</h3></a>
+
+		<v-with source="$pre-process">
+			<span class="chip">pre-process</span>
+		</v-with>
+		<v-with source="$form-only">
+			<span class="chip">form-only</span>
+		</v-with>
+
+		<p>$description</p>
+
+		<v-with source="$arguments">
+			<table class="arg-table">
+				<thead>
+					<tr>
+						<th scope="col">name</th>
+						<th scope="col">default</th>
+						<th scope="col">templated</th>
+					</tr>
+				</thead>
+				<tbody>
+					<v-for-each>
+						<tr>
+							<td>$name</td>
+
+							<td>
+								<v-with source="$default"> $ </v-with>
+								<v-unless source="$default">
+									<v-if source="$optional"> optional </v-if>
+									<v-unless source="$optional">
+										<b>required</b>
+									</v-unless>
+								</v-unless>
+							</td>
+
+							<v-if source="$templated">
+								<td>yes</td>
+							</v-if>
+							<v-unless source="$templated">
+								<td>no</td>
+							</v-unless>
+						</tr>
+					</v-for-each>
+				</tbody>
+			</table>
+		</v-with>
+
+		<v-with source="$example">
+			<pre class="language-html"><code>$</code></pre>
+		</v-with>
+	</article>
+</v-for-each>

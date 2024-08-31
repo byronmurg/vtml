@@ -6,188 +6,204 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="color-scheme" content="light dark" />
 
-		<link
-			rel="stylesheet"
-			href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css"
-		/>
+		<title>VTML</title>
+
+		<!-- HTMX for Ajax -->
+		<script src="https://unpkg.com/htmx.org@2.0.2"></script>
+
+		<!-- Beer JS material design -->
+		<link href="https://cdn.jsdelivr.net/npm/beercss@3.6.13/dist/cdn/beer.min.css" rel="stylesheet">
+		<script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.6.13/dist/cdn/beer.min.js"></script>
+		<script type="module" src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.2/dist/cdn/material-dynamic-colors.min.js"></script>
+
+		<!-- Code highlighting -->
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 
 		<script>
-			hljs.highlightAll()
+			// Run code highlighting whenever content is added to DOM.
+			htmx.onLoad(function(content) {
+				hljs.highlightAll();
+			});
 		</script>
 
-		<link
-			rel="stylesheet"
-			href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"
-		/>
-
 		<style>
-			.docs-area {
-				display: grid;
-				column-gap: 1rem;
-				grid-template-areas: "sidebar main main outer";
+			:root, body.dark {
+			--primary:#9ecaff;
+			--on-primary:#003258;
+			--primary-container:#00497d;
+			--on-primary-container:#d1e4ff;
+			--secondary:#bbc7db;
+			--on-secondary:#253140;
+			--secondary-container:#3b4858;
+			--on-secondary-container:#d7e3f7;
+			--tertiary:#d6bee4;
+			--on-tertiary:#3b2948;
+			--tertiary-container:#523f5f;
+			--on-tertiary-container:#f2daff;
+			--error:#ffb4ab;
+			--on-error:#690005;
+			--error-container:#93000a;
+			--on-error-container:#ffb4ab;
+			--background:#1a1c1e;
+			--on-background:#e2e2e6;
+			--surface:#121316;
+			--on-surface:#e2e2e6;
+			--surface-variant:#43474e;
+			--on-surface-variant:#c3c7cf;
+			--outline:#8d9199;
+			--outline-variant:#43474e;
+			--shadow:#000000;
+			--scrim:#000000;
+			--inverse-surface:#e2e2e6;
+			--inverse-on-surface:#2f3033;
+			--inverse-primary:#0061a4;
+			--surface-dim:#121316;
+			--surface-bright:#38393c;
+			--surface-container-lowest:#0d0e11;
+			--surface-container-low:#1a1c1e;
+			--surface-container:#1e2022;
+			--surface-container-high:#282a2d;
+			--surface-container-highest:#333538;
 			}
 
-			.docs-sidebar {
-				grid-area: "sidebar";
+			.hljs-name {
+				color: var(--primary);
 			}
 
-			.docs-main {
-				grid-area: "main";
+			.hljs-attr {
+				color: var(--secondary);
 			}
 
-			.page-footer {
-				display: block;
-				min-height: 10rem;
+			.hljs-string {
+				color: var(--tertiary);
 			}
 
-			.tag {
-				background-color: var(--pico-primary);
-				color: var(--pico-contrast-inverse);
-				border-radius: 4px;
-				padding: 5px 1rem 5px 1rem;
-				float: right;
+			.arg-table th, .arg-table td {
+				width: 33%;
 			}
 
-			body {
-				font-size: 80%;
+			/*
+			.link-selected {
+				border-inline-start: .25rem solid var(--primary);
+				padding-left: .4rem;
 			}
+			*/
 
-			aside nav a {
-				padding-bottom: 0;
-				padding-top: 0;
+
+			.link-selected {
+				color: var(--primary);
 			}
 
 		</style>
+
 	</head>
-	<body>
-		<header class="container" >
-			<nav style="padding-left: 1rem">
-				<ul>
-					<li><h5>VTML docs</h5></li>
-				</ul>
-				<ul>
-					<li><a href="/tutorial/intro" >Tutorial</a></li>
-					<li><a href="/reference" >Reference</a></li>
-				</ul>
+	<body hx-boost="true" >
+		<header>
+			<nav>
+				<h5 class="max" >VTML</h5>
+				<v-json target="tabs" >
+					[
+						{ "icon":"info", "match":"/tutorial", "link":"/tutorial/intro", "name":"Tutorial" },
+						{ "icon":"design_services", "match":"/reference", "link":"/reference", "name":"Reference" }
+					]
+				</v-json>
+
+				<div class="tabs" >
+				<v-for-each source="$tabs" >
+
+					<v-nodejs target="isactive" >
+						return $.path.startsWith($match) ? "active" : ""
+					</v-nodejs>
+
+					<a href="$link" class="$isactive" >
+						<i>$icon</i>
+						<span>$name</span>
+					</a>
+				</v-for-each>
+				</div>
 			</nav>
-			<hr />
 		</header>
 
-		<main class="container" >
-			<v-yaml src="./reference.yaml" target="tags" />
+		<main class="responsive max" >
+			<div class="grid" >
 
-			<div class="docs-area">
-				<aside class="docs-sidebar">
-					<nav>
+			<div class="s12 m3 2">
+				<article>
+					<v-nodejs target="open" >return $.path.startsWith("/tutorial")</v-nodejs>
+					<details open="$open" >
+						<summary class="none" >Tutorial</summary>
 
-						<h5>Tutorial</h5>
-						<ul>
-							<li><a href="/tutorial/intro" >Introduction</a></li>
-							<li><a href="/tutorial/getting_started" >Getting started</a></li>
-							<li><a href="/tutorial/variables" >Variables</a></li>
-							<li><a href="/tutorial/logic" >Logic</a></li>
-							<li><a href="/tutorial/pages" >Pages</a></li>
-							<li><a href="/tutorial/forms" >Forms</a></li>
-							<li><a href="/tutorial/cookies" >Cookies and Auth</a></li>
-							<li><a href="/tutorial/hints" >Hints</a></li>
-						</ul>
+						<v-json target="tutorials" >
+							[
+								{ "path":"intro", "name":"Intro" },
+								{ "path":"getting_started", "name":"Getting started" },
+								{ "path":"variables", "name":"Variables" },
+								{ "path":"logic", "name":"Logic" },
+								{ "path":"pages", "name":"Pages" },
+								{ "path":"forms", "name":"Forms" }
+							]
+						</v-json>
 
-						<h5>Reference</h5>
-						<ul>
-							<v-for-each source="$tags">
-								<li><a href="/reference#$tag">$tag</a></li>
-							</v-for-each>
-						</ul>
+						<v-for-each source="$tutorials" >
+							<v-if source="$.path" eq="/tutorial/$path" >
+								<a class="row link-selected" href="/tutorial/$path">$name</a>
+							</v-if>
+							<v-unless source="$.path" eq="/tutorial/$path" >
+								<a class="row" href="/tutorial/$path">$name</a>
+							</v-unless>
+						</v-for-each>
 
-					</nav>
-				</aside>
-				<div class="docs-main">
+					</details>
+				</article>
+
+				<article>
+					<v-yaml src="./reference.yaml" target="tags" />
+
+					<v-nodejs target="open" >return $.path.startsWith("/reference")</v-nodejs>
+					<details open="$open" >
+						<summary class="none" >Reference</summary>
+						<v-for-each source="$tags">
+							<a class="row" href="/reference#$tag">$tag</a>
+						</v-for-each>
+					</details>
+				</article>
+
+
+			</div>
+
+				<div class="s12 m9 10" style="margin: 1rem;" >
 
 					<v-page path="/tutorial/intro" >
-						<v-markdown src="./intro.md" />
+						<v-markdown src="./tutorial/intro.md" />
 					</v-page>
 
 					<v-page path="/tutorial/getting_started" >
-						<v-markdown src="./getting_started.md" />
+						<v-markdown src="./tutorial/getting_started.md" />
 					</v-page>
 
 					<v-page path="/tutorial/variables" >
-						<v-markdown src="./variables.md" />
+						<v-markdown src="./tutorial/variables.md" />
 					</v-page>
 
 					<v-page path="/tutorial/logic" >
-						<v-markdown src="./logic.md" />
+						<v-markdown src="./tutorial/logic.md" />
 					</v-page>
 
 					<v-page path="/tutorial/pages" >
-						<v-markdown src="./pages.md" />
+						<v-markdown src="./tutorial/pages.md" />
 					</v-page>
 
 					<v-page path="/tutorial/forms" >
-						<v-markdown src="./forms.md" />
+						<v-markdown src="./tutorial/forms.md" />
 					</v-page>
 
 					<v-page path="/reference">
-							<v-for-each source="$tags">
-								<section>
-									<a id="$tag" href="#$tag"><h2>$tag</h2></a>
-
-									<v-with source="$pre-process">
-										<span class="tag">pre-process</span>
-									</v-with>
-									<v-with source="$form-only">
-										<span class="tag">form-only</span>
-									</v-with>
-
-									<p>$description</p>
-
-									<v-with source="$arguments">
-										<table>
-											<thead>
-												<tr>
-													<th scope="col">name</th>
-													<th scope="col">default</th>
-													<th scope="col">templated</th>
-												</tr>
-											</thead>
-											<tbody>
-												<v-for-each>
-													<tr>
-														<th scope="row">$name</th>
-														<v-with source="$default">
-															<td>$</td>
-														</v-with>
-														<v-unless source="$default">
-															<v-if source="$optional">
-																<td><i>optional</i></td>
-															</v-if>
-															<v-unless source="$optional">
-																<td><b>required</b></td>
-															</v-unless>
-														</v-unless>
-
-														<v-if source="$templated" >
-															<td>yes</td>
-														</v-if>
-														<v-unless source="$templated" >
-															<td>no</td>
-														</v-unless>
-													</tr>
-												</v-for-each>
-											</tbody>
-										</table>
-									</v-with>
-
-									<v-with source="$example">
-										<pre class="language-html"><code>$</code></pre>
-									</v-with>
-								</section>
-							</v-for-each>
+						<v-include src="./reference_page.html" />
 					</v-page>
 				</div>
+
 			</div>
+
 		</main>
-		<footer class="page-footer"></footer>
 	</body>
 </html>
