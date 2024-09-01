@@ -1,7 +1,5 @@
 # Variables
 
-## Basics
-
 ### Syntax
 
 Variables can be referenced with the `$` symbol.

@@ -1,10 +1,13 @@
 <!DOCTYPE html>
+<v-expose src="/assets/vtml_icon.png" path="/favicon.ico" />
+<v-expose src="/assets/$.params.name" path="/assets/:name" />
 <html lang="en">
 
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<meta name="color-scheme" content="light dark" />
+		<meta name="color-scheme" content="dark" />
+		<meta name="description" content="VTML Documentation">
 
 		<title>VTML</title>
 
@@ -28,7 +31,7 @@
 
 		<style>
 			:root, body.dark {
-			--primary:#9ecaff;
+			--primary:#c87137f7;
 			--on-primary:#003258;
 			--primary-container:#00497d;
 			--on-primary-container:#d1e4ff;
@@ -82,37 +85,48 @@
 				width: 33%;
 			}
 
-			/*
-			.link-selected {
-				border-inline-start: .25rem solid var(--primary);
-				padding-left: .4rem;
-			}
-			*/
-
-
 			.link-selected {
 				color: var(--primary);
+			}
+
+			.topbar {
+				position:fixed;
+				width:100%;
+				z-index:100;
 			}
 
 		</style>
 
 	</head>
 	<body hx-boost="true" >
-		<header>
+
+		<header class="topbar" >
 			<nav>
-				<h5 class="max" >VTML</h5>
+				<button data-ui="#sidebar" class="circle transparent" >
+					<i>menu</i>
+				</button>
+
+				<div class="max" >
+					<img src="/assets/vtml_logo.svg" alt="VTML" style="height:3rem;" />
+				</div>
+
+				<a href="https://github.com/byronmurg/vtml" aria-label="Github link" >
+					<img src="/assets/github-mark-white.svg" style="height:2rem;" alt="Github icon">
+				</a>
+
 				<v-json target="tabs" >
 					[
-						{ "icon":"info", "match":"/tutorial", "link":"/tutorial/intro", "name":"Tutorial" },
-						{ "icon":"design_services", "match":"/reference", "link":"/reference", "name":"Reference" }
+						{ "icon":"home", "match":"^/$", "link":"/", "name":"Home" },
+						{ "icon":"info", "match":"^/tutorial/\\w+", "link":"/tutorial/getting_started", "name":"Tutorial" },
+						{ "icon":"design_services", "match":"^/reference", "link":"/reference", "name":"Reference" }
 					]
 				</v-json>
 
-				<div class="tabs" >
+				<div class="tabs m l" >
 				<v-for-each source="$tabs" >
 
 					<v-nodejs target="isactive" >
-						return $.path.startsWith($match) ? "active" : ""
+						return $.path.match($match) ? "active" : ""
 					</v-nodejs>
 
 					<a href="$link" class="$isactive" >
@@ -124,18 +138,22 @@
 			</nav>
 		</header>
 
-		<main class="responsive max" >
-			<div class="grid" >
+			<dialog id="sidebar" class="left" >
 
-			<div class="s12 m3 2">
+				<div class="max" >
+					<a href="/" >
+						<img src="/assets/vtml_logo.svg" alt="VTML" style="height:3rem;" />
+					</a>
+				</div>
+
 				<article>
 					<v-nodejs target="open" >return $.path.startsWith("/tutorial")</v-nodejs>
 					<details open="$open" >
 						<summary class="none" >Tutorial</summary>
+						<hr>
 
 						<v-json target="tutorials" >
 							[
-								{ "path":"intro", "name":"Intro" },
 								{ "path":"getting_started", "name":"Getting started" },
 								{ "path":"variables", "name":"Variables" },
 								{ "path":"logic", "name":"Logic" },
@@ -162,21 +180,17 @@
 					<v-nodejs target="open" >return $.path.startsWith("/reference")</v-nodejs>
 					<details open="$open" >
 						<summary class="none" >Reference</summary>
+						<hr>
 						<v-for-each source="$tags">
 							<a class="row" href="/reference#$tag">$tag</a>
 						</v-for-each>
 					</details>
 				</article>
 
+			</dialog>
 
-			</div>
 
-				<div class="s12 m9 10" style="margin: 1rem;" >
-
-					<v-page path="/tutorial/intro" >
-						<v-markdown src="./tutorial/intro.md" />
-					</v-page>
-
+		<main class="responsive" style="margin-top:4rem;" >
 					<v-page path="/tutorial/getting_started" >
 						<v-markdown src="./tutorial/getting_started.md" />
 					</v-page>
@@ -200,10 +214,19 @@
 					<v-page path="/reference">
 						<v-include src="./reference_page.html" />
 					</v-page>
-				</div>
+
+					<v-page path="/" >
+						<v-markdown src="./intro.md" />
+					</v-page>
 
 			</div>
 
 		</main>
+
+
+		<footer>
+			All rights reserved blah blah.
+		</footer>
+
 	</body>
 </html>

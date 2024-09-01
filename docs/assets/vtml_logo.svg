@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="250"
+   height="150.26582"
+   viewBox="0 0 250 150.26582"
+   version="1.1"
+   xml:space="preserve"
+   id="SVGRoot"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"><defs
+   id="defs126" />
+
+<style
+   type="text/css"
+   id="style1">
+g.prefab path {
+  vector-effect:non-scaling-stroke;
+  -inkscape-stroke:hairline;
+  fill: none;
+  fill-opacity: 1;
+  stroke-opacity: 1;
+  stroke: #00349c;
+}
+</style>
+
+<path
+   style="fill:#c87137;fill-opacity:0.969439;stroke-width:0.5;stroke-linecap:round"
+   d="m 175,60 v 90 c 42.86223,-15.17653 50,-10 75,-55 -20,15 -30,25 -55,25 V 70 Z"
+   id="L" /><path
+   style="fill:#c87137;fill-opacity:0.969439;stroke-width:0.5;stroke-linecap:round"
+   d="M 110,150 V 60.26583 L 140,75 c 10,-5 20,-10 30,-15 v 90 H 149.59117 L 150,90 l -10,5 -10,-5 -1.2e-4,60.26583 z"
+   id="M" /><path
+   style="fill:#c87137;fill-opacity:0.969439;stroke-width:0.5;stroke-linecap:round"
+   d="M 45,90 105,60 V 80 L 85,90 v 60 H 65 v -50 l -20,10 z"
+   id="T" /><path
+   style="display:inline;fill:#e6e6e6;fill-opacity:0.969439;stroke-width:0.5;stroke-linecap:round"
+   d="M 0,0 10,60 45,85 105,55 125,0 105,15 45,50 10,15 Z"
+   id="VShadow" /><path
+   style="fill:#c87137;fill-opacity:0.969439;stroke-width:0.5;stroke-linecap:round"
+   d="M 10,15 V 60 L 45,85 105,55 V 15 L 45,60 Z"
+   id="V" /></svg>
