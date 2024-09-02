@@ -10,7 +10,6 @@ const ctx = FilterContext.Init({
 	cookies: {},
 	headers: {},
 	params:{},
-	pageNotFound: false,
 })
 
 test("v-nodejs basic", async () => {

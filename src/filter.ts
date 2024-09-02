@@ -18,7 +18,7 @@ function CreateCascade(extractor:Extractor): Cascade {
 	const childs = (children:Element[]|undefined): Filter => {
 		children = children || []
 
-		const childFilters = children.map((child) => filterNode(child, cascade))
+		const childFilters = filterElementArray(children, cascade)
 
 		return async (ctx:FilterContext): Promise<Branch> => {
 			let subCtx = ctx
@@ -28,6 +28,9 @@ function CreateCascade(extractor:Extractor): Cascade {
 				const subBranch = await child(subCtx)
 				elements.push(...subBranch.elements)
 				subCtx = subBranch.ctx
+				if (subCtx.ShouldBreak()) {
+					break
+				}
 			}
 
 			return { ctx, elements }
@@ -38,6 +41,10 @@ function CreateCascade(extractor:Extractor): Cascade {
 	return cascade
 }
 
+export
+function filterElementArray(elements:Element[], cascade: Cascade) {
+		return elements.map((child) => filterNode(child, cascade))
+}
 
 function textFilter(el:TextElement): Filter {
 	return async (ctx:FilterContext): Promise<Branch> => {
@@ -204,6 +211,7 @@ function CreateRootFilter(els:Element[], extractor:Extractor): RootFilter {
 			return {
 				status: ctx.GetReturnCode(),
 				cookies: ctx.GetCookies(),
+				error: ctx.GetErrorMessage(),
 				elements,
 			}
 		} catch (e) {

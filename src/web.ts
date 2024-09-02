@@ -7,14 +7,14 @@ import DefaultError from "./default_errors"
 
 import VtmlDocument from "./document"
 import FilterContext from "./filter_context"
-import {RootDataset, RenderResponse, ResponseError, CookieMap} from "./types"
+import {RootDataset, ResponseError, CookieMap} from "./types"
 import * as HTML from "./html"
 
 const debug = Debug("vtml")
 
 const matchSearch = (url:string) => (url.match(/\?(.+)/)||[])[1]
 
-const createRootDataset = (req:Express.Request, pageNotFound:boolean = false): RootDataset => ({
+const createRootDataset = (req:Express.Request): RootDataset => ({
 	query: req.query,
 	params: req.params,
 	search: matchSearch(req.originalUrl),
@@ -23,11 +23,10 @@ const createRootDataset = (req:Express.Request, pageNotFound:boolean = false): R
 	method: req.method,
 	headers: req.headers,
 	cookies: req.cookies,
-	pageNotFound,
 })
 
-const createFilterContextFromRequest = (req:Express.Request, pageNotFound:boolean = false): FilterContext => FilterContext.Init(
-	createRootDataset(req, pageNotFound),
+const createFilterContextFromRequest = (req:Express.Request): FilterContext => FilterContext.Init(
+	createRootDataset(req),
 )
 
 export type exposeOptions = {
@@ -65,43 +64,49 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 	// Basic responses
 	//
 
-	function filterResponseError(req:Express.Request, res:Express.Response, response:RenderResponse) {
+	async function renderFromContext(ctx:FilterContext, res:Express.Response) {
+		debug("render loader")
+
+		const response = await vtmlDocument.renderDocument(ctx)
+
+		debug("response", response.status)
+		if (response.redirect) {
+			debug("response redirect", response.redirect)
+			res.redirect(307, response.redirect)
+		} else {
+			res.status(response.status)
+			HTML.serializeHTML(response.elements, res)
+		}
+	}
+
+	async function filterResponseError(req:Express.Request, res:Express.Response, status:number, error:string|undefined = undefined) {
 		const err: ResponseError = {
-			code: response.status,
-			message: response.error || DefaultError(response.status),
+			code: status,
+			message: error || DefaultError(status),
 		}
 		const rootDataset = createRootDataset(req)
 
 		const errRoot = { ...rootDataset, error:err }
 		const ctx = FilterContext.Init(errRoot)
 		
-		return vtmlDocument.renderDocument(ctx)
-			.then((response) => {
-				res.status(response.status)
-				HTML.serializeHTML(response.elements, res)
-			})
-			.catch(sendCatchError(res))
+		const response = await vtmlDocument.renderDocument(ctx)
+
+		debug("response", response.status)
+		if (response.redirect) {
+			debug("response redirect", response.redirect)
+			res.redirect(307, response.redirect)
+		} else {
+			res.status(status)
+			HTML.serializeHTML(response.elements, res)
+		}
 	}
 
-	function renderLoader(pageNotFound: boolean = false) {
+	function renderLoader() {
 		return async function(req:Express.Request, res:Express.Response) {
 			debug("render loader")
 
-			const ctx = createFilterContextFromRequest(req, pageNotFound)
-			const response = await vtmlDocument.renderDocument(ctx)
-
-			debug("response", response.status)
-			if (response.redirect) {
-				debug("response redirect", response.redirect)
-				res.redirect(307, response.redirect)
-			} else if (response.status < 400) {
-				debug("response ok")
-				res.status(response.status)
-				HTML.serializeHTML(response.elements, res)
-			} else {
-				debug("response error", response.error)
-				await filterResponseError(req, res, response)
-			}
+			const ctx = createFilterContextFromRequest(req)
+			return renderFromContext(ctx, res)
 		}
 	}
 
@@ -123,7 +128,7 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 				setCookies(res, formRes.cookies)
 				res.redirect(307, formRes.redirect  || "back")
 			} else {
-				await filterResponseError(req, res, formRes)
+				await filterResponseError(req, res, formRes.status, formRes.error)
 			}
 		})
 
@@ -208,7 +213,14 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 
 	for (const path of pages) {
 		debug("page found", path)
-		app.all(path, renderLoader(false))
+		app.all(path, renderLoader())
+	}
+
+	if (pages.length === 0) {
+		// If no pages were defined we may be a
+		// single page app so create a default route.
+
+		app.all("/", renderLoader())
 	}
 
 	// Exposes
@@ -242,12 +254,13 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 		})
 	}
 
-	// A fallback for favicon to avoid the whole page rendering @TODO don't think needed now
+	// A fallback for favicon to avoid the whole page rendering
 	app.get("/favicon.ico", (_, res) => res.status(404).send("Not found"))
 
-	// This has to be an all as the redirects
-	// preserve the POST method
-	app.all("/", renderLoader(true))
+	// Fallback 404 page
+	app.all("/*", (req, res) => {
+		filterResponseError(req, res, 404)
+	})
 
 
 	// Determine the listen port in order of

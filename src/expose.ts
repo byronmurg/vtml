@@ -4,6 +4,7 @@ import * as utils from "./utils"
 import {prepareLoaderChain} from "./filter"
 import FilterContext from "./filter_context"
 import pathLib from "path"
+import {ServerError} from "./default_errors"
 
 export
 type ExposeDescriptor = {
@@ -43,13 +44,12 @@ function prepareExpose(exposeTag:TagElement, preElements:ElementChain[]): Expose
 				return { status:404, cookies, sendFile:"" }
 			}
 
-			// If any elements in the chain set the return code to
-			// a non-success code then we should assume that the expose
+			// If any elements in the chain set the error
+			// then we should assume that the expose
 			// would otherwise not be available.
-			const chainCode = chainResult.ctx.GetReturnCode()
-			if (chainCode >= 400) {
+			if (chainResult.ctx.InError()) {
 				return {
-					status: chainCode,
+					status: chainResult.ctx.GetReturnCode(),
 					cookies: {},
 					sendFile: "",
 				}
@@ -87,8 +87,7 @@ function prepareExpose(exposeTag:TagElement, preElements:ElementChain[]): Expose
 			console.error(e)
 
 			// We assume a 500 error and just return it.
-			const error = (e instanceof Error) ? e.message : ""
-			return { status:500, cookies:{}, sendFile:"", error }
+			return { status:500, cookies:{}, sendFile:"", error:ServerError }
 		}
 	}
 

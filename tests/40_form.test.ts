@@ -9,7 +9,6 @@ const rootDataset = {
 	cookies: {},
 	headers: {},
 	params:{},
-	pageNotFound: false,
 }
 
 test("form", async () => {

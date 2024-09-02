@@ -13,7 +13,11 @@ export const XTry:Tag = {
 		return async (ctx) => {
 			if (! ctx.InError()) {
 				tryDebug("render")
-				return childs(ctx)
+				const output = await childs(ctx)
+				if (output.ctx.InThrow()) {
+					output.ctx.UnsetThrow()
+				}
+				return output
 			} else {
 				tryDebug("pass")
 				return filterPass(ctx)

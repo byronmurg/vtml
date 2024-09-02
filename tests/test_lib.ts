@@ -11,7 +11,6 @@ function InitCtx(init:Partial<RootDataset> = {}) {
 		cookies: {},
 		headers: {},
 		params:{},
-		pageNotFound: false,
 		...init,
 	})
 }

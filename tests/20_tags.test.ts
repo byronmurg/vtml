@@ -214,28 +214,6 @@ test("v-page", async () => {
 	expect(trimAll(fooOut)).toBe(`Foo`)
 })
 
-test("v-default-page", async () => {
-	const exampleHTML = `
-		<v-page path="/bar" >
-			Bar
-		</v-page>
-		<v-default-page>
-			Foo
-		</v-default-page>
-	`
-
-	const fooCtx = InitCtx({
-		path: "/foo",
-		matchedPath: "/foo",
-		pageNotFound: true,
-	})
-
-	const doc = VtmlDocument.LoadFromString(exampleHTML)
-
-	const fooOut = await doc.renderLoaderMl(fooCtx)
-	expect(trimAll(fooOut)).toBe(`Foo`)
-})
-
 test(`select`, async () => {
 	const exampleHTML = `
 		<v-json target="foo" >"foo"</v-json>

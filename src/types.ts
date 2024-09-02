@@ -23,7 +23,6 @@ type RootDataset = {
 	body?: unknown
 	headers: Record<string, string|string[]|undefined>
 	cookies: Record<string, string>
-	pageNotFound: boolean
 	error?: ResponseError
 }
 

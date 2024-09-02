@@ -3,6 +3,7 @@ import type { Tag } from "../types"
 import type { TagElement } from "../html"
 import { filterPass, stripFilter, loaderOnlyPreceeds, loaderOnlyFilter } from "../tag_utils"
 import * as utils from "../utils"
+import {ServerError} from "../default_errors"
 import NodeFunction from "../node"
 
 function elementNodeFunction(el: TagElement) {
@@ -17,10 +18,15 @@ function runNode(el:TagElement) {
 	const nodeBody = elementNodeFunction(el)
 
 	return async (ctx:FilterContext) => {
-		const resp = await nodeBody(ctx)
+		try {
+			const resp = await nodeBody(ctx)
 
-		// Set output to target
-		return target ? ctx.SetVar(target, resp) : ctx
+			// Set output to target
+			return target ? ctx.SetVar(target, resp) : ctx
+		} catch (e) {
+			const message = (e instanceof Error)? e.message : ServerError
+			return ctx.ThrowError({ code:500, message })
+		}
 	}
 }
 

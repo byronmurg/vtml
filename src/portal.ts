@@ -4,6 +4,7 @@ import * as utils from "./utils"
 import {prepareLoaderChain, createPortalFilter} from "./filter"
 import FilterContext from "./filter_context"
 import pathLib from "path"
+import {ServerError} from "./default_errors"
 
 export
 type PortalDescriptor = {
@@ -47,20 +48,19 @@ function preparePortal(portalTag:TagElement, preElements:ElementChain[]): Portal
 				return { status:404, cookies, elements:[] }
 			}
 
-			// If any elements in the chain set the return code to
-			// a non-success code then we should assume that the portal
+			// If any elements in the chain set the error
+			// then we should assume that the portal
 			// would otherwise not be available.
-			const chainCode = chainResult.ctx.GetReturnCode()
-			if (chainCode >= 400) {
+			if (chainResult.ctx.InError()) {
 				return {
-					status: chainCode,
+					status: chainResult.ctx.GetReturnCode(),
 					cookies: {},
 					elements: [],
 				}
 			}
 
 			// If the chain Would otherwise redirect before rendering
-			// the form we must assume that it is not visible and return
+			// the portal we must assume that it is not visible and return
 			// the redirect.
 			//
 			// This would be for things such as redirecting to a login
@@ -90,8 +90,7 @@ function preparePortal(portalTag:TagElement, preElements:ElementChain[]): Portal
 			console.error(e)
 
 			// We assume a 500 error and just return it.
-			const error = (e instanceof Error) ? e.message : ""
-			return { status:500, cookies:{}, elements:[], error }
+			return { status:500, cookies:{}, elements:[], error:ServerError }
 		}
 	}
 
