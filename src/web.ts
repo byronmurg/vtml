@@ -43,16 +43,6 @@ function setCookies(res:Express.Response, cookies:CookieMap) {
 	}
 }
 
-function sendCatchError(res:Express.Response) {
-	// What to send when an error is throw inside
-	// error context.
-	return (e:unknown) => {
-		console.error(e)
-		res.status(500).send(DefaultError(500))
-	}
-}
-
-
 export
 function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 
@@ -103,8 +93,6 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 
 	function renderLoader() {
 		return async function(req:Express.Request, res:Express.Response) {
-			debug("render loader")
-
 			const ctx = createFilterContextFromRequest(req)
 			return renderFromContext(ctx, res)
 		}
