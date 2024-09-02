@@ -35,6 +35,7 @@ const emptyTags: Record<string, string[]> = {
 
 const neverClose = [
 	"script",
+	"form",
 	"textarea",
 	"progress",
 	"span",
