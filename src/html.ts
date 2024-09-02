@@ -130,10 +130,10 @@ function serializeAttributes(el: TagElement): string {
 		const v = el.attributes[k]
 		const canBeEmpty = canBeEmptyAttribute(el.name, k)
 
-		if (((v === true) || (v === "true")) && canBeEmpty) {
-			ret.push(`${k}`)
-		} else if (((v === false) || (v === "false")) && canBeEmpty) {
-			continue
+	   	if (canBeEmpty) {
+			if ((v === true) || (v === "true")) {
+				ret.push(`${k}`)
+			}
 		} else {
 			ret.push(`${k}="${v}"`)
 		}
