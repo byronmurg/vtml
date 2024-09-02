@@ -26,7 +26,7 @@ type Element = TextElement | TagElement
 const singleTags = ["hr", "br", "link", "meta"]
 
 const emptyTags: Record<string, string[]> = {
-	input: ["required", "disabled", "autofocus"],
+	input: ["required", "disabled", "autofocus", "checked"],
 	details: ["open"],
 	form: ["v-ajax"],
 	"v-sql": ["single-row"],
