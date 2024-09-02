@@ -124,9 +124,6 @@
   description: Expose a file specified at (src) at http (path)
   special: true
 
-- description: The default content to show when no other page has been matched.
-  tag: v-default-page
-
 - tag: v-setcookie-action
   form-ony: true
   arguments:
@@ -187,7 +184,9 @@
     description: "Return code to send. Must be numeric."
     templated: true
   description: |
-    Set the return code. If the code is a HTTP error code then you may enter the error filter.
+    Set the return code.
+
+    Rendering will continue as normal. Use v-throw if you want to stop execution.
 
 - tag: v-redirect-action
   arguments:

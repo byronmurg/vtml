@@ -144,7 +144,6 @@ Root variables are globaly available variables that describe the incoming reques
 | $.body          | Request body when using form actions               | { newFoo:"bar" }        |
 | $.headers       | All request headers (always lower case)            | { accept:"text/html" }  |
 | $.cookies       | Any cookies sent by the client                     | { skey:"123" }          |
-| $.pageNotFound  | A special variable set when no other page matches  | false                   |
 
 Root variables are always available by using the `$.` prefix on variables.
 

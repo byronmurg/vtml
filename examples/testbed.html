@@ -28,83 +28,28 @@
 
 		<main class="container" >
 
-			<form v-name="noddy" >
-				<input name="foo" placeholder="foo" type="text" />
-				<input type="submit" value="Go" />
+			<p>See me!</p>
 
-				<v-return-code code="404" />
-			</form>
-
-			<hr>
+			<v-nodejs>
+				console.log("In render")
+			</v-nodejs>
 
 			<v-try>
+				<p>In try</p>
+
+				<!--
 				<v-nodejs>
-					throw Error("Oh no")
+					throw Error("Some error")
 				</v-nodejs>
+				-->
+				<v-throw code="500" />
+
+				<p>Should not see</p>
 			</v-try>
 
 			<v-catch>
-				<h3>Error</h3>
 				<p>$.error.message</p>
 			</v-catch>
-
-
-			<form method="POST" v-name="select_multi_test" >
-
-				<v-nodejs-action>
-					console.log($.body)
-				</v-nodejs-action>
-
-				<label>time:
-					<input name="time" type="time" required value="10:30:00" />
-				</label>
-
-				<!--
-				<label>date:
-					<input name="date" type="date" required />
-				</label>
-
-				<label>datetime-local:
-					<input name="datetime-local" type="datetime-local" required />
-				</label>
-
-
-				<label>color:
-					<input name="color" type="color" required />
-				</label>
-				-->
-
-				<button type="submit" >Go</button>
-			</form>
-
-
-			<v-page path="/subpage">
-				<form v-name="subform" >
-					<input name="name" value="I'm the sub form" />
-				</form>
-
-
-
-				<v-page path="/subpage/more/:id" >
-
-					<form v-name="grandchild" >
-
-						<v-nodejs-action>
-							console.log($.body)
-						</v-nodejs-action>
-
-						<input name="id" value="$.params.id" />
-
-						<input id="vanilla" type="radio" name="icecream" value="vanilla" />
-						<label for="vanilla" >Vanilla</label>
-
-						<input id="chocolate" type="radio" name="icecream" value="chocolate" />
-						<label for="chocolate" >Chocolate</label>
-
-						<button type="submit" >Go</button>
-					</form>
-				</v-page>
-			</v-page>
 
 		</main>
 	</body>

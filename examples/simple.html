@@ -5,88 +5,154 @@
 
 		<title>Simple example</title>
 
+		<!--
+			We'll use picocss and material icons to make our page look a bit prettier.
+		-->
 		<link
 		  rel="stylesheet"
 		  href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"
 		/>
 		<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
 
-		<style>
-			.centre {
-				display: block;
-				text-align: center;
-				margin-left: auto;
-				margin-right: auto;
-			}
-
-			.ctrl-button {
-				width: 6rem;
-			}
-		</style>
-
 	</head>
 	<body>
 
+		<!-- Our header does nothing special -->
 		<header class="container" >
 			<nav>
 				<ul>
-					<li><b>Vtml test</b></li>
+					<li><b>VTML simple example</b></li>
 				</ul>
 			</nav>
 		</header>
 
 		<main class="container" >
 
-			<!-- create form -->
-			<form v-name="create_todo" method="POST" >
-				<v-sql-action>
-					insert into simple.todos (text) values ($body.text)
-				</v-sql-action>
+			<!--
+				Let's start with a create form.
+
+				The user can add new todo text then click the submit button or hit enter.
+
+				To make VTML handle the form all we need is a unique v-name attribute, in
+				this case we use "create_todo".
+			-->
+			<form v-name="create_todo" >
+				<!-- Here we define our for fields. This is just normal HTML -->
 				<fieldset role="group" >
 					<input name="text" type="text" autofocus="yes" maxlength="128" required />
 					<button type="submit" class="material-icons" >add</button>
 				</fieldset>
+
+				<!--
+					Any 'v-' tag that ends with '-action' will be called when the form submits
+					
+					In this case we insert to the text from the form body into table with sql.
+
+					Note that we can refer to the new text as $.body.text because the input
+					above has name="text"
+				-->
+				<v-sql-action>
+					INSERT INTO simple.todos (text) VALUES ($.body.text)
+				</v-sql-action>
+
+				<!-- And that's it! All we have to do. -->
 			</form>
 
 			<hr/>
 
-			<!-- Get the todos -->
+			<!--
+				Now let's get the todos already in the database and show them to the client.
+
+				We start with a v-sql block which selects all todos and sets them to the
+				vtml variable 'todos'. Later we'll be able to reference this variable
+				with '$todos'.
+			-->
 			<v-sql target="todos" >
-				select * from simple.todos where $.query.showdone::boolean is not null or done = false order by c desc
+				SELECT * FROM simple.todos ORDER BY c DESC
 			</v-sql>
 
+			<!--
+				So the sql we just ran returned multiple rows and we want each row to be
+				rendered as it's own entry.
+
+				To do this we use v-for-each and specify the $todos variable to loop through.
+			-->
+			<v-for-each source="$todos" >
+
+				<!--
+					We're now inside the loop and can taking in individual rows.
+
+					We could do something like <p>$text</p> to display the text of each todo.
+					
+					Instead we're going display the entries as forms so that they can be
+					updated.
+				-->
+
+				<form v-name="edit_todo" >
+					<!--
+						Here we have a form to edit the text of the todos.
+
+						Just like before we have the html to be displayed then the sql to
+						be executed when the form is submitted.
+
+						But this time we set the value of the inputs from the data in the row.
+
+						See how the input below has value="$text". That will template the
+						current value into the text input.
+
+						Also note how we add a hidden input with value="$_id". This is because
+						when we submit the form vtml doesn't know *which* todo we want to
+						submit it for, so we need to specify the id.
+					-->
+
+					<input name="text" value="$text" maxlength="128" />
+					<input type="hidden" name="id" value="$_id" />
+
+					<v-sql-action>
+						UPDATE simple.todos SET text = $body.text WHERE _id = $.body.id
+					</v-sql-action>
+
+				</form>
+
+				<form v-name="delete_todo" >
+					<!--
+						Let's add a button to delete the todo.
+
+						This is largely the same as the last form but this time we don't
+						need a text input.
+					-->
+
+					<input type="hidden" name="id" value="$_id" />
+					<button type="submit" class="material-icons" >delete</button>
+
+					<v-sql-action>
+						DELETE FROM simple.todos WHERE _id = $.body.id
+					</v-sql-action>
+				</form>
+
+			</v-for-each>
+
+			<!--
+				To finish let's add something a bit different.
+
+				After the main list I want to put the total number of todos on the page.
+
+				But we don't have a tag for that so we must write it in javascript that 
+				executes on the server.
+			-->
+
+			<!--
+				So here we have a v-nodejs block that returns the length of the todos array
+				and sets it to the 'ntodos' variable.
+			-->
 			<v-nodejs target="ntodos" >
 				return $todos.length
 			</v-nodejs>
 
+			<!-- Now we can use $ntodos in a <p> tag -->
 			<p>There are $ntodos todos</p>
 
-			<!-- Loop through the todos -->
-			<v-for-each source="$todos" >
 
-				<!-- Form to update the text -->
-				<form method="POST" v-name="edit_todo" >
-					<v-sql-action>
-						update simple.todos set text = $body.text where _id = $.body.id
-					</v-sql-action>
-					<fieldset role="group" >
-
-						<input name="text" value="$text" maxlength="128" disabled />
-						<input type="hidden" name="id" value="$_id" />
-						<button form="delete-todo-$_id" type="submit" class="ctrl-button contrast material-icons" >delete</button>
-
-					</fieldset>
-				</form>
-
-				<!-- Hidden form to delete -->
-				<form id="delete-todo-$_id" method="POST" v-name="delete_todo" >
-					<v-sql-action>
-						delete from simple.todos where _id = $.body.id
-					</v-sql-action>
-					<input type="hidden" name="id" value="$_id" />
-				</form>
-
-			</v-for-each>
 		</main>
 	</body>
 

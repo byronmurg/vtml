@@ -191,35 +191,40 @@
 
 
 		<main class="responsive" style="margin-top:4rem;" >
-					<v-page path="/tutorial/getting_started" >
-						<v-markdown src="./tutorial/getting_started.md" />
-					</v-page>
+			<v-try>
 
-					<v-page path="/tutorial/variables" >
-						<v-markdown src="./tutorial/variables.md" />
-					</v-page>
+				<v-page path="/tutorial/getting_started" >
+					<v-markdown src="./tutorial/getting_started.md" />
+				</v-page>
 
-					<v-page path="/tutorial/logic" >
-						<v-markdown src="./tutorial/logic.md" />
-					</v-page>
+				<v-page path="/tutorial/variables" >
+					<v-markdown src="./tutorial/variables.md" />
+				</v-page>
 
-					<v-page path="/tutorial/pages" >
-						<v-markdown src="./tutorial/pages.md" />
-					</v-page>
+				<v-page path="/tutorial/logic" >
+					<v-markdown src="./tutorial/logic.md" />
+				</v-page>
 
-					<v-page path="/tutorial/forms" >
-						<v-markdown src="./tutorial/forms.md" />
-					</v-page>
+				<v-page path="/tutorial/pages" >
+					<v-markdown src="./tutorial/pages.md" />
+				</v-page>
 
-					<v-page path="/reference">
-						<v-include src="./reference_page.html" />
-					</v-page>
+				<v-page path="/tutorial/forms" >
+					<v-markdown src="./tutorial/forms.md" />
+				</v-page>
 
-					<v-page path="/" >
-						<v-markdown src="./intro.md" />
-					</v-page>
+				<v-page path="/reference">
+					<v-include src="./reference_page.html" />
+				</v-page>
 
-			</div>
+				<v-page path="/" >
+					<v-markdown src="./intro.md" />
+				</v-page>
+			</v-try>
+
+			<v-catch>
+				<h6>$.error.message</h6>
+			</v-catch>
 
 		</main>
 
