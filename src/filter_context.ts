@@ -175,6 +175,10 @@ class FilterContext {
 	getKeySafe(token:string) {
 		const value = this.getKey(token)
 
+		if (value instanceof Date) {
+			return value.toJSON()
+		}
+
 		switch (typeof value) {
 			case "number":
 			case "boolean":
