@@ -26,7 +26,7 @@ function getFullPath(xName:string, ctx:FilterContext): string {
 export const FormTag:Tag = {
 	name: "form",
 	render(el, cascade) {
-		const xName = utils.requireAttribute(el, 'v-name')
+		const xName = utils.getAttribute(el, 'v-name')
 		// If it's not an action I don't care
 		if (!xName) {
 			return justReturnFilter(el, cascade)
