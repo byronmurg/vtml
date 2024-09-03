@@ -155,6 +155,43 @@
     Although form is an inbuilt tag we do alter it's behaviour. Defining a form with
     method="POST" and an v-name attribute will create an action endpoint.
 
+- tag: v-check-{found,authorized,allowed}
+  arguments:
+  - name: eq
+    optional: true
+    templated: true
+  - name: lt
+    optional: true
+    templated: true
+  - name: lte
+    optional: true
+    templated: true
+  - name: gt
+    optional: true
+    templated: true
+  - name: gte
+    optional: true
+    templated: true
+  - default: $
+    name: source
+    templated: true
+  description: |
+    Similar to the v-if tags the v-check-* tags will conditionally display a block.
+
+    Unlike the x-if tag an error status will be set for the whole page if the condition
+    is not met.
+
+    Useful for creating an error-barrier for resources.
+
+  example: |
+    <v-sql target="user" >select * from user where email = $.headers.x-email</v-sql>
+
+    <v-check-authorized source="$user" >
+      <p>Some sensitive information here...</p>
+    </v-check-authorized>
+
+
+
 - tag: v-pass
   description: |
     This tag allows you to pass-over a value context to avoid executing loader
@@ -173,6 +210,8 @@
     Rendered when an error has occured. The root variables `$.error.code` and `$.error.message`
     will be available to display.
 
+    This tag is roughly equivilent to calling `<v-if source="$.error" >...</v-if>`
+
 - tag: v-try
   description: |
     Rendered when no error has occured. Useful when a section may result in an error.
@@ -186,7 +225,8 @@
   description: |
     Set the return code.
 
-    Rendering will continue as normal. Use v-throw if you want to stop execution.
+    Rendering will continue as normal. If you want to report a non-success status take
+    a look at the v-check-* tags instead.
 
 - tag: v-redirect-action
   arguments:

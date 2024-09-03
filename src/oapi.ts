@@ -214,6 +214,18 @@ function createOpenApiSchema(doc:VtmlDocument): OAPI.OpenAPIObject {
 			version: "1.0",
 		},
 		paths: apiPaths,
+		components: {
+			schemas: {
+				"error": {
+					title: "Error",
+					type: "object",
+					properties: {
+						code: { type:"number" },
+						message: { type:"string" },
+					},
+				}
+			}
+		},
 	}
 
 	for (const form of doc.forms) {
@@ -234,11 +246,38 @@ function createOpenApiSchema(doc:VtmlDocument): OAPI.OpenAPIObject {
 						description: "Successful operation",
 					},
 					"400": {
-						description: "Invalid input"
+						description: "Invalid input",
+						content: {
+							"application/json": {
+						  		schema: { $ref:"#/components/schemas/error" }
+							}
+						},
+					},
+					"401": {
+						description: "Unauthorized",
+						content: {
+							"application/json": {
+						  		schema: { $ref:"#/components/schemas/error" }
+							}
+						},
+					},
+					"403": {
+						description: "Forbidden",
+						content: {
+							"application/json": {
+						  		schema: { $ref:"#/components/schemas/error" }
+							}
+						},
 					},
 					"404": {
-						description: "Target not found"
-					}
+						description: "Target not found",
+						content: {
+							"application/json": {
+						  		schema: { $ref:"#/components/schemas/error" }
+							}
+						},
+					},
+					// @TODO rest of these
 				}
 			}
 		}

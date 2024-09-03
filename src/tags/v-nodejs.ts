@@ -25,7 +25,7 @@ function runNode(el:TagElement) {
 			return target ? ctx.SetVar(target, resp) : ctx
 		} catch (e) {
 			const message = (e instanceof Error)? e.message : ServerError
-			return ctx.ThrowError({ code:500, message })
+			return ctx.SetError(500, message)
 		}
 	}
 }

@@ -5,7 +5,7 @@ import type {TagElement} from "./html"
 import * as utils from "./utils"
 import Ajv, {ValidationError} from "ajv"
 import AjvFormats from "ajv-formats"
-import {ServerError} from "./default_errors"
+import DefaultError, {ServerError} from "./default_errors"
 
 import FilterContext from "./filter_context"
 import {prepareActionChain, createFormFilter} from "./filter"
@@ -153,24 +153,26 @@ function prepareForm(postForm:TagElement, preElements:ElementChain[]): FormDescr
 			// preceeding this form.
 			const chainResult = await chain(preCtx)
 
-			// If the form would otherwise not be rendered by the
-			// loader then it is in a 'not found' state and therefore
-			// should return 404.
-			if (! chainResult.found) {
-				const cookies = chainResult.ctx.GetCookies()
-				return { status:404, cookies, elements:[] }
-			}
-
 			// If any elements in the chain set the error
 			// then we should assume that the form
 			// would otherwise not be available.
 			if (chainResult.ctx.InError()) {
 				return {
 					status: chainResult.ctx.GetReturnCode(),
+					error: chainResult.ctx.GetErrorMessage(),
 					cookies: {},
 					elements: [],
 				}
 			}
+
+			// If the form would otherwise not be rendered by the
+			// loader then it is in a 'not found' state and therefore
+			// should return 404.
+			if (! chainResult.found) {
+				const cookies = chainResult.ctx.GetCookies()
+				return { status:404, cookies, elements:[], error:DefaultError(404) }
+			}
+
 
 			// If the chain Would otherwise redirect before rendering
 			// the form we must assume that it is not visible and return

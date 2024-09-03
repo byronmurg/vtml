@@ -40,14 +40,6 @@ function preparePortal(portalTag:TagElement, preElements:ElementChain[]): Portal
 			// Execute chain
 			const chainResult = await chain(preCtx)
 
-			// If the portal would otherwise not be rendered by the
-			// loader then it is in a 'not found' state and therefore
-			// should return 404.
-			if (! chainResult.found) {
-				const cookies = chainResult.ctx.GetCookies()
-				return { status:404, cookies, elements:[] }
-			}
-
 			// If any elements in the chain set the error
 			// then we should assume that the portal
 			// would otherwise not be available.
@@ -57,6 +49,14 @@ function preparePortal(portalTag:TagElement, preElements:ElementChain[]): Portal
 					cookies: {},
 					elements: [],
 				}
+			}
+
+			// If the portal would otherwise not be rendered by the
+			// loader then it is in a 'not found' state and therefore
+			// should return 404.
+			if (! chainResult.found) {
+				const cookies = chainResult.ctx.GetCookies()
+				return { status:404, cookies, elements:[] }
 			}
 
 			// If the chain Would otherwise redirect before rendering

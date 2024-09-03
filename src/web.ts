@@ -145,6 +145,7 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 				res.status(formRes.status).json({})
 			} else {
 				res.status(formRes.status).json({
+					code: formRes.status,
 					message: formRes.error
 				})
 			}

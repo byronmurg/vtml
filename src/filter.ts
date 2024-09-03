@@ -28,9 +28,6 @@ function CreateCascade(extractor:Extractor): Cascade {
 				const subBranch = await child(subCtx)
 				elements.push(...subBranch.elements)
 				subCtx = subBranch.ctx
-				if (subCtx.ShouldBreak()) {
-					break
-				}
 			}
 
 			return { ctx, elements }

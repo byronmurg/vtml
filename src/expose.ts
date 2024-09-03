@@ -36,14 +36,6 @@ function prepareExpose(exposeTag:TagElement, preElements:ElementChain[]): Expose
 			// Execute chain
 			const chainResult = await chain(preCtx)
 
-			// If the expose would otherwise not be rendered by the
-			// loader then it is in a 'not found' state and therefore
-			// should return 404.
-			if (! chainResult.found) {
-				const cookies = chainResult.ctx.GetCookies()
-				return { status:404, cookies, sendFile:"" }
-			}
-
 			// If any elements in the chain set the error
 			// then we should assume that the expose
 			// would otherwise not be available.
@@ -54,6 +46,15 @@ function prepareExpose(exposeTag:TagElement, preElements:ElementChain[]): Expose
 					sendFile: "",
 				}
 			}
+
+			// If the expose would otherwise not be rendered by the
+			// loader then it is in a 'not found' state and therefore
+			// should return 404.
+			if (! chainResult.found) {
+				const cookies = chainResult.ctx.GetCookies()
+				return { status:404, cookies, sendFile:"" }
+			}
+
 
 			// If the chain Would otherwise redirect before rendering
 			// the form we must assume that it is not visible and return

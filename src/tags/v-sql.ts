@@ -3,7 +3,6 @@ import type {TagElement} from "../html"
 import { filterPass, stripFilter, loaderOnlyPreceeds, loaderOnlyFilter } from "../tag_utils"
 import * as utils from "../utils"
 import type FilterContext from "../filter_context"
-import {ServerError} from "../default_errors"
 import * as SQL from "../sql"
 
 function runSQL(el:TagElement) {
@@ -12,14 +11,9 @@ function runSQL(el:TagElement) {
 	const single = utils.getBoolAttribute(el, "single-row")
 
 	return async (ctx:FilterContext) => {
-		try {
-			const results = await SQL.query(query, ctx)
-			const output = single ? results[0] : results
-			return target ? ctx.SetVar(target, output) : ctx
-		} catch (e) {
-			console.error(e)
-			return ctx.ThrowError({ code:500, message:ServerError })
-		}
+		const results = await SQL.query(query, ctx)
+		const output = single ? results[0] : results
+		return target ? ctx.SetVar(target, output) : ctx
 	}
 }
 
