@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+
+		<title>Dogs DB</title>
+
+		<link
+		  rel="stylesheet"
+		  href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"
+		/>
+		<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+
+	</head>
+	<body>
+
+		<header class="container" >
+			<nav>
+				<ul>
+					<li><b>Dogs DB</b></li>
+				</ul>
+			</nav>
+		</header>
+
+		<main class="container" >
+
+			<v-try>
+
+				<v-page path="/" >
+
+					<form>
+						<input name="q" value="$.query.q" placeholder="search" />
+					</form>
+
+					<v-sql target="dogs" >
+						select * from dogs where $.query.q::text is null or name ~ $.query.q::text
+					</v-sql>
+
+					<ul>
+						<v-for-each source="$dogs" >
+							<li><a href="/dog/$id/view" >$name</a></li>
+						</v-for-each>
+					</ul>
+
+				</v-page>
+
+				<v-page path="/dog/:id" >
+
+					<v-sql target="$" single-row >
+						select * from dogs where id = $.params.id
+					</v-sql>
+
+					<!--
+					<v-nodejs target="$" >
+						return db.query("select * from dogs where id = ?", [$.params.id])
+					</v-nodejs>
+					-->
+
+					<v-unless source="$" >
+						<v-throw code=404 message="Dog not found" />
+					</v-unless>
+
+
+					<v-page path="/dog/:id/view" >
+						<article>
+							<h5>$name</h5>
+							<a role="button" href="/dog/$id/edit" >Edit</a>
+						</article>
+					</v-page>
+
+
+					<v-page path="/dog/:id/edit" >
+						<article>
+							<form v-name="edit_dog" >
+								<input name="name" value="$name" maxlength=128 />
+								<input name="dob" value="$dob" type="date" />
+								<input name="dinner_time" value="$dinner_time" type="time" />
+								<label> cheeky:
+									<input name="cheeky" checked="$cheeky" type="checkbox" />
+								</label>
+
+								<button type="submit" >Update</button>
+
+								<v-sql-action>
+									update dogs set dinner_time = $.body.dinner_time, name = $.body.name, cheeky = $.body.cheeky, dob = $.body.dob
+									where id = $.params.id
+								</v-sql-action>
+							</form>
+						</article>
+					</v-page>
+
+				</v-page>
+
+			</v-try>
+			<v-catch>
+				<!-- 
+				<img src="https://httpstatusdogs.com/img/$.error.code.jpg" />
+				-->
+
+				<p>$.error.message</p>
+			</v-catch>
+
+		</main>
+	</body>
+
+</html>

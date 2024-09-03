@@ -14,10 +14,6 @@
 	</head>
 	<body>
 
-		<v-if source="$foo" eq="bar" >
-			<v-expose path="/sql" src="coffee.sql" />
-		</v-if>
-
 		<header class="container" >
 			<nav>
 				<ul>
@@ -28,28 +24,8 @@
 
 		<main class="container" >
 
-			<p>See me!</p>
 
-			<v-nodejs>
-				console.log("In render")
-			</v-nodejs>
 
-			<v-try>
-				<p>In try</p>
-
-				<!--
-				<v-nodejs>
-					throw Error("Some error")
-				</v-nodejs>
-				-->
-				<v-throw code="500" />
-
-				<p>Should not see</p>
-			</v-try>
-
-			<v-catch>
-				<p>$.error.message</p>
-			</v-catch>
 
 		</main>
 	</body>
