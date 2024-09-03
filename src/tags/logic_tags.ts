@@ -40,6 +40,21 @@ export const XIf: Tag = {
 		}
 	},
 
+	action(el, cascade) {
+		const check = elementCheck(el)
+		const childs = cascade.childs(el.elements)
+
+		return async (ctx) => {
+			const doesMatch = check(ctx)
+
+			if (doesMatch) {
+				return await childs(ctx)
+			} else {
+				return filterPass(ctx)
+			}
+		}
+	},
+
 	loaderContains(el) {
 		const check = elementCheck(el)
 
@@ -63,6 +78,21 @@ export const XIf: Tag = {
 export const XUnless: Tag = {
 	name: "v-unless",
 	render(el, cascade) {
+		const check = elementCheck(el)
+		const childs = cascade.childs(el.elements)
+
+		return async (ctx) => {
+			const doesMatch = check(ctx)
+
+			if (!doesMatch) {
+				return await childs(ctx)
+			} else {
+				return filterPass(ctx)
+			}
+		}
+	},
+
+	action(el, cascade) {
 		const check = elementCheck(el)
 		const childs = cascade.childs(el.elements)
 
