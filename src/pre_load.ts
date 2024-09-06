@@ -5,15 +5,6 @@ import path from "node:path"
 import * as utils from "./utils"
 import {findTag} from "./filter"
 
-/*
-const relativeAttrs: Record<string, string[]> = {
-	"v-expose":["src"],
-	"v-json":["src"],
-	"v-yaml":["src"],
-	"v-markdown":["src"],
-}
-*/
-
 function getRelativeAttrs(el:Element): string[] {
 	if (el.type === "element") {
 		const tag = findTag(el)

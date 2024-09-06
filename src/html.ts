@@ -6,7 +6,6 @@ export
 type TextElement = {
 	type: "text"
 	text: string
-	startIndex: number
 	filename: string
 }
 
@@ -16,7 +15,6 @@ type TagElement = {
 	name: string
 	attributes: Record<string, string | boolean>
 	elements: Element[]
-	startIndex: number
 	filename: string
 }
 
@@ -28,6 +26,8 @@ const singleTags = ["hr", "br", "link", "meta"]
 const emptyTags: Record<string, string[]> = {
 	input: ["required", "disabled", "autofocus", "checked"],
 	details: ["open"],
+
+	// @TODO why add these. It's only for serialization????
 	form: ["v-ajax"],
 	"v-sql": ["single-row"],
 	"v-sql-action": ["single-row"],
@@ -85,7 +85,6 @@ function childrenToElements(children: ChildNode[], filename:string): Element[] {
 					name: child.name,
 					elements: childrenToElements(child.children, filename),
 					attributes: toAttributes(child),
-					startIndex: child.startIndex || NaN,
 					filename,
 				})
 				break
@@ -97,7 +96,6 @@ function childrenToElements(children: ChildNode[], filename:string): Element[] {
 				ret.push({
 					type: "text",
 					text: child.data,
-					startIndex: child.startIndex || NaN,
 					filename,
 				})
 				break
@@ -113,7 +111,7 @@ function toElement(doc: Document, filename:string): Element[] {
 
 export
 function parse(htmlString: string, filename:string) {
-	const dom = htmlparser2.parseDocument(htmlString, { recognizeSelfClosing:true, withStartIndices:true })
+	const dom = htmlparser2.parseDocument(htmlString, { recognizeSelfClosing:true })
 	return toElement(dom, filename)
 }
 

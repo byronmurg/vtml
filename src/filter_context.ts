@@ -1,6 +1,7 @@
 import get from "lodash/get"
-import type {RootDataset, Cookie} from "./types"
+import type {RootDataset, Cookie, Branch} from "./types"
 import {escapeHtml} from "./html"
+import Debug from "debug"
 
 //////////////////////////////////////////////
 // Big special template regex
@@ -23,10 +24,12 @@ const initGlobals = (): Globals => ({
 	returnCode: 200,
 })
 
+const debug = Debug("vtml:filter_context")
+
 export default
 class FilterContext {
 	constructor(
-		public readonly dataset: unknown,
+		public readonly dataset: object,
 		public readonly rootDataset: RootDataset,
 		private readonly parent: FilterContext|undefined = undefined,
 		private globals: Globals = initGlobals(),
@@ -34,13 +37,13 @@ class FilterContext {
 
 	// Initialize a new dataset with only the rootDataset
 	static Init(dataset:RootDataset) {
-		return new FilterContext(dataset, dataset)
+		return new FilterContext({}, dataset)
 	}
 
 	static TemplateRegex = templateRegex
 
 	// Initialize a copy with a new dataset
-	private copy(dataset:unknown): FilterContext {
+	private copy(dataset:object): FilterContext {
 		return new FilterContext(dataset, this.rootDataset, this, this.globals)
 	}
 
@@ -105,6 +108,7 @@ class FilterContext {
 		return this.copy(newDataset)
 	}
 
+	// @TODO remove
 	Split(): FilterContext[] {
 		if (!Array.isArray(this.dataset)) {
 			// If the dataset is not an array or null just return an empty array
@@ -115,13 +119,22 @@ class FilterContext {
 		}
 	}
 
-	SetVar(target:string, data:unknown): FilterContext {
-		const newDataset = (target === "$") ? data : {[target]: data}
-
-		return this.Set(newDataset)
+	SplitAs(as:string): FilterContext[] {
+		if (!Array.isArray(this.dataset)) {
+			// If the dataset is not an array or null just return an empty array
+			return []
+		} else {
+			// Or split the dataset
+			return this.dataset.map((sub) => this.SetVar(as, sub))
+		}
 	}
 
-	Set(newDataset:unknown): FilterContext {
+
+	SetVar(target:string, data:unknown): FilterContext {
+		const key = target.substr(1)
+		debug("set", key)
+		const newDataset = {[key]: data}
+
 		return this.copy(newDataset)
 	}
 
@@ -142,10 +155,17 @@ class FilterContext {
 		return this.templateString(key)
 	}
 
+	Merge(rhs:FilterContext): FilterContext {
+		return new FilterContext(
+			{ ...this.dataset, ...rhs.dataset },
+			this.rootDataset,
+			this.parent,
+			this.globals,
+		)
+	}
+
 	getKey(token:string) {
-		if (token === "$") {
-			return this.dataset
-		} else if (token.startsWith('$.')) {
+		if (token.startsWith('$.')) {
 			const rootKey = token.substr(2)
 			return get(this.rootDataset, rootKey)
 		} else if (token.startsWith("$")) {
@@ -189,6 +209,10 @@ class FilterContext {
 
 	templateStringJson(str:string): string {
 		return str.replace(templateRegex, (t) => this.getKeyJSON(t))
+	}
+
+	filterPass(): Branch {
+		return { ctx:this, elements:[] }
 	}
 }
 

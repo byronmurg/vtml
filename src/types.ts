@@ -24,6 +24,7 @@ type RootDataset = {
 	headers: Record<string, string|string[]|undefined>
 	cookies: Record<string, string>
 	error?: ResponseError
+	_inAction: boolean
 }
 
 export
