@@ -1,5 +1,5 @@
 import {Pool} from "pg"
-import sqlite from "sqlite3"
+import { Database as SQLiteDatabase } from "bun:sqlite"
 import Debug from "debug"
 import FilterContext from "./filter_context"
 
@@ -110,18 +110,13 @@ function postgresqlInterface(url:URL): NodeSqlInterface {
 }
 
 function sqliteInterface(url:URL): NodeSqlInterface {
-	const sqliteDb = new sqlite.Database(url.host)
+	const sqliteDb = new SQLiteDatabase(url.host)
 
-	function sqliteQuery(sql:string, vars:unknown[]): Promise<unknown[]> {
-		return new Promise((resolve, reject) => {
-			sqliteDb.all(sql, vars, (err, rows) => {
-				if (err) {
-					reject(err)
-				} else {
-					resolve(rows)
-				}
-			})
-		})
+	async function sqliteQuery(sql:string, vars:unknown[]): Promise<unknown[]> {
+		debug(sql)
+		const query = sqliteDb.query(sql)
+		// TS doesn't like this line as it's bun specific
+		return await query.all(vars)
 	}
 
 	function vtmlToSqliteQuery(sql:string, ctx:FilterContext): ProcessedSQL {

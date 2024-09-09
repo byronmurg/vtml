@@ -24,8 +24,11 @@
 
 		<main class="container" >
 
+			<v-json target="$q" >"Y%"</v-json>
+			<v-json target="$v" >22</v-json>
+
 			<v-sql target="$todos" >
-				select * from todos;
+				select * from simple.todos where text like $q and $v = $v;
 			</v-sql>
 
 			<v-dump source="$todos" />
