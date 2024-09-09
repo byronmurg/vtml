@@ -1,32 +1,30 @@
-import type {RootDataset, ElementChain, ExposeResult} from "./types"
-import type {TagElement} from "./html"
+import type {RootDataset, TagBlock, ExposeResult} from "./types"
 import * as utils from "./utils"
-import {prepareLoaderChain} from "./filter"
 import FilterContext from "./filter_context"
-import pathLib from "path"
 import {ServerError} from "./default_errors"
 
 export
 type ExposeDescriptor = {
 	path: string
-	element: TagElement
 	load: (rootDataset:RootDataset) => Promise<ExposeResult>
 }
 
 export default
-function prepareExpose(exposeTag:TagElement, preElements:ElementChain[]): ExposeDescriptor {
+function prepareExpose(expose:TagBlock): ExposeDescriptor {
 
-	const subPath = utils.requireAttribute(exposeTag, "path")
-	const src = utils.requireAttribute(exposeTag, "src")
-	const contentType = utils.getAttribute(exposeTag, "content-type")
+	const path = expose.attr("path")
+	const src = expose.attr("src")
+	const contentType = expose.attr("content-type")
 
 	// Get the path of the nearest page
-	const pagePath = utils.getPagePath(preElements)
+	const pagePath = expose.findAncestor(utils.byName("v-page"))?.attr("path") || "/"
 
 	// Figure out the form path suffix
-	const path = pathLib.posix.join(pagePath, subPath)
+	if (!path.startsWith(pagePath)) {
+		expose.error(`Must start with page path (${pagePath})`)
+	}
 
-	const chain = prepareLoaderChain(preElements)
+	const isolate = expose.Isolate()
 
 	async function load(rootDataset:RootDataset): Promise<ExposeResult> {
 
@@ -34,14 +32,14 @@ function prepareExpose(exposeTag:TagElement, preElements:ElementChain[]): Expose
 			const preCtx = FilterContext.Init(rootDataset)
 
 			// Execute chain
-			const chainResult = await chain(preCtx)
+			const {ctx, found} = await isolate(preCtx)
 
 			// If any elements in the chain set the error
 			// then we should assume that the expose
 			// would otherwise not be available.
-			if (chainResult.ctx.InError()) {
+			if (ctx.InError()) {
 				return {
-					status: chainResult.ctx.GetReturnCode(),
+					status: ctx.GetReturnCode(),
 					cookies: {},
 					sendFile: "",
 				}
@@ -50,8 +48,8 @@ function prepareExpose(exposeTag:TagElement, preElements:ElementChain[]): Expose
 			// If the expose would otherwise not be rendered by the
 			// loader then it is in a 'not found' state and therefore
 			// should return 404.
-			if (! chainResult.found) {
-				const cookies = chainResult.ctx.GetCookies()
+			if (! found) {
+				const cookies = ctx.GetCookies()
 				return { status:404, cookies, sendFile:"" }
 			}
 
@@ -62,7 +60,7 @@ function prepareExpose(exposeTag:TagElement, preElements:ElementChain[]): Expose
 			//
 			// This would be for things such as redirecting to a login
 			// page when a session has expired.
-			const chainRedirect = chainResult.ctx.GetRedirect()
+			const chainRedirect = ctx.GetRedirect()
 			if (chainRedirect) {
 				return {
 					status: 307,
@@ -71,9 +69,6 @@ function prepareExpose(exposeTag:TagElement, preElements:ElementChain[]): Expose
 					redirect: chainRedirect,
 				}
 			}
-
-			// Expose doesn't modify filter so we just use the chain one
-			const ctx = chainResult.ctx
 			
 			// Extract globals from the Context and create a RenderResponse
 			const cookies = ctx.GetCookies()
@@ -94,7 +89,6 @@ function prepareExpose(exposeTag:TagElement, preElements:ElementChain[]): Expose
 
 	return {
 		path,
-		element: exposeTag,
 		load,
 	}
 }

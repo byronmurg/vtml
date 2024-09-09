@@ -1,28 +1,36 @@
-import type { Element } from "../html"
-import type { Tag } from "../types"
-import { filterPass } from "../tag_utils"
+import CreateDisplayTag from "./display"
+import {Element} from "../html"
 
-export const XDump: Tag = {
+export
+const VDump = CreateDisplayTag({
 	name: "v-dump",
-	render(el) {
+	attributes: {
+		"source": { source:true, required:true },
+	},
+
+	prepareRender(block) {
+		const source = block.sourceAttr()
+		const el = block.element()
+
 		return async (ctx) => {
+			const data = ctx.getKey(source)
+			const attrs = block.templateAttributes(ctx)
+
 			const resp: Element = {
 				type: "element",
 				name: "pre",
-				startIndex: el.startIndex,
 				filename: el.filename,
-				attributes: el.attributes,
+				attributes: attrs,
 				elements: [
 					{
 						type: "text",
-						text: JSON.stringify(ctx.dataset, null, 2),
-						startIndex: el.startIndex,
+						text: JSON.stringify(data, null, 2),
 						filename: el.filename,
 					},
 				],
 			}
 
-			return filterPass(ctx, resp)
+			return { ctx, elements:[resp] }
 		}
-	},
-}
+	}
+})

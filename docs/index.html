@@ -114,7 +114,7 @@
 					<img src="/assets/github-mark-white.svg" style="height:2rem;" alt="Github icon">
 				</a>
 
-				<v-json target="tabs" >
+				<v-json target="$tabs" >
 					[
 						{ "icon":"home", "match":"^/$", "link":"/", "name":"Home" },
 						{ "icon":"info", "match":"^/tutorial/\\w+", "link":"/tutorial/getting_started", "name":"Tutorial" },
@@ -123,15 +123,15 @@
 				</v-json>
 
 				<div class="tabs m l" >
-				<v-for-each source="$tabs" >
+				<v-for-each source="$tabs" as="$tab" >
 
-					<v-nodejs target="isactive" >
-						return $.path.match($match) ? "active" : ""
+					<v-nodejs target="$isactive" >
+						return $.path.match($tab.match) ? "active" : ""
 					</v-nodejs>
 
-					<a href="$link" class="$isactive" >
-						<i>$icon</i>
-						<span>$name</span>
+					<a href="$tab.link" class="$isactive" >
+						<i>$tab.icon</i>
+						<span>$tab.name</span>
 					</a>
 				</v-for-each>
 				</div>
@@ -147,12 +147,12 @@
 				</div>
 
 				<article>
-					<v-nodejs target="open" >return $.path.startsWith("/tutorial")</v-nodejs>
+					<v-nodejs target="$open" >return $.path.startsWith("/tutorial")</v-nodejs>
 					<details open="$open" >
 						<summary class="none" >Tutorial</summary>
 						<hr>
 
-						<v-json target="tutorials" >
+						<v-json target="$tutorials" >
 							[
 								{ "path":"getting_started", "name":"Getting started" },
 								{ "path":"variables", "name":"Variables" },
@@ -162,12 +162,12 @@
 							]
 						</v-json>
 
-						<v-for-each source="$tutorials" >
-							<v-if source="$.path" eq="/tutorial/$path" >
-								<a class="row link-selected" href="/tutorial/$path">$name</a>
+						<v-for-each source="$tutorials" as="$tutorial" >
+							<v-if source="$.path" eq="/tutorial/$tutorial.path" >
+								<a class="row link-selected" href="/tutorial/$tutorial.path">$tutorial.name</a>
 							</v-if>
-							<v-unless source="$.path" eq="/tutorial/$path" >
-								<a class="row" href="/tutorial/$path">$name</a>
+							<v-unless source="$.path" eq="/tutorial/$tutorial.path" >
+								<a class="row" href="/tutorial/$tutorial.path">$tutorial.name</a>
 							</v-unless>
 						</v-for-each>
 
@@ -175,14 +175,14 @@
 				</article>
 
 				<article>
-					<v-yaml src="./reference.yaml" target="tags" />
+					<v-yaml src="./reference.yaml" target="$tags" />
 
-					<v-nodejs target="open" >return $.path.startsWith("/reference")</v-nodejs>
+					<v-nodejs target="$open" >return $.path.startsWith("/reference")</v-nodejs>
 					<details open="$open" >
 						<summary class="none" >Reference</summary>
 						<hr>
-						<v-for-each source="$tags">
-							<a class="row" href="/reference#$tag">$tag</a>
+						<v-for-each source="$tags" as="$entry" >
+							<a class="row" href="/reference#$entry.tag">$entry.tag</a>
 						</v-for-each>
 					</details>
 				</article>

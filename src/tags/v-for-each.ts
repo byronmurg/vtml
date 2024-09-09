@@ -1,23 +1,31 @@
-import type { Tag, Branch } from "../types"
-import * as utils from "../utils"
+import type {VtmlTag} from "../types"
 
-export const XForEach: Tag = {
+export const VForEach: VtmlTag = {
 	name: "v-for-each",
-	render(el, cascade) {
-		const source = utils.getSource(el)
-		const childs = cascade.childs(el.elements)
+	attributes: {
+		source: { required:true, source:true },
+		as: { required:true, inject:true },
+	},
+	prepare: (branch) => {
 
-		const pages = utils.findPages(el.elements)
-		if (pages.length) {
-			utils.error(el, "v-page cannot appear inside v-for-each")
-		}
+		const source = branch.sourceAttr()
+		const asAttr = branch.attr("as")
 
-		return async (ctx): Promise<Branch> => {
-			const ctxs = ctx.Select(source).Split()
+		return {
+			preceeds: (ctx) => Promise.resolve(ctx),
+			// Always found!!!
+			contains: (ctx) => Promise.resolve({ ctx, found:true }),
 
-			const childBranches = await Promise.all(ctxs.map((s) => childs(s)))
-			const elements = childBranches.flatMap((branch) => branch.elements)
-			return { ctx, elements }
+			async render(ctx) {
+				
+				const ctxs = ctx.Select(source).SplitAs(asAttr)
+
+				const childBranches = await Promise.all(ctxs.map((s) => branch.renderChildren(s)))
+				const elements = childBranches.flatMap((child) => child.elements)
+				return { ctx, elements }
+			}
 		}
 	},
 }
+
+

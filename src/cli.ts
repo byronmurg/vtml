@@ -1,19 +1,16 @@
 #!/usr/bin/env node
 import VtmlDocument from "./document"
 import {exposeVtmlDocument, exposeOptions} from "./web"
+import {printRenderDescription} from "./description"
 import {program} from "commander"
 import starterTemplate from "./template"
-
-async function run(filePath:string, options:exposeOptions) {
-	const vtmlDocument = VtmlDocument.LoadFromFile(filePath)
-	exposeVtmlDocument(vtmlDocument, options)
-}
 
 program.name("vtml")
 	.description("Vtml runtime cli")
 	.version("0.1.0")
 	.argument("<file>", "html start file")
 	.option("--template", "Print the starter template")
+	.option("--describe", "Describe rendering")
 	.option("--listen <addr>", "Listen address")
 	.option("--port <port>", "Listen port")
 	.action((file, options) => {
@@ -22,12 +19,21 @@ program.name("vtml")
 			return
 		}
 
+
+		const vtmlDocument = VtmlDocument.LoadFromFile(file)
+
+		if (options.describe) {
+			const description = vtmlDocument.getRenderDescription()
+			printRenderDescription(description)
+			return;
+		}
+
 		const cliOptions:exposeOptions = {
 			cliPort: options.port,
 			cliListen: options.listen,
 		}
 
-		run(file, cliOptions)
+		exposeVtmlDocument(vtmlDocument, cliOptions)
 	})
 
 program.parse()

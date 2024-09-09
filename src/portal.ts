@@ -1,36 +1,26 @@
-import type {RootDataset, ElementChain, PortalResult} from "./types"
-import type {TagElement} from "./html"
+import type {RootDataset, TagBlock, PortalResult} from "./types"
 import * as utils from "./utils"
-import {prepareLoaderChain, createPortalFilter} from "./filter"
 import FilterContext from "./filter_context"
-import pathLib from "path"
 import {ServerError} from "./default_errors"
 
 export
 type PortalDescriptor = {
 	path: string
-	element: TagElement
 	load: (rootDataset:RootDataset) => Promise<PortalResult>
 }
 
 export default
-function preparePortal(portalTag:TagElement, preElements:ElementChain[]): PortalDescriptor {
+function preparePortal(portalTag:TagBlock): PortalDescriptor {
 
-	const xName = utils.getAttribute(portalTag, "v-name")
-
-	if (! xName) {
-		utils.error(portalTag, `No v-name set`)
-	}
+	const xName = portalTag.attr("v-name")
 
 	// Get the path of the nearest page
-	const pagePath = utils.getPagePath(preElements)
+	const pagePath = portalTag.findAncestor(utils.byName("v-page"))?.attr("path") || "/"
 
 	// Figure out the form path suffix
-	const path = pathLib.posix.join(pagePath, xName)
+	const path = utils.joinPaths(pagePath, xName)
 
-	const chain = prepareLoaderChain(preElements)
-
-	const portalFilter = createPortalFilter(portalTag)
+	const isolate = portalTag.Isolate()
 
 	async function load(rootDataset:RootDataset): Promise<PortalResult> {
 
@@ -38,14 +28,14 @@ function preparePortal(portalTag:TagElement, preElements:ElementChain[]): Portal
 			const preCtx = FilterContext.Init(rootDataset)
 
 			// Execute chain
-			const chainResult = await chain(preCtx)
+			const {elements, found, ctx} = await isolate(preCtx)
 
 			// If any elements in the chain set the error
 			// then we should assume that the portal
 			// would otherwise not be available.
-			if (chainResult.ctx.InError()) {
+			if (ctx.InError()) {
 				return {
-					status: chainResult.ctx.GetReturnCode(),
+					status: ctx.GetReturnCode(),
 					cookies: {},
 					elements: [],
 				}
@@ -54,8 +44,8 @@ function preparePortal(portalTag:TagElement, preElements:ElementChain[]): Portal
 			// If the portal would otherwise not be rendered by the
 			// loader then it is in a 'not found' state and therefore
 			// should return 404.
-			if (! chainResult.found) {
-				const cookies = chainResult.ctx.GetCookies()
+			if (! found) {
+				const cookies = ctx.GetCookies()
 				return { status:404, cookies, elements:[] }
 			}
 
@@ -65,7 +55,7 @@ function preparePortal(portalTag:TagElement, preElements:ElementChain[]): Portal
 			//
 			// This would be for things such as redirecting to a login
 			// page when a session has expired.
-			const chainRedirect = chainResult.ctx.GetRedirect()
+			const chainRedirect = ctx.GetRedirect()
 			if (chainRedirect) {
 				return {
 					status: 307,
@@ -74,10 +64,6 @@ function preparePortal(portalTag:TagElement, preElements:ElementChain[]): Portal
 					redirect: chainRedirect,
 				}
 			}
-
-			// Finally we execute the chain with the filter context
-			// of the preceeding chain.
-			const {ctx, elements} = await portalFilter(chainResult.ctx)
 			
 			// Extract globals from the Context and create a RenderResponse
 			const cookies = ctx.GetCookies()
@@ -96,7 +82,6 @@ function preparePortal(portalTag:TagElement, preElements:ElementChain[]): Portal
 
 	return {
 		path,
-		element: portalTag,
 		load,
 	}
 }

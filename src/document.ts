@@ -3,13 +3,13 @@ import * as OAPI from "./oapi"
 import preLoad from "./pre_load"
 
 import FilterContext from "./filter_context"
-import {RootFilter, RootDataset, RenderResponse, BodyType} from "./types"
-import FilterRoot from "./filter"
-import * as utils from "./utils"
+import {RootDataset, Block, RenderResponse, BodyType} from "./types"
+import {MakeRootBlock} from "./block"
 import PrepareForm, {FormDescriptor} from "./form"
 import  {Readable, PassThrough} from "stream"
 import PreparePortal, {PortalDescriptor} from "./portal"
 import PrepareExpose, {ExposeDescriptor} from "./expose"
+import * as utils from "./utils"
 
 async function streamToString(stream:Readable): Promise<string> {
     // lets have a ReadableStream as a stream variable
@@ -30,89 +30,94 @@ class VtmlDocument {
 	public readonly portals: PortalDescriptor[]
 	public readonly exposes: ExposeDescriptor[]
 	public readonly oapiSchema: OAPI.OpenAPIObject
-	private _renderDocument: RootFilter
+	private rootBlock: Block
+	private pathMap: Record<string, boolean> = {}
 
-	private constructor(public readonly root:HTML.Element[]) {
+	private constructor(root:HTML.Element[]) {
+		this.rootBlock = MakeRootBlock(root)
 		this.forms = this.prepareForms()
 		this.portals = this.preparePortals()
 		this.exposes = this.prepareExposes()
 		this.oapiSchema = OAPI.createOpenApiSchema(this)
-		this._renderDocument = FilterRoot(root)
 	}
 
 	get title() {
-		return utils.findTitle(this.root)
+		return utils.findTitle(this.rootBlock)
+	}
+
+	getPages() {
+		return this.rootBlock.FindAll(utils.matchPage).map(
+			(pageBlock) => pageBlock.attr("path")
+		)
 	}
 
 	prepareForms(): FormDescriptor[] {
-		const actionForms = utils.findActionForms(this.root)
+		const actionForms = this.rootBlock.FindAll(utils.matchActionForm)
 
-		const forms = actionForms.map((form) => {
-			const preElements = utils.getPrecedingElements(this.root, form)
-			return PrepareForm(form, preElements)
-		})
+		const forms = actionForms.map(PrepareForm)
 
 		// Check for duplicate v-name(s). Even though the full path may be
 		// different for each form the v-name must be unique.
 
-		const formNames:Record<string, true> = {}
-
 		for (const form of forms) {
 
-			if (formNames[form.name]) {
-				utils.error(form.element, `Duplicate v-name`)
+			if (this.pathMap[form.path]) {
+				throw Error(`Duplicate path in form ${form.path}`)
 			}
 
-			formNames[form.name] = true
+			this.pathMap[form.path] = true
 		}
 
 		return forms
 	}
 
 	preparePortals(): PortalDescriptor[] {
-		const actionForms = utils.findPortals(this.root)
+		const portalBlocks = this.rootBlock.FindAll(utils.matchPortal)
 
-		const portals = actionForms.map((portal) => {
-			const preElements = utils.getPrecedingElements(this.root, portal)
-			return PreparePortal(portal, preElements)
-		})
-
-		// Check that no two portal paths are the same.
-
-		const portalPaths:Record<string, true> = {}
+		const portals = portalBlocks.map(PreparePortal)
 
 		for (const portal of portals) {
 
-			if (portalPaths[portal.path]) {
-				utils.error(portal.element, `Duplicate portal path`)
+			if (this.pathMap[portal.path]) {
+				throw Error(`Duplicate path in portal ${portal.path}`)
 			}
 
-			portalPaths[portal.path] = true
+			this.pathMap[portal.path] = true
 		}
 
 		return portals
 	}
 
 	prepareExposes(): ExposeDescriptor[] {
-		const exposes = utils.findExposes(this.root)
+		const exposeBlocks = this.rootBlock.FindAll(utils.matchExpose)
 
-		return exposes.map((expose) => {
-			const preElements = utils.getPrecedingElements(this.root, expose)
-			return PrepareExpose(expose, preElements)
-		})
+		const exposes = exposeBlocks.map(PrepareExpose)
+
+		for (const expose of exposes) {
+
+			if (this.pathMap[expose.path]) {
+				throw Error(`Duplicate path in expose ${expose.path}`)
+			}
+
+			this.pathMap[expose.path] = true
+		}
+
+		return exposes
 	}
 
 	findHint(tag:string, attr:string): string|undefined {
-		return utils.findHint(this.root, tag, attr)
+		return utils.findHint(this.rootBlock, tag, attr)
 	}
 
-	findPages(): string[] {
-		const pages = utils.findPages(this.root)
-		return pages.map((page) => utils.requireAttribute(page, 'path'))
-	}
+	async renderDocument(inputCtx:FilterContext): Promise<RenderResponse> {
+		const {elements, ctx} = await this.rootBlock.Render(inputCtx)
 
-	renderDocument(ctx:FilterContext) {
-		return this._renderDocument(ctx)
+		return {
+			elements,
+			status: ctx.GetReturnCode(),
+			cookies: ctx.GetCookies(),
+		}
+
 	}
 
 	async renderLoaderMl(ctx:FilterContext): Promise<string> {
@@ -141,5 +146,9 @@ class VtmlDocument {
 	static LoadFromFile(filePath:string) {
 		const document = preLoad(filePath)
 		return new this(document)
+	}
+
+	getRenderDescription() {
+		return this.rootBlock.getRenderDescription()
 	}
 }

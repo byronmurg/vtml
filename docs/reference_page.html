@@ -1,19 +1,19 @@
-<v-yaml src="./reference.yaml" target="tags" />
+<v-yaml src="./reference.yaml" target="$tags" />
 
-<v-for-each source="$tags">
+<v-for-each source="$tags" as="$entry" >
 	<article class="border" style="margin-bottom: 2rem">
-		<a id="$tag" href="#$tag"><h3>$tag</h3></a>
+		<a id="$entry.tag" href="#$entry.tag"><h3>$entry.tag</h3></a>
 
-		<v-with source="$pre-process">
+		<v-if source="$entry.pre-process">
 			<span class="chip">pre-process</span>
-		</v-with>
-		<v-with source="$form-only">
+		</v-if>
+		<v-if source="$entry.form-only">
 			<span class="chip">form-only</span>
-		</v-with>
+		</v-if>
 
-		<p>$description</p>
+		<p>$entry.description</p>
 
-		<v-with source="$arguments">
+		<v-if source="$entry.arguments">
 			<table class="arg-table">
 				<thead>
 					<tr>
@@ -23,34 +23,34 @@
 					</tr>
 				</thead>
 				<tbody>
-					<v-for-each>
+					<v-for-each source="$entry.arguments" as="$arg" >
 						<tr>
-							<td>$name</td>
+							<td>$arg.name</td>
 
 							<td>
-								<v-with source="$default"> $ </v-with>
-								<v-unless source="$default">
-									<v-if source="$optional"> optional </v-if>
-									<v-unless source="$optional">
+								<v-if source="$arg.default">$arg.default</v-with>
+								<v-unless source="$arg.default">
+									<v-if source="$arg.optional"> optional </v-if>
+									<v-unless source="$arg.optional">
 										<b>required</b>
 									</v-unless>
 								</v-unless>
 							</td>
 
-							<v-if source="$templated">
+							<v-if source="$arg.templated">
 								<td>yes</td>
 							</v-if>
-							<v-unless source="$templated">
+							<v-unless source="$arg.templated">
 								<td>no</td>
 							</v-unless>
 						</tr>
 					</v-for-each>
 				</tbody>
 			</table>
-		</v-with>
+		</v-if>
 
-		<v-with source="$example">
-			<pre class="language-html"><code>$</code></pre>
-		</v-with>
+		<v-if source="$entry.example">
+			<pre class="language-html"><code>$entry.example</code></pre>
+		</v-if>
 	</article>
 </v-for-each>

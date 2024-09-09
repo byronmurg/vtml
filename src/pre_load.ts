@@ -2,13 +2,24 @@ import type { Element } from "./html"
 import * as HTML from "./html"
 import {readFileSync} from "node:fs"
 import path from "node:path"
-import * as utils from "./utils"
-import {findTag} from "./filter"
+import {findTag} from "./find_tag"
 
 function getRelativeAttrs(el:Element): string[] {
 	if (el.type === "element") {
 		const tag = findTag(el)
-		return tag?.relativeAttributes || []
+		if (! tag) {
+			return []
+		}
+
+		const relativeAttrs = []
+		for (const k in tag.attributes) {
+			const v = tag.attributes[k]
+			if (v.relative) {
+				relativeAttrs.push(k)
+			}
+		}
+
+		return relativeAttrs
 	} else {
 		return []
 	}
@@ -32,7 +43,10 @@ function preFilterElements(elements:Element[], dir:string): Element[] {
 		if (child.type === "text") {
 			return child
 		} else if (child.name === "v-include") {
-			const src = utils.requireAttribute(child, "src")
+			const src = child.attributes.src.toString()
+			if (! src) {
+				throw Error(`No src attribute on v-exclude in ${child.filename}`)
+			}
 			return preLoadInclude(path.posix.join(dir, src))
 		} else if (relativeAttrs.length) {
 			// If the tag has a relative attribute join it

@@ -100,6 +100,12 @@ class FilterContext {
 		return this
 	}
 
+	UnsetError() {
+		// Unset error but leave the return code
+		this.rootDataset.error = undefined
+		return this
+	}
+
 
 	// Alter methods
 

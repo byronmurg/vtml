@@ -1,18 +1,19 @@
-import type { Tag, Branch } from "../types"
-import { filterPass } from "../tag_utils"
-import * as utils from "../utils"
+import CreateLoaderTag from "./loader"
 
-export const XJson: Tag = {
+export 
+const VJson = CreateLoaderTag({
 	name: "v-json",
-	relativeAttributes: ["src"],
-	render(el) {
-		const json = utils.bodyOrSrc(el)
-		const targetAttr = utils.requireTargetAttribute(el)
+
+	attributes: {
+		"src": { special:true, relative:true },
+		"target": { target:true, required:true },
+	},
+
+	prepareChain(block) {
+		const json = block.bodyOrSrc()
+		const targetAttr = block.targetAttr()
 		const jsonData = JSON.parse(json)
 
-		return async (ctx): Promise<Branch> => {
-			const nextCtx = ctx.SetVar(targetAttr, jsonData)
-			return filterPass(nextCtx)
-		}
-	},
-}
+		return async (ctx) => ctx.SetVar(targetAttr, jsonData)
+	}
+})

@@ -14,7 +14,7 @@ const debug = Debug("vtml")
 
 const matchSearch = (url:string) => (url.match(/\?(.+)/)||[])[1]
 
-const createRootDataset = (req:Express.Request): RootDataset => ({
+const createRootDataset = (req:Express.Request, action:boolean): RootDataset => ({
 	query: req.query,
 	params: req.params,
 	search: matchSearch(req.originalUrl),
@@ -23,11 +23,11 @@ const createRootDataset = (req:Express.Request): RootDataset => ({
 	method: req.method,
 	headers: req.headers,
 	cookies: req.cookies,
+	action,
 })
 
-const createFilterContextFromRequest = (req:Express.Request): FilterContext => FilterContext.Init(
-	createRootDataset(req),
-)
+const createFilterContextFromRequest = (req:Express.Request, action:boolean): FilterContext =>
+	FilterContext.Init(createRootDataset(req, action))
 
 export type exposeOptions = {
 	cliListen?: string
@@ -74,7 +74,7 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 			code: status,
 			message: error || DefaultError(status),
 		}
-		const rootDataset = createRootDataset(req)
+		const rootDataset = createRootDataset(req, false)
 
 		const errRoot = { ...rootDataset, error:err }
 		const ctx = FilterContext.Init(errRoot)
@@ -93,7 +93,7 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 
 	function renderLoader() {
 		return async function(req:Express.Request, res:Express.Response) {
-			const ctx = createFilterContextFromRequest(req)
+			const ctx = createFilterContextFromRequest(req, false)
 			return renderFromContext(ctx, res)
 		}
 	}
@@ -108,7 +108,7 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 
 		debug(`Create action /action${form.path}`)
 		app.post(`/action${form.path}`, async (req, res) => {
-			const rootDataset = createRootDataset(req)
+			const rootDataset = createRootDataset(req, true)
 
 			const formRes = await form.executeFormEncoded(rootDataset, req.body)
 
@@ -122,7 +122,7 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 
 		app.post(`/ajax${form.path}`, async (req, res) => {
 
-			const rootDataset = createRootDataset(req)
+			const rootDataset = createRootDataset(req, true)
 
 			const formRes = await form.executeFormEncoded(rootDataset, req.body)
 
@@ -136,7 +136,7 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 		})
 
 		app.post(`/api${form.path}`, Express.json(), async (req, res) => {
-			const rootDataset = createRootDataset(req)
+			const rootDataset = createRootDataset(req, true)
 
 			const formRes = await form.execute(rootDataset, req.body)
 
@@ -164,7 +164,7 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 		debug("Create portal", portal.path)
 
 		app.get(portal.path, async (req, res) => {
-			const rootDataset = createRootDataset(req)
+			const rootDataset = createRootDataset(req, false)
 	
 			const portalRes = await portal.load(rootDataset)
 
@@ -184,21 +184,7 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 	app.use("/api/_schema.json", (_, res) => res.json(vtmlDocument.oapiSchema))
 
 
-	// @NOTE for debuging
-	if (debug.enabled) {
-		app.get("/debug", async (req, res) => {
-			const ctx = createFilterContextFromRequest(req)
-			const response = await vtmlDocument.renderDocument(ctx)
-			res.json(response)
-		})
-
-		app.get("/root", async (req, res) => {
-			res.json(vtmlDocument.root)
-		})
-	}
-
-
-	const pages = vtmlDocument.findPages()
+	const pages = vtmlDocument.getPages()
 
 	for (const path of pages) {
 		debug("page found", path)
@@ -216,7 +202,7 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 
 	for (const expose of vtmlDocument.exposes) {
 		app.get(expose.path, async (req, res) => {
-			const rootDataset = createRootDataset(req)
+			const rootDataset = createRootDataset(req, false)
 			const exposeResult = await expose.load(rootDataset)
 
 			// Redirect if required

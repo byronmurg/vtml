@@ -1,37 +1,32 @@
-import type {Tag} from "../types"
-import type {TextElement} from "../html"
-import {filterHTML} from "../filter"
+import CreateOverrideTag from "./override"
 import * as utils from "../utils"
-import {filterPass} from "../tag_utils"
-import templateAttributes from "../attributes"
+import {TextElement} from "../html"
 
-export const ScriptTag:Tag = {
+export const Script = CreateOverrideTag({
 	name: "script",
-	render(el, cascade) {
-		const text = utils.getText(el)
+	attributes: {},
+	prepareRender: (block) => {
+		const el = block.element()
+		const body = utils.getText(el).trim()
 
-		if (text.trim()) {
-			return async (ctx) => {
-				const attributes = templateAttributes(el.attributes, ctx)
+		return async (ctx) => {
+			const attributes = block.templateAttributes(ctx)
 
-				const textBody = ctx.templateStringJson(text)
+			const textBody = ctx.templateStringJson(body)
 
-				const textNode: TextElement = {
-					type: "text",
-					text: textBody,
-					startIndex: el.startIndex,
-					filename: el.filename,
-				}
-
-				return filterPass(ctx, {
-					...el,
-					attributes,
-					elements:[textNode],
-					startIndex: el.startIndex,
-				})
+			const textNode: TextElement = {
+				type: "text",
+				text: textBody,
+				filename: el.filename,
 			}
-		} else {
-			return filterHTML(el, cascade)
+
+			const resp = {
+				...el,
+				attributes,
+				elements:[textNode],
+			}
+
+			return { ctx, elements:[resp] }
 		}
 	},
-}
+})

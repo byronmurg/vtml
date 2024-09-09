@@ -1,9 +1,8 @@
-import {Block, BlockReport, MakeBlock} from "./block"
+import {MakeBlock} from "./index"
 import {pullAll, intersection, uniq} from "lodash"
-import type {Branch} from "./types"
-import * as HTML from "./html"
-import type FilterContext from "./filter_context"
-import {RenderDescription} from "./description"
+import type {RenderDescription, Branch, Block, TagBlock, BlockReport} from "../types"
+import * as HTML from "../html"
+import type FilterContext from "../filter_context"
 import Debug from "debug"
 
 type ChainReport = {
@@ -93,8 +92,6 @@ class BlockCollection {
 					// and can be added to the real order
 					const childName = child.block.getName()
 					realOrder[i].push(child)
-
-					this.debug(childName, "in", i, report.consumes)
 
 					// Add to the description
 					description[child.seq] = {
@@ -289,7 +286,7 @@ class BlockCollection {
 		return ctx
 	}
 
-	findInChildren(check:(el:HTML.TagElement) => boolean): Block|undefined {
+	findInChildren(check:(el:TagBlock) => boolean): TagBlock|undefined {
 		for (const child of this.children) {
 			const found = child.Find(check)
 			if (found) {
@@ -298,8 +295,16 @@ class BlockCollection {
 		}
 	}
 
+	findAllInChildren(check:(el:TagBlock) => boolean): TagBlock[] {
+		return this.children.flatMap((child) => child.FindAll(check))
+	}
+
 	getRenderDescription() {
 		return this.description
+	}
+
+	anyDynamic(): boolean {
+		return this.children.some((child) => child.isDynamic())
 	}
 }
 

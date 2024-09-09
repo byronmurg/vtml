@@ -1,14 +1,11 @@
 import {createPostFormApiSchema, SchemaObject, ParameterObject, createPathParameters, expressToOapiPath} from "./oapi"
-import type {RootDataset, InputValue, BodyType, ElementChain, FormResult} from "./types"
-import pathLib from "path"
-import type {TagElement} from "./html"
+import type {RootDataset, InputValue, BodyType, TagBlock, FormResult} from "./types"
 import * as utils from "./utils"
 import Ajv, {ValidationError} from "ajv"
 import AjvFormats from "ajv-formats"
 import DefaultError, {ServerError} from "./default_errors"
 
 import FilterContext from "./filter_context"
-import {prepareActionChain, createFormFilter} from "./filter"
 
 const ajv = new Ajv()
 AjvFormats(ajv)
@@ -16,6 +13,18 @@ AjvFormats(ajv)
 function formatValidationError(e:ValidationError): string {
 	return e.message +" : "+ e.errors[0].message
 }
+
+
+export
+function matchInputs(block:TagBlock): boolean {
+	const inputTypes = ["input", "select", "textarea"]
+	const excludedTypes = ["submit", "reset", "button"]
+
+	const name = block.getName()
+	const type = block.attr("type")
+	return inputTypes.includes(name) && !excludedTypes.includes(type)
+}
+
 
 function simpleToTime(timeStr:string): string {
 	// This function is neccesary due to the slightly different
@@ -37,8 +46,8 @@ function simpleToTime(timeStr:string): string {
 	return timeStr + "Z"
 }
 
-function parseFormInput(value:string, input:TagElement): boolean|string|number {
-	const type = utils.getAttribute(input, "type")
+function parseFormInput(value:string, input:TagBlock): boolean|string|number {
+	const type = input.attr("type")
 	switch (type) {
 		case "checkbox":
 			return (value === "on")
@@ -58,26 +67,27 @@ function asArray(v:string|string[]): string[] {
 	return Array.isArray(v)? v : [v]
 }
 
-function parseFormSelect(value:string, field:TagElement): string|string[] {
-	const isMulti = utils.getBoolAttribute(field, "multiple")
+function parseFormSelect(value:string, field:TagBlock): string|string[] {
+	const isMulti = field.boolAttr("multiple")
 	return isMulti ? asArray(value) : value
 }
 
-function parseFormField(value:string, field:TagElement): InputValue {
-	if (field.name === "input") {
+function parseFormField(value:string, field:TagBlock): InputValue {
+	const name = field.getName()
+	if (name === "input") {
 		return parseFormInput(value, field)
-	} else if (field.name === "select") {
+	} else if (name === "select") {
 		return parseFormSelect(value, field)
 	} else {
 		return value
 	}
 }
 
-function parseFormFields(body:Record<string, string>, formFields:TagElement[]): BodyType {
+function parseFormFields(body:Record<string, string>, formFields:TagBlock[]): BodyType {
 	const newBody: BodyType = {}
 
 	for (const field of formFields) {
-		const name = utils.getAttribute(field, "name")
+		const name = field.attr("name")
 		if (! name) continue
 
 		const value = body[name]
@@ -93,7 +103,6 @@ type FormDescriptor = {
 	path: string
 	oapiPath: string
 
-	element: TagElement
 	inputSchema: SchemaObject
 	parameters: ParameterObject[]
 	execute: (rootDataset:RootDataset, body:BodyType) => Promise<FormResult>
@@ -101,27 +110,21 @@ type FormDescriptor = {
 }
 
 export default
-function prepareForm(postForm:TagElement, preElements:ElementChain[]): FormDescriptor {
+function prepareForm(postForm:TagBlock): FormDescriptor {
 	
-	const xName = utils.getAttribute(postForm, "v-name")
-
-	if (! xName) {
-		utils.error(postForm, `No v-name set`)
-	}
+	const xName = postForm.attr("v-name")
 
 	// Get the path of the nearest page
-	const pagePath = utils.getPagePath(preElements)
+	const pagePath = postForm.findAncestor(utils.byName("v-page"))?.attr("path") || "/"
 
 	// Figure out the form path suffix
-	const path = pathLib.posix.join(pagePath, xName)
+	const path = utils.joinPaths(pagePath, xName)
 
 	// The oapi path is slightly different
 	const oapiPath = expressToOapiPath(path)
 
-	const chain = prepareActionChain(preElements)
-
 	// Create the action filter
-	const filterAction = createFormFilter(postForm)
+	const isolate = postForm.Isolate()
 
 	// Create OAPI schema
 	const inputSchema = createPostFormApiSchema(postForm)
@@ -130,7 +133,7 @@ function prepareForm(postForm:TagElement, preElements:ElementChain[]): FormDescr
 	const parameters = createPathParameters(pagePath)
 
 	// Find all inputs (and selects, and textareas)
-	const formInputs = utils.findInputs(postForm)
+	const formInputs = postForm.FindAll(matchInputs)
 
 	// Initialize validator
 	const validator = ajv.compile({ ...inputSchema, $async:true })
@@ -151,15 +154,15 @@ function prepareForm(postForm:TagElement, preElements:ElementChain[]): FormDescr
 
 			// Execute the chain, which is all elements above or
 			// preceeding this form.
-			const chainResult = await chain(preCtx)
+			const {elements, found, ctx} = await isolate(preCtx)
 
 			// If any elements in the chain set the error
 			// then we should assume that the form
 			// would otherwise not be available.
-			if (chainResult.ctx.InError()) {
+			if (ctx.InError()) {
 				return {
-					status: chainResult.ctx.GetReturnCode(),
-					error: chainResult.ctx.GetErrorMessage(),
+					status: ctx.GetReturnCode(),
+					error: ctx.GetErrorMessage(),
 					cookies: {},
 					elements: [],
 				}
@@ -168,8 +171,8 @@ function prepareForm(postForm:TagElement, preElements:ElementChain[]): FormDescr
 			// If the form would otherwise not be rendered by the
 			// loader then it is in a 'not found' state and therefore
 			// should return 404.
-			if (! chainResult.found) {
-				const cookies = chainResult.ctx.GetCookies()
+			if (! found) {
+				const cookies = ctx.GetCookies()
 				return { status:404, cookies, elements:[], error:DefaultError(404) }
 			}
 
@@ -180,7 +183,7 @@ function prepareForm(postForm:TagElement, preElements:ElementChain[]): FormDescr
 			//
 			// This would be for things such as redirecting to a login
 			// page when a session has expired.
-			const chainRedirect = chainResult.ctx.GetRedirect()
+			const chainRedirect = ctx.GetRedirect()
 			if (chainRedirect) {
 				return {
 					status: 307,
@@ -189,11 +192,6 @@ function prepareForm(postForm:TagElement, preElements:ElementChain[]): FormDescr
 					redirect: chainRedirect,
 				}
 			}
-
-
-			// Finally we execute the action with the filter context
-			// of the preceeding chain.
-			const {ctx, elements} = await filterAction(chainResult.ctx)
 			
 			// Extract globals from the Context and create a RenderResponse
 			const cookies = ctx.GetCookies()
@@ -228,7 +226,6 @@ function prepareForm(postForm:TagElement, preElements:ElementChain[]): FormDescr
 
 	return {
 		name: xName,
-		element: postForm,
 		path,
 		oapiPath,
 		parameters,

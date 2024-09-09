@@ -1,38 +1,39 @@
-import type { Tag } from "../types"
-import { filterPass } from "../tag_utils"
-import * as utils from "../utils"
+import type {VtmlTag} from "../types"
+import type FilterContext from "../filter_context"
 
-export const XWithTag: Tag = {
+
+export
+const VWith: VtmlTag = {
 	name: "v-with",
-	render(el, cascade) {
-		const source = utils.getSource(el)
-		const content = cascade.childs(el.elements)
-		return async (ctx) => {
-			const sub = ctx.Select(source)
-			if (!sub.dataset) {
-				return filterPass(ctx)
-			} else {
-				const s = await content(sub)
-				return { ctx, elements: s.elements }
+	attributes: {
+		source: { source:true, required:true },	
+		as: { inject:true, required:true },	
+	},
+
+	prepare(block) {
+		const source = block.sourceAttr()
+
+		const isFound = (ctx:FilterContext) => ctx.getKey(source) !== undefined
+
+		return {
+			preceeds: (ctx) => Promise.resolve(ctx),
+
+			contains: (ctx) => {
+				const found = isFound(ctx)
+				return Promise.resolve({ ctx, found })
+			},
+
+			async render(ctx) {
+				const found = isFound(ctx)
+
+				if (found) {
+					const subCtx = ctx.Select(source)
+					return block.renderChildren(subCtx)
+				} else {
+					return ctx.filterPass()
+				}
 			}
 		}
-	},
-	loaderContains(el) {
-		const source = utils.getSource(el)
-
-		return (ctx) => {
-			ctx = ctx.Select(source)
-			const found = !!ctx.dataset
-			return { ctx, found }
-		}
-	},
-	actionContains(el) {
-		const source = utils.getSource(el)
-
-		return (ctx) => {
-			ctx = ctx.Select(source)
-			const found = !!ctx.dataset
-			return { ctx, found }
-		}
-	},
+	}
 }
+

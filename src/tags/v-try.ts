@@ -1,25 +1,29 @@
-import type { Tag } from "../types"
-import {filterPass } from "../tag_utils"
-import Debug from "debug"
+import {VtmlTag} from "../types"
 import {ServerError} from "../default_errors"
+import type FilterContext from "../filter_context"
 
-const debug = Debug("vtml:tags:v-try")
-
-export const XTry:Tag = {
+export
+const VTry:VtmlTag = {
 	name: "v-try",
-	render(el, cascade) {
-		const childs = cascade.childs(el.elements)
+	attributes: {},
 
-		return async (ctx) => {
-			try {
-				debug("Started")
-				return childs(ctx)
-			} catch (e) {
-				console.log(e)
-				ctx = ctx.SetError(500, ServerError)
-				return filterPass(ctx)
-			} finally {
-				debug("finished")
+	prepare(block) {
+		return {
+			preceeds: (ctx:FilterContext) => Promise.resolve(ctx),
+			contains: (ctx) => Promise.resolve({ctx, found:true}),
+
+			async render(ctx) {
+				
+				try {
+					block.debug("started")
+					return block.renderChildren(ctx)
+				} catch (e) {
+					console.log(e)
+					ctx = ctx.SetError(500, ServerError)
+					return ctx.filterPass()
+				} finally {
+					block.debug("finished")
+				}
 			}
 		}
 	}

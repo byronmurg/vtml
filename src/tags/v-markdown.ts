@@ -1,22 +1,21 @@
-import type { Tag, Branch } from "../types"
-import { filterPass } from "../tag_utils"
+import CreateDisplayTag from "./display"
+import * as HTML from "../html"
 import * as utils from "../utils"
 import {parse as mdParse} from "marked"
-import * as HTML from "../html"
-import { readFileSync } from "fs"
 
-export const XMarkdown: Tag = {
+export
+const VMarkdown = CreateDisplayTag({
 	name: "v-markdown",
-	relativeAttributes: ["src"],
-	render(el) {
-		const mdSrc = utils.requireAttribute(el, "src")
-		const md = readFileSync(mdSrc, "utf8")
-		const rawHTML = mdParse(HTML.escapeHtml(md)) as string
-		const html = HTML.parse(rawHTML, el.filename)
-
-		// @TODO startIndex?
-		return async (ctx): Promise<Branch> => {
-			return filterPass(ctx, ...html)
-		}
+	attributes: {
+		"src": { special:true, required:true, relative:true },
 	},
-}
+
+	prepareRender(block) {
+		const mdSrc = block.attr("src")
+		const md = utils.readFile(mdSrc)
+		const rawHTML = mdParse(HTML.escapeHtml(md)) as string
+		const html = HTML.parse(rawHTML, block.element().filename)
+
+		return (ctx) => Promise.resolve({ ctx, elements:html })
+	}
+})

@@ -1,11 +1,4 @@
-import type { BlockReport } from "./block"
-
-export type RenderDescription = {
-	name: string
-	seq: number
-	report: BlockReport
-	order: RenderDescription[]
-}
+import type {RenderDescription} from "./types"
 
 function makeIndentString(indent: number): string {
 	return new Array(indent * 2).fill(" ").join("")
@@ -18,7 +11,7 @@ function printRenderDescriptionRow(
 	const indentStr = makeIndentString(indent)
 
 	const report = desc.report
-	const parts = []
+	const parts = [`(${desc.seq})${desc.name}`]
 
 	if (report.provides.length) {
 		const provides = desc.report.provides.join(" ")
@@ -35,7 +28,7 @@ function printRenderDescriptionRow(
 		parts.push(`\x1b[94m${consumes}\x1b[0m`)
 	}
 
-	console.log(`${indentStr}(${desc.seq})<${desc.name}`, parts.join(" "), ">")
+	console.log(`${indentStr}<${parts.join(" ")}>`)
 	printRenderDescription(desc.order, indent + 1)
 }
 

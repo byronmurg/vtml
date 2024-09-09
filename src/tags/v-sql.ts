@@ -1,40 +1,24 @@
-import type { Tag } from "../types"
-import type {TagElement} from "../html"
-import { filterPass, stripFilter, loaderOnlyPreceeds, loaderOnlyFilter } from "../tag_utils"
-import * as utils from "../utils"
-import type FilterContext from "../filter_context"
+import CreateLoaderTag from "./loader"
 import * as SQL from "../sql"
 
-function runSQL(el:TagElement) {
-	const query = utils.requireOneTextChild(el)
-	const target = utils.getAttribute(el, "target")
-	const single = utils.getBoolAttribute(el, "single-row")
-
-	return async (ctx:FilterContext) => {
-		const results = await SQL.query(query, ctx)
-		const output = single ? results[0] : results
-		return target ? ctx.SetVar(target, output) : ctx
-	}
-}
-
-function passSQL(el:TagElement) {
-	const run = runSQL(el)
-	return (ctx:FilterContext) => run(ctx).then(filterPass)
-}
-
-
-export const XSQL: Tag = {
+export 
+const VSQL = CreateLoaderTag({
 	name: "v-sql",
-	render: passSQL,
 
-	loaderPreceeds: runSQL,
+	attributes: {
+		"target": { target:true },
+		"single-row": {},
+	},
 
-	action: loaderOnlyFilter(passSQL),
-	actionPreceeds: loaderOnlyPreceeds(runSQL),
-}
+	prepareChain(block) {
+		const query = block.requireOneTextChild()
+		const target = block.targetAttr()
+		const single = block.boolAttr("single-row")
 
-export const XSQLAction: Tag = {
-	name: "v-sql-action",
-	render: stripFilter,
-	action: passSQL,
-}
+		return async (ctx) => {
+			const results = await SQL.query(query, ctx)
+			const output = single ? results[0] : results
+			return target ? ctx.SetVar(target, output) : ctx
+		}
+	}
+})

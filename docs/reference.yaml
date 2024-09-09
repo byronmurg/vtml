@@ -57,12 +57,14 @@
   - name: target
   - name: src
     optional: true
+    relative: true
   description: Create a new variable at target from a json body or using the src argument
 
 - tag: v-yaml
   arguments:
   - name: target
   - name: src
+    relative: true
   description: |
     Create a new variable at target from a yaml document specified by the src argument.
 
@@ -81,18 +83,7 @@
   - name: target
   - name: single-row
     optional: true
-  - name: loader-only
-    optional: true
   description: Execute sql query and set a new variable at target
-
-- tag: v-sql-action
-  form-ony: true
-  arguments:
-  - name: target
-  - name: single-row
-    optional: true
-  description: Execute sql query inside a form action. When rendering the page this
-    statement is skipped.
 
 - tag: v-nodejs
   arguments:
@@ -124,7 +115,7 @@
   description: Expose a file specified at (src) at http (path)
   special: true
 
-- tag: v-setcookie-action
+- tag: v-set-cookie
   form-ony: true
   arguments:
   - name: name
@@ -132,11 +123,15 @@
   - name: value
     templated: true
   - name: max-seconds
+    templated: true
   - name: max-minutes
+    templated: true
   - name: max-hours
+    templated: true
   - name: max-days
+    templated: true
   description: |
-    Set a response cookie inside an action.
+    Set a response cookie.
 
     The maximum cookie age will be set to the sum of the max-* attribute values.
 
@@ -191,20 +186,6 @@
     </v-check-authorized>
 
 
-
-- tag: v-pass
-  description: |
-    This tag allows you to pass-over a value context to avoid executing loader
-    actions inside the chain of a form. Also stops any variables declared inside
-    from leaking out.
-
-    In the exmaple only `out:` would be renderered as the $foo value is scoped to the v-pass.
-  example: |
-    <v-pass>
-      <v-json target="foo" >22</v-json>
-    </v-pass>
-    out:$foo
-
 - tag: v-catch
   description: |
     Rendered when an error has occured. The root variables `$.error.code` and `$.error.message`
@@ -228,7 +209,7 @@
     Rendering will continue as normal. If you want to report a non-success status take
     a look at the v-check-* tags instead.
 
-- tag: v-redirect-action
+- tag: v-redirect
   arguments:
   - name: path
     description: "Path to redirect to"

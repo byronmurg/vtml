@@ -1,49 +1,23 @@
-import type FilterContext from "../filter_context"
-import type { Tag } from "../types"
-import type { TagElement } from "../html"
-import { filterPass, stripFilter, loaderOnlyPreceeds, loaderOnlyFilter } from "../tag_utils"
-import * as utils from "../utils"
-import {ServerError} from "../default_errors"
+import CreateLoaderTag from "./loader"
 import NodeFunction from "../node"
 
-function elementNodeFunction(el: TagElement) {
-	const body = utils.requireOneTextChild(el)
-	const idAttr = utils.getAttribute(el, "id")
+export
+const VNodeJs = CreateLoaderTag({
+	name: "v-nodejs",
 
-	return NodeFunction(body, idAttr)
-}
+	attributes: {
+		"target": { target:true },
+	},
 
-function runNode(el:TagElement) {
-	const target = utils.getAttribute(el, "target")
-	const nodeBody = elementNodeFunction(el)
+	prepareChain(block) {
+		const body = block.requireOneTextChild()
+		const targetAttr = block.targetAttr()
+		const fnc = NodeFunction(body, block.getName())
 
-	return async (ctx:FilterContext) => {
-		try {
-			const resp = await nodeBody(ctx)
-
-			// Set output to target
-			return target ? ctx.SetVar(target, resp) : ctx
-		} catch (e) {
-			const message = (e instanceof Error)? e.message : ServerError
-			return ctx.SetError(500, message)
+		return async (ctx) => {
+			const output = await fnc(ctx)
+			return ctx.SetVar(targetAttr, output)
 		}
 	}
-}
+})
 
-function passNode(el:TagElement) {
-	const run = runNode(el)
-	return (ctx:FilterContext) => run(ctx).then(filterPass)
-}
-
-export const XNodejs: Tag = {
-	name: "v-nodejs",
-	render: loaderOnlyFilter(passNode),
-	loaderPreceeds: runNode,
-	actionPreceeds: loaderOnlyPreceeds(runNode),
-}
-
-export const XNodejsAction: Tag = {
-	name: "v-nodejs-action",
-	render: stripFilter,
-	action: passNode,
-}

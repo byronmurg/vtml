@@ -51,9 +51,11 @@
 					Note that we can refer to the new text as $.body.text because the input
 					above has name="text"
 				-->
-				<v-sql-action>
-					INSERT INTO simple.todos (text) VALUES ($.body.text)
-				</v-sql-action>
+				<v-action>
+					<v-sql>
+						INSERT INTO simple.todos (text) VALUES ($.body.text)
+					</v-sql>
+				</v-action>
 
 				<!-- And that's it! All we have to do. -->
 			</form>
@@ -67,7 +69,7 @@
 				vtml variable 'todos'. Later we'll be able to reference this variable
 				with '$todos'.
 			-->
-			<v-sql target="todos" >
+			<v-sql target="$todos" >
 				SELECT * FROM simple.todos ORDER BY c DESC
 			</v-sql>
 
@@ -77,7 +79,8 @@
 
 				To do this we use v-for-each and specify the $todos variable to loop through.
 			-->
-			<v-for-each source="$todos" >
+
+			<v-for-each source="$todos" as="$todo" >
 
 				<!--
 					We're now inside the loop and can taking in individual rows.
@@ -105,12 +108,14 @@
 						submit it for, so we need to specify the id.
 					-->
 
-					<input name="text" value="$text" maxlength="128" />
-					<input type="hidden" name="id" value="$_id" />
+					<input name="text" value="$todo.text" maxlength="128" />
+					<input type="hidden" name="id" value="$todo._id" />
 
-					<v-sql-action>
-						UPDATE simple.todos SET text = $body.text WHERE _id = $.body.id
-					</v-sql-action>
+					<v-action>
+						<v-sql>
+							UPDATE simple.todos SET text = $.body.text WHERE _id = $.body.id
+						</v-sql>
+					</v-action>
 
 				</form>
 
@@ -122,12 +127,14 @@
 						need a text input.
 					-->
 
-					<input type="hidden" name="id" value="$_id" />
+					<input type="hidden" name="id" value="$todo._id" />
 					<button type="submit" class="material-icons" >delete</button>
 
-					<v-sql-action>
-						DELETE FROM simple.todos WHERE _id = $.body.id
-					</v-sql-action>
+					<v-action>
+						<v-sql>
+							DELETE FROM simple.todos WHERE _id = $.body.id
+						</v-sql>
+					<v-action>
 				</form>
 
 			</v-for-each>
@@ -145,7 +152,7 @@
 				So here we have a v-nodejs block that returns the length of the todos array
 				and sets it to the 'ntodos' variable.
 			-->
-			<v-nodejs target="ntodos" >
+			<v-nodejs target="$ntodos" >
 				return $todos.length
 			</v-nodejs>
 

@@ -14,6 +14,23 @@ function getVarFromTemplate(str:string): string {
 export
 function getVarsInString(str:string): string[] {
 	return getTemplatesInString(str).map(getVarFromTemplate)
-		.filter((v) => !!v)
+		.filter((v) => !!v) // @TODO this is stripping root vars too
+}
+
+export
+function getVarsInMap(map:Record<string, unknown>): string[] {
+	let vars:string[] = []
+
+	for (const k in map) {
+		const v = map[k]
+
+		if (typeof(v) === "string") {
+			const attrVars = getVarsInString(v)
+
+			vars = vars.concat(attrVars)
+		}
+	}
+
+	return vars
 }
 

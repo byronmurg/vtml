@@ -1,67 +1,73 @@
 import FilterContext from "../filter_context"
-import type {Tag} from "../types"
-import {filterPass, justReturnFilter} from "../tag_utils"
-import pathLib from "path"
-import * as utils from "../utils"
-import templateAttributes from "../attributes"
+import {joinPaths} from "../utils"
+import CreateOverrideTag from "./override"
 
-function extractRelevantPath(path:string, matchedPage:string = ''): string {
-	const noRelevantParts = matchedPage.split('/').length
-	return path.split('/').slice(1, noRelevantParts).join('/')
+function extractRelevantPath(path: string, matchedPage: string = ""): string {
+	const noRelevantParts = matchedPage.split("/").length
+	return path.split("/").slice(1, noRelevantParts).join("/")
 }
 
-function getFullPath(xName:string, ctx:FilterContext): string {
-	const path = ctx.getKey("$.path")
-	const search = ctx.getKey("$.search")
+function getFullPath(xName: string, ctx: FilterContext): string {
+	const path = ctx.rootDataset.path
+	const search = ctx.rootDataset.search
 	const matchedPage = ctx.getKey("$__matchedPage")
 	const searchStr = search ? `?${search}` : ""
 
 	const relevantPath = extractRelevantPath(path, matchedPage)
 
 	// Don't need extra slash if path is empty
-	const fullPath = pathLib.posix.join(relevantPath, xName)
+	const fullPath = joinPaths(relevantPath, xName)
 	return `/${fullPath}${searchStr}`
 }
 
-export const FormTag:Tag = {
+export const Form = CreateOverrideTag({
 	name: "form",
-	render(el, cascade) {
-		const xName = utils.getAttribute(el, 'v-name')
-		// If it's not an action I don't care
-		if (!xName) {
-			return justReturnFilter(el, cascade)
-		} else {
-			const xAjax = utils.getBoolAttribute(el, 'v-ajax')
-			const childs = cascade.childs(el.elements)
+	attributes: {
+		"v-ajax": { strip: true },
+		"v-name": { special: true },
+		method: { special: true },
+	},
+	prepareRender: (block) => {
+		const xName = block.attr("v-name")
+		const xAjax = block.boolAttr("v-ajax")
+		const el = block.element()
 
-			return async (ctx:FilterContext) => {
-				const fullPath = getFullPath(xName, ctx)
-
-				const actionPath = "/action" +fullPath
-				const ajaxPath = "/ajax" +fullPath
-
-				const subCtx = ctx.SetVar('__form_action', actionPath)
-					.SetVar('__form_ajax', ajaxPath)
-
-				const outputAttributes = templateAttributes(el.attributes, subCtx)
-
-				if (xAjax) {
-					outputAttributes.onsubmit ||= "return false"
-				} else {
-					outputAttributes.method = "POST"
-					outputAttributes.action ||= actionPath
-				}
-
-				const children = await childs(subCtx)
-
-				const resp = {
-					...el,
-					attributes: outputAttributes,
-					elements: children.elements,
-				}
-				
-				return filterPass(ctx, resp)
+		return async (ctx) => {
+			if (!xName) {
+				return block.defaultBehaviour(ctx)
 			}
+
+			const fullPath = getFullPath(xName, ctx)
+
+			const actionPath = "/action" + fullPath
+			const ajaxPath = "/ajax" + fullPath
+
+			// @TODO Nothing "provides" these
+			const subCtx = ctx
+				.SetVar("__form_action", actionPath)
+				.SetVar("__form_ajax", ajaxPath)
+
+			const outputAttributes = block.templateAttributes(subCtx)
+
+			if (xAjax) {
+				outputAttributes.onsubmit ||= "return false"
+			} else {
+				// @TODO This is an assumption
+				outputAttributes.method = "POST"
+				outputAttributes.action ||= actionPath
+			}
+
+			const children = await block.renderChildren(subCtx)
+
+			const resp = {
+				name: "form",
+				type: el.type,
+				filename: el.filename,
+				attributes: outputAttributes,
+				elements: children.elements,
+			}
+
+			return { ctx, elements: [resp] }
 		}
 	},
-}
+})
