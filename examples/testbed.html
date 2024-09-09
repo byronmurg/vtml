@@ -24,28 +24,11 @@
 
 		<main class="container" >
 
-			<v-page path="/" >
-				<v-json target="$opt" >2</v-json>
+			<v-sql target="$todos" >
+				select * from todos;
+			</v-sql>
 
-				<select value="$opt" >
-					<option value="1" >one</option>
-					<option value="2" >two</option>
-					<option value="3" >three</option>
-				</select>
-
-				<v-fs-readdir path="." target=$dir />
-
-				<v-dump source="$dir" />
-			</v-page>
-
-			<v-page path="/stuff" >
-
-				
-				<v-page path="/stuff" >
-					<p>Hi</p>
-				</v-page>
-
-			</v-page>
+			<v-dump source="$todos" />
 
 		</main>
 	</body>

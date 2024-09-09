@@ -1,12 +1,12 @@
 import type FilterContext from "./filter_context"
-import {nodeInterface} from "./sql"
+import nodeInterFace from "./sql"
 
 // A regex for matching vars in v-nodejs
 const nodeVarRegex = /(?<!\\)\$\w+/g
 
 const inbuiltVars: Record<string, unknown> = {
 	require: require,
-	sql: nodeInterface,
+	sql: nodeInterFace,
 }
 
 export default
