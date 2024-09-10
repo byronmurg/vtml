@@ -18,7 +18,6 @@ type RootDataset = {
 	body?: unknown
 	headers: Record<string, string|string[]|undefined>
 	cookies: Record<string, string>
-	error?: ResponseError
 	action: boolean
 }
 
@@ -76,7 +75,9 @@ export
 type VtmlTag = TagCommon & {
 
 	consumesError?: boolean
+	providesError?: boolean
 	allowExtraAttributes?: boolean
+	isLoop?: boolean
 
 	prepare: (block:VtmlBlock) => {
 		contains: (ctx:FilterContext) => Promise<ChainResult>

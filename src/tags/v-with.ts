@@ -21,7 +21,8 @@ const VWith: VtmlTag = {
 
 			contains: (ctx) => {
 				const found = isFound(ctx)
-				return Promise.resolve({ ctx, found })
+				const subCtx = ctx.Select(source, asAttr)
+				return Promise.resolve({ ctx:subCtx, found })
 			},
 
 			async render(ctx) {

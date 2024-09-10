@@ -7,10 +7,12 @@ export default
 class TextBlock implements Block {
 
 	private bodyVars: string[]
+	private bodyTemplates: string[]
 	
 
 	constructor(private el:HTML.TextElement, private seq:number, private parent:Block) {
 		this.bodyVars = this.getVarsInBody()
+		this.bodyTemplates = this.getTemplatesInBody()
 	}
 
 	getName() {
@@ -19,11 +21,15 @@ class TextBlock implements Block {
 
 
 	isDynamic(): boolean {
-		return this.bodyVars.length > 0
+		return this.bodyTemplates.length > 0
 	}
 
 	getVarsInBody(): string[] {
 		return Vars.getVarsInString(this.el.text)
+	}
+
+	getTemplatesInBody(): string[] {
+		return Vars.getTemplatesInString(this.el.text)
 	}
 
 	async Render(ctx:FilterContext): Promise<Branch> {

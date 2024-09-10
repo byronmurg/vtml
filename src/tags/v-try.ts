@@ -7,6 +7,8 @@ const VTry:VtmlTag = {
 	name: "v-try",
 	attributes: {},
 
+	providesError: true,
+
 	prepare(block) {
 		return {
 			preceeds: (ctx:FilterContext) => Promise.resolve(ctx),

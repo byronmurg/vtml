@@ -8,12 +8,12 @@ test("error is set", async () => {
 			<v-nodejs>throw Error("Hi")</v-nodejs>
 		</v-try>
 		<v-catch>
-			<p>$.error.message</p>
+			<p>$error.message</p>
 		</v-catch>
 	`
 
 	const doc = VtmlDocument.LoadFromString(exampleHTML)
 	const res = await doc.renderLoaderMl(ctx)
 
-	expect(res).toBe("<p>Server error</p>")
+	expect(res).toBe("<p>Internal Server Error</p>")
 })

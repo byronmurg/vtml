@@ -6,6 +6,9 @@ export const VForEach: VtmlTag = {
 		source: { required:true, source:true },
 		as: { required:true, inject:true },
 	},
+
+	isLoop: true,
+
 	prepare: (branch) => {
 
 		const source = branch.sourceAttr()

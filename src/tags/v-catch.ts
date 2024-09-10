@@ -7,6 +7,8 @@ const VCatch: VtmlTag = {
 
 	attributes: {},
 
+	consumesError: true,
+
 	prepare(block) {
 		return {
 			preceeds: (ctx:FilterContext) => Promise.resolve(ctx.UnsetError()),
@@ -15,6 +17,7 @@ const VCatch: VtmlTag = {
 			async render(ctx) {
 				if (ctx.InError()) {
 					block.debug("render")
+					ctx = ctx.SetVar("$error", ctx.GetError()).UnsetError()
 					return block.renderChildren(ctx)
 				} else {
 					block.debug("pass")

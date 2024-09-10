@@ -24,17 +24,36 @@
 
 		<main class="container" >
 
-			<v-json target="$vars" >
-				"Hi there"
-			</v-json>
+			<v-page path="/" >
+				<v-json target="$foo" >22</v-json>
 
-			<v-with source="$vars" as="$sub" >
-				<p>$sub</p>
-			</v-with>
+				<v-with source="$foo" as="$bar" >
+					<v-portal v-name="bar" >
+						<p>bar= $bar</p>
+					</v-portal>
+				</v-with>
+			</v-page>
 
-			<v-with source="$vars.foo" as="$notset" >
-				<p>Shouldn't see me</p>
-			</v-with>
+			<v-page path="/todos" >
+			<v-sql target="$todos" >
+				select * from simple.todos
+			</v-sql>
+
+			<v-for-each source="$todos" as="$todo" >
+				<p>$todo.text</p>
+
+				<form v-name="do_stuff" >
+					<button type="submit" >GO!</button>
+
+					<v-action>
+						<v-nodejs>
+							console.log("I'm a form")
+						</v-nodejs>
+					</v-action>
+				</form>
+
+			</v-for-each>
+			</v-page>
 
 		</main>
 	</body>

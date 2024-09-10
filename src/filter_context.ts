@@ -1,5 +1,5 @@
 import get from "lodash/get"
-import type {RootDataset, Cookie, Branch} from "./types"
+import type {RootDataset, ResponseError, Cookie, Branch} from "./types"
 import {escapeHtml} from "./html"
 import Debug from "debug"
 
@@ -16,6 +16,7 @@ type Globals = {
 	setCookies: Record<string, Cookie>
 	redirect: string
 	returnCode: number
+	error?: ResponseError
 }
 
 const initGlobals = (): Globals => ({
@@ -86,23 +87,27 @@ class FilterContext {
 	// Error methods
 
 	InError():boolean {
-		return !!this.rootDataset.error 
+		return !!this.globals.error 
+	}
+
+	GetError() {
+		return this.globals.error
 	}
 
 	GetErrorMessage() {
-		return this.rootDataset.error?.message
+		return this.globals.error?.message
 	}
 
 
 	SetError(code:number, message:string) {
 		this.globals.returnCode = code
-		this.rootDataset.error = { code, message }
+		this.globals.error = { code, message }
 		return this
 	}
 
 	UnsetError() {
 		// Unset error but leave the return code
-		this.rootDataset.error = undefined
+		this.globals.error = undefined
 		return this
 	}
 

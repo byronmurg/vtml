@@ -77,9 +77,9 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 	}
 
 	getLocalReport(): BlockReport {
-		const attrConsumes: string[] = []
-		const attrProvides: string[] = []
-		const attrInjects: string[] = []
+		const consumes: string[] = []
+		const provides: string[] = []
+		const injects: string[] = []
 
 		for (const k in this.el.attributes) {
 			const value = this.el.attributes[k]
@@ -94,19 +94,31 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 			if (type.special) continue
 
 			if (type.target) {
-				attrProvides.push(...vars)
+				provides.push(...vars)
 			} else if (type.inject) {
-				attrInjects.push(...vars)
+				injects.push(...vars)
 			} else {
-				attrConsumes.push(...vars)
+				consumes.push(...vars)
 			}
+		}
+
+		// In case of error tags like v-catch/v-try we have to add
+		// a meta-variable to ensure that the tags are run in the correct order.
+
+		if (this.tag.consumesError) {
+			consumes.push(`!thrown_error`)
+			injects.push("$error")
+		}
+
+		if (this.tag.providesError) {
+			provides.push(`!thrown_error`)
 		}
 
 		return {
 			id: `${this.el.name}(${this.seq})`,
-			provides: uniq(attrProvides),
-			consumes: uniq(attrConsumes),
-			injects: uniq(attrInjects),
+			provides: uniq(provides),
+			consumes: uniq(consumes),
+			injects: uniq(injects),
 			doesConsumeError: this.tag.consumesError || false,
 		}
 
@@ -242,24 +254,66 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 		}
 	}
 
-	createChildChain(seq:number, consumes:string[]) {
-		this.debug("prepare child chain")
-		const localReport = this.getLocalReport()
+	createChildChainInLoop(seq:number, consumes:string[]) {
+		// Loop tags such as v-for-each have a slight exception to then in
+		// that they don't need to run when containing an isolate.
+		// This is because they cannot match the isolate to a specific instance
+		// of the loop so cannot inject the variables.
 
+		// Get all tags before the target tag that provide for it.
 		const preceedChain = this.children.createContainerChain(seq, consumes)
 
-		const blockConsumes = consumes.concat(localReport.consumes).concat(preceedChain.consumes)
-		const parentChain = this.parent.createChildChain(this.seq, blockConsumes)
+		// Collect all consumes of the initial child plus any that were
+		// added by the preceeding chain
+		const childrenConsume = consumes.concat(preceedChain.consumes)
+		
+		const parentChain = this.parent.createChildChain(this.seq, childrenConsume)
 
 		return async (ctx:FilterContext): Promise<ChainResult> => {
+			// Execute parent chain and return if this tag wouldn't be executed.
 			const parentRes = await parentChain(ctx)
 			if (!parentRes.found) {
 				return parentRes
 			}
 
-			const preceedRes = await preceedChain.collection.runPreceed(parentRes.ctx)
+			const preceedingCtx = await preceedChain.collection.runPreceed(parentRes.ctx)
+			return { found:true, ctx:preceedingCtx }
+		}
+	}
 
-			return await this.CheckContains(preceedRes)
+	createChildChain(seq:number, consumes:string[]) {
+		this.debug("prepare child chain")
+
+		// If this is a loop we have to do special magic stuff
+		if (this.tag.isLoop) {
+			return this.createChildChainInLoop(seq, consumes)
+		}
+
+
+		// Get all tags before the target tag that provide for it.
+		const preceedChain = this.children.createContainerChain(seq, consumes)
+
+		// Get the chain from my parent with my consumes and the remaining preceeding consumes.
+		const localReport = this.getLocalReport()
+		const blockConsumes = consumes.concat(localReport.consumes).concat(preceedChain.consumes)
+		const parentChain = this.parent.createChildChain(this.seq, blockConsumes)
+
+		return async (ctx:FilterContext): Promise<ChainResult> => {
+			// Execute parent chain and return if this tag wouldn't be executed.
+			const parentRes = await parentChain(ctx)
+			if (!parentRes.found) {
+				return parentRes
+			}
+
+			// Now execute myself and return if not found
+			const containsRes = await this.CheckContains(parentRes.ctx)
+			if (! containsRes.found) {
+				return containsRes
+			}
+
+			// Finally execute all tags before the target
+			const preceedRes = await preceedChain.collection.runPreceed(containsRes.ctx)
+			return { ctx:preceedRes, found:true }
 		}
 	}
 }
