@@ -1,4 +1,4 @@
-import {Branch, Block, TagBlock, BlockReport, RenderDescription } from "../types"
+import type {Branch, Block, TagBlock, BlockReport, RenderDescription } from "../types"
 import * as HTML from "../html"
 import FilterContext from "../filter_context"
 import BlockCollection from "./block_collection"

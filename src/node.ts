@@ -10,12 +10,9 @@ const inbuiltVars: Record<string, unknown> = {
 }
 
 export default
-function prepare(body:string, idAttr:string) {
+function prepare(body:string) {
 	// Find ant ctx variables used by the js body
 	const injectVars = body.match(nodeVarRegex) || []
-
-	// Extra details to add to Any error message
-	const extra = idAttr ? `(id ${idAttr})` : ""
 
 	const inbuiltKeys = Object.keys(inbuiltVars)
 
@@ -24,7 +21,7 @@ function prepare(body:string, idAttr:string) {
 			return new Function("$", ...inbuiltKeys, ...injectVars, `return (async () => {\n ${body} \n})()`)
 		} catch (err) {
 			const e = err as Error
-			throw Error(`Syntax error in v-node ${extra}: ${e.message}`)
+			throw Error(`Syntax error in v-node: ${e.message}`)
 		}
 	}
 
@@ -50,7 +47,7 @@ function prepare(body:string, idAttr:string) {
 			return await fnc(...args)
 		} catch (err) {
 			const e = err as Error
-			throw Error(`Error in v-node ${extra}: ${e.message}`)
+			throw Error(`Error in v-node: ${e.message}`)
 		}
 	}
 }

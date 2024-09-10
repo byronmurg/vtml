@@ -18,7 +18,7 @@ export const VForEach: VtmlTag = {
 
 			async render(ctx) {
 				
-				const ctxs = ctx.Select(source).SplitAs(asAttr)
+				const ctxs = ctx.SplitAs(source, asAttr)
 
 				const childBranches = await Promise.all(ctxs.map((s) => branch.renderChildren(s)))
 				const elements = childBranches.flatMap((child) => child.elements)

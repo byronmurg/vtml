@@ -1,4 +1,7 @@
 import type {TagElement} from "./html"
+import Debug from "debug"
+
+const debug = Debug("vtml:logic")
 
 type LogicOperator = {
 	key: string
@@ -42,6 +45,7 @@ function checkAllMathOperators(value:unknown, attributes:TagElement["attributes"
 
 			// If the operations fails, break with false
 			if (! op.operation(asNum, check)) {
+				debug("failed check", op.key, asNum, check)
 				return false
 			}
 		}
@@ -55,11 +59,11 @@ function doesLogicSelectorMatch(value:unknown, attributes:TagElement["attributes
 	// If the selector has any math operators then all of them must not conflict
 	if (hasMathOperator(attributes)) {
 		return checkAllMathOperators(value, attributes)
-	} else if (attributes.eq !== undefined) {
+	} else if (attributes['eq'] !== undefined) {
 		// If 'eq' is specified then it must match the value as a string
 		if (value === undefined) value = ""
 		const str = `${value}`
-		return str === attributes.eq
+		return str === attributes['eq']
 	} else {
 		// Otherwise just return truthy
 		return !!value

@@ -2,6 +2,7 @@ import {Pool} from "pg"
 import { Database as SQLiteDatabase } from "bun:sqlite"
 import Debug from "debug"
 import FilterContext from "./filter_context"
+import {URL} from "url"
 
 const debug = Debug("vtml:sql")
 
@@ -115,8 +116,9 @@ function sqliteInterface(url:URL): NodeSqlInterface {
 	async function sqliteQuery(sql:string, vars:unknown[]): Promise<unknown[]> {
 		debug(sql)
 		const query = sqliteDb.query(sql)
-		// TS doesn't like this line as it's bun specific
-		return await query.all(vars)
+		// @NOTE TS doesn't like this line as it's bun specific
+		// it is okay though.
+		return await query.all(vars as unknown as string)
 	}
 
 	function vtmlToSqliteQuery(sql:string, ctx:FilterContext): ProcessedSQL {
@@ -153,7 +155,7 @@ function sqliteInterface(url:URL): NodeSqlInterface {
 }
 
 function Initialize(): NodeSqlInterface {
-	const DB_URL = process.env.DB_URL
+	const DB_URL = process.env['DB_URL']
 
 	if (! DB_URL) {
 		return dummyInterface()

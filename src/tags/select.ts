@@ -13,14 +13,14 @@ export const Select = CreateOverrideTag({
 			//@TODO options don't have to be direct children
 			for (const child of children.elements) {
 				if (child.type === "element" && child.name === "option") {
-					let value = child.attributes.value
+					let value = child.attributes['value']
 					// The value may be set as a child
 					if (value === undefined) {
 						value = utils.getText(child)
 					}
 
-					if (value === attrs.value) {
-						child.attributes.selected = "yes"
+					if (value === attrs['value']) {
+						child.attributes['selected'] = "yes"
 					}
 				}
 			}

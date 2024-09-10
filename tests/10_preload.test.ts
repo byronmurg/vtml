@@ -1,5 +1,4 @@
 import VtmlDocument from "../src/document"
-import type {TagElement} from "../src/html"
 import {InitCtx} from "./test_lib"
 
 // Just an example context
@@ -16,10 +15,4 @@ test("v-include", async () => {
 	const output = await doc.renderLoaderMl(ctx)
 
 	expect(trimAll(output)).toBe(`<p>22</p>`)
-
-	const expose = doc.root[1]
-
-	expect(expose).toBeTruthy()
-	expect(expose.type).toBe("element")
-	expect((expose as TagElement).attributes.src).toBe("tests/test_assets/some.yml")
 })

@@ -13,21 +13,21 @@ test("Unknown tags throw an error", () => {
 
 	const func = () => VtmlDocument.LoadFromString(exampleHTML)
 
-	expect(func).toThrow(`Unknown v- tag in v-dunnome`)
+	expect(func).toThrow(`Unknown VTML tag v-dunnome`)
 })
 
 test("v-with", async () => {
 
 	const exampleHTML = `
-		<v-json target="vars" >
+		<v-json target="$vars" >
 			"Hi there"
 		</v-json>
 
-		<v-with source="$vars">
-			<p>$</p>
+		<v-with source="$vars" as="$sub" >
+			<p>$sub</p>
 		</v-with>
 
-		<v-with source="$notexist">
+		<v-with source="$vars.foo" as="$notset" >
 			<p>Shouldn't see me</p>
 		</v-with>
 	`
@@ -37,29 +37,6 @@ test("v-with", async () => {
 	const output = await doc.renderLoaderMl(ctx)
 
 	expect(output).toBe(`<p>Hi there</p>`)
-})
-
-test("v-use", async () => {
-
-	const exampleHTML = `
-		<v-json target="vars" >
-			"Hi there"
-		</v-json>
-
-		<v-use source="$vars">
-			<p>$</p>
-		</v-use>
-
-		<v-use source="$notexist">
-			<p>Should still see me</p>
-		</v-use>
-	`
-
-	const doc = VtmlDocument.LoadFromString(exampleHTML)
-
-	const output = await doc.renderLoaderMl(ctx)
-
-	expect(output).toBe(`<p>Hi there</p><p>Should still see me</p>`)
 })
 
 test("v-hint-port", async () => {
@@ -79,7 +56,7 @@ test("v-if", async () => {
 
 	async function testIf(tag:string) {
 		const exampleHTML = `
-			<v-json target="var" >
+			<v-json target="$var" >
 				22
 			</v-json>
 
@@ -144,7 +121,7 @@ test("v-if", async () => {
 test("v-unless", async () => {
 
 	const exampleHTML = `
-		<v-json target="foo" >"bar"</v-json>
+		<v-json target="$foo" >"bar"</v-json>
 		<v-unless source="$foo" eq="bar" >
 			Shouldn't see me
 		</v-unless>
@@ -160,14 +137,14 @@ test("v-unless", async () => {
 test("v-for-each", async () => {
 
 	const exampleHTML = `
-		<v-json target="vars" >
+		<v-json target="$vars" >
 			[
 				"foo", "bar"
 			]
 		</v-json>
 
-		<v-for-each source="$vars">
-			<p>$</p>
+		<v-for-each source="$vars" as="$var">
+			<p>$var</p>
 		</v-for-each>
 	`
 
@@ -180,10 +157,8 @@ test("v-for-each", async () => {
 
 test("v-dump", async () => {
 	const exampleHTML = `
-		<v-json target="foo" >"bar"</v-json>
-		<v-with source="$foo" >
-			<v-dump />
-		<v-with>
+		<v-json target="$foo" >"bar"</v-json>
+		<v-dump source="$foo" />
 	`
 
 	const doc = VtmlDocument.LoadFromString(exampleHTML)
@@ -216,7 +191,7 @@ test("v-page", async () => {
 
 test(`select`, async () => {
 	const exampleHTML = `
-		<v-json target="foo" >"foo"</v-json>
+		<v-json target="$foo" >"foo"</v-json>
 		<select value="$foo" >
 			<option>foo</option>
 			<option>bar</option>
@@ -230,9 +205,9 @@ test(`select`, async () => {
 	expect(output).toBe(`<select value="foo"><option selected="yes">foo</option><option>bar</option></select>`)
 })
 
-test(`v-return-code`, async () => {
+test(`v-set-status`, async () => {
 	const exampleHTML = `
-		<v-return-code code="403" />
+		<v-set-status code="403" />
 	`
 
 	const doc = VtmlDocument.LoadFromString(exampleHTML)
@@ -241,4 +216,3 @@ test(`v-return-code`, async () => {
 
 	expect(res.status).toBe(403)
 })
-

@@ -24,14 +24,17 @@
 
 		<main class="container" >
 
-			<v-json target="$q" >"Y%"</v-json>
-			<v-json target="$v" >22</v-json>
+			<v-json target="$vars" >
+				"Hi there"
+			</v-json>
 
-			<v-sql target="$todos" >
-				select * from simple.todos where text like $q and $v = $v;
-			</v-sql>
+			<v-with source="$vars" as="$sub" >
+				<p>$sub</p>
+			</v-with>
 
-			<v-dump source="$todos" />
+			<v-with source="$vars.foo" as="$notset" >
+				<p>Shouldn't see me</p>
+			</v-with>
 
 		</main>
 	</body>

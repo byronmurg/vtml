@@ -9,7 +9,7 @@ test("v-json", async () => {
 	const ctx = InitCtx()
 
 	const doc = VtmlDocument.LoadFromString(`
-		<v-json target="foo" >21</v-json>
+		<v-json target="$foo" >21</v-json>
 		<p>$foo</p>
 	`)
 
@@ -22,8 +22,8 @@ test("v-yaml", async () => {
 	const ctx = InitCtx()
 
 	const doc = VtmlDocument.LoadFromString(`
-		<v-yaml target="$" src="./tests/test_assets/some.yml" />
-		<p>$foo</p>
+		<v-yaml target="$data" src="./tests/test_assets/some.yml" />
+		<p>$data.foo</p>
 	`)
 
 	const output = await doc.renderLoaderMl(ctx)

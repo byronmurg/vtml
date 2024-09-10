@@ -12,6 +12,7 @@ const VWith: VtmlTag = {
 
 	prepare(block) {
 		const source = block.sourceAttr()
+		const asAttr = block.attr("as")
 
 		const isFound = (ctx:FilterContext) => ctx.getKey(source) !== undefined
 
@@ -27,7 +28,7 @@ const VWith: VtmlTag = {
 				const found = isFound(ctx)
 
 				if (found) {
-					const subCtx = ctx.Select(source)
+					const subCtx = ctx.Select(source, asAttr)
 					return block.renderChildren(subCtx)
 				} else {
 					return ctx.filterPass()

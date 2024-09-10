@@ -43,11 +43,11 @@ function preFilterElements(elements:Element[], dir:string): Element[] {
 		if (child.type === "text") {
 			return child
 		} else if (child.name === "v-include") {
-			const src = child.attributes.src.toString()
+			const src = child.attributes['src']
 			if (! src) {
 				throw Error(`No src attribute on v-exclude in ${child.filename}`)
 			}
-			return preLoadInclude(path.posix.join(dir, src))
+			return preLoadInclude(path.posix.join(dir, src.toString()))
 		} else if (relativeAttrs.length) {
 			// If the tag has a relative attribute join it
 			// with the current dir.

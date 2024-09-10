@@ -109,29 +109,20 @@ class FilterContext {
 
 	// Alter methods
 
-	Select(token:string): FilterContext {
+	Select(token:string, as:string): FilterContext {
 		const newDataset = this.getKey(token)
-		return this.copy(newDataset)
+		return this.SetVar(as, newDataset)
 	}
 
-	// @TODO remove
-	Split(): FilterContext[] {
-		if (!Array.isArray(this.dataset)) {
+	SplitAs(source:string, as:string): FilterContext[] {
+		const value = this.getKey(source)
+
+		if (!Array.isArray(value)) {
 			// If the dataset is not an array or null just return an empty array
 			return []
 		} else {
 			// Or split the dataset
-			return this.dataset.map((sub) => this.copy(sub))
-		}
-	}
-
-	SplitAs(as:string): FilterContext[] {
-		if (!Array.isArray(this.dataset)) {
-			// If the dataset is not an array or null just return an empty array
-			return []
-		} else {
-			// Or split the dataset
-			return this.dataset.map((sub) => this.SetVar(as, sub))
+			return value.map((sub) => this.SetVar(as, sub))
 		}
 	}
 

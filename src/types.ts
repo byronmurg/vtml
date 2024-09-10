@@ -1,4 +1,4 @@
-import {ParsedQs} from "qs"
+import type {ParsedQs} from "qs"
 import type { TagElement, Element } from "./html"
 import type FilterContext from "./filter_context"
 import type {VtmlBlock} from "./block"

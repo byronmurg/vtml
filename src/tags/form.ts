@@ -50,11 +50,11 @@ export const Form = CreateOverrideTag({
 			const outputAttributes = block.templateAttributes(subCtx)
 
 			if (xAjax) {
-				outputAttributes.onsubmit ||= "return false"
+				outputAttributes['onsubmit'] ||= "return false"
 			} else {
 				// @TODO This is an assumption
-				outputAttributes.method = "POST"
-				outputAttributes.action ||= actionPath
+				outputAttributes['method'] = "POST"
+				outputAttributes['action'] ||= actionPath
 			}
 
 			const children = await block.renderChildren(subCtx)

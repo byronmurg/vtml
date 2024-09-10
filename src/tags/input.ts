@@ -1,5 +1,5 @@
 import CreateOverrideTag from "./override"
-import {TagElement} from "../html"
+import type {TagElement} from "../html"
 
 export const InputTag = CreateOverrideTag({
 	name: "input",
@@ -30,9 +30,10 @@ export const InputTag = CreateOverrideTag({
 					elements: children.elements,
 				}
 
-				if (resp.attributes.value) {
-					const v = resp.attributes.value.toString()
-					resp.attributes.value = v.substr(0, 10)
+				const value = resp.attributes['value']
+				if (value) {
+					const v = value.toString()
+					resp.attributes['value'] = v.substr(0, 10)
 				}
 
 				return { ctx, elements:[] }

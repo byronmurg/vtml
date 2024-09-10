@@ -1,4 +1,4 @@
-import {VtmlTag} from "../types"
+import type {VtmlTag} from "../types"
 import type FilterContext from "../filter_context"
 
 export

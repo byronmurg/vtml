@@ -1,4 +1,4 @@
-import {VtmlTag} from "../types"
+import type {VtmlTag} from "../types"
 import {ServerError} from "../default_errors"
 import type FilterContext from "../filter_context"
 
@@ -16,9 +16,9 @@ const VTry:VtmlTag = {
 				
 				try {
 					block.debug("started")
-					return block.renderChildren(ctx)
+					return await block.renderChildren(ctx)
 				} catch (e) {
-					console.log(e)
+					console.error(e)
 					ctx = ctx.SetError(500, ServerError)
 					return ctx.filterPass()
 				} finally {

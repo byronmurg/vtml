@@ -37,6 +37,7 @@ function CreateCheckTag(tag:CheckTag): VtmlTag {
 			return async (ctx:FilterContext) => {
 				const result = check(ctx)
 				if (! result) {
+					block.debug("check failed")
 					const message = ctx.templateStringSafe(messageTmpl) || DefaultError(tag.code)
 					ctx.SetError(tag.code, message)
 				}

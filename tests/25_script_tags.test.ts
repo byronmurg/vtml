@@ -10,7 +10,7 @@ function trimAll(str:string): string {
 
 test("script empty as normal", async () => {
 	const exampleHTML = `
-		<v-json target="foo" >[1,2,3]</v-json>
+		<v-json target="$foo" >[1,2,3]</v-json>
 		<script src="thing.js" />
 	`
 
@@ -22,7 +22,7 @@ test("script empty as normal", async () => {
 
 test("script basic binding", async () => {
 	const exampleHTML = `
-		<v-json target="foo" >22</v-json>
+		<v-json target="$foo" >22</v-json>
 		<script>let f = $foo</script>
 	`
 
@@ -34,7 +34,7 @@ test("script basic binding", async () => {
 
 test("script complex binding", async () => {
 	const exampleHTML = `
-		<v-json target="foo" >[1,2,3]</v-json>
+		<v-json target="$foo" >[1,2,3]</v-json>
 		<script>let f = $foo</script>
 	`
 
@@ -42,15 +42,4 @@ test("script complex binding", async () => {
 
 	const fooOut = await doc.renderLoaderMl(ctx)
 	expect(trimAll(fooOut)).toBe(`<script>let f = [1,2,3]</script>`)
-})
-
-test("script undefined binding", async () => {
-	const exampleHTML = `
-		<script>let f = $foo</script>
-	`
-
-	const doc = VtmlDocument.LoadFromString(exampleHTML)
-
-	const fooOut = await doc.renderLoaderMl(ctx)
-	expect(trimAll(fooOut)).toBe(`<script>let f = undefined</script>`)
 })

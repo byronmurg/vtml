@@ -1,4 +1,5 @@
-import {createPostFormApiSchema, SchemaObject, ParameterObject, createPathParameters, expressToOapiPath} from "./oapi"
+import {createPostFormApiSchema, createPathParameters, expressToOapiPath} from "./oapi"
+import type {SchemaObject, ParameterObject} from "./oapi"
 import type {RootDataset, InputValue, BodyType, TagBlock, FormResult} from "./types"
 import * as utils from "./utils"
 import Ajv, {ValidationError} from "ajv"

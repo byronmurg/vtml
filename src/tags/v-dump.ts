@@ -1,5 +1,5 @@
 import CreateDisplayTag from "./display"
-import {Element} from "../html"
+import type {Element} from "../html"
 
 export
 const VDump = CreateDisplayTag({

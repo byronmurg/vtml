@@ -3,7 +3,12 @@ import FilterContext from "../src/filter_context"
 
 export
 function InitCtx(init:Partial<RootDataset> = {}) {
-	return FilterContext.Init({
+	return FilterContext.Init(InitRoot(init))
+}
+
+export
+function InitRoot(init:Partial<RootDataset> = {}): RootDataset {
+	return {
 		path: "/",
 		matchedPath: "/",
 		query: {},
@@ -11,7 +16,7 @@ function InitCtx(init:Partial<RootDataset> = {}) {
 		cookies: {},
 		headers: {},
 		params:{},
+		action: false,
 		...init,
-	})
+	}
 }
-

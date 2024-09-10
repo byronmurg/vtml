@@ -1,6 +1,6 @@
-#!/usr/bin/env node
 import VtmlDocument from "./document"
-import {exposeVtmlDocument, exposeOptions} from "./web"
+import {exposeVtmlDocument} from "./web"
+import type {exposeOptions} from "./web"
 import {printRenderDescription} from "./description"
 import {program} from "commander"
 import starterTemplate from "./template"

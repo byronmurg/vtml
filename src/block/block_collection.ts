@@ -1,9 +1,10 @@
 import {MakeBlock} from "./index"
-import {pullAll, intersection, uniq} from "lodash"
+import uniq from "lodash/uniq"
+import pullAll from "lodash/pullAll"
+import intersection from "lodash/intersection"
 import type {RenderDescription, Branch, Block, TagBlock, BlockReport} from "../types"
 import * as HTML from "../html"
 import type FilterContext from "../filter_context"
-import Debug from "debug"
 
 type ChainReport = {
 	collection: BlockCollection
@@ -24,14 +25,12 @@ export default
 class BlockCollection {
 
 	private childRenderOrder: OrderSet[][]
-	private debug: Debug.Debugger
 	private description: RenderDescription[]
 
 	private constructor(
 		private children: Block[],
 		private parent: Block
 	) {
-		this.debug = Debug("vtml:block-collection:"+ parent.getName())
 		const {description, orderSets} = this.makeRenderOrder()
 		this.childRenderOrder = orderSets
 		this.description = description

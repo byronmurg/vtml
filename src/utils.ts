@@ -1,5 +1,5 @@
 import type { TagBlock, Block } from "./types"
-import type {TagElement} from "./html"
+import type {TagElement, TextElement} from "./html"
 import {readFileSync} from "fs"
 import pathLib from "path"
 
@@ -8,13 +8,13 @@ const joinPaths = pathLib.posix.join
 
 
 export
-function toNum(v:string|boolean): number {
-	return parseInt(v.toString())
+function toNum(v:string|boolean|undefined, def:number): number {
+	return v === undefined ? def : parseInt(v.toString())
 }
 
 export
 function getText(el:TagElement): string {
-	return el.elements.find((child) => child.type === "text")?.text || ""
+	return (el.elements.find((child) => child.type === "text") as TextElement|undefined)?.text || ""
 }
 
 export

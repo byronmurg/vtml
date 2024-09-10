@@ -1,7 +1,8 @@
 import TagBlockBase from "./tag_block_base"
-import {Branch, Block, TagBlock, VtmlTag, ChainResult, BlockReport, IsolateReponse} from "../types"
+import type {Branch, Block, TagBlock, VtmlTag, ChainResult, BlockReport, IsolateReponse} from "../types"
 import * as HTML from "../html"
-import {uniq, pullAll} from "lodash"
+import uniq from "lodash/uniq"
+import pullAll from "lodash/pullAll"
 import * as Vars from "../variables"
 import FilterContext from "../filter_context"
 import * as utils from "../utils"
@@ -14,7 +15,16 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 	constructor(private readonly tag:VtmlTag, el:HTML.TagElement, seq:number, parent:Block) {
 		super(el, seq, parent)
 		this.checkAttributes()
-		this._prepared = tag.prepare(this)
+		//this._prepared = tag.prepare(this)
+		this._prepared = this.prepare(tag)
+	}
+
+	private prepare(tag:VtmlTag) {
+		try {	
+			return tag.prepare(this)
+		} catch (e) {
+			this.error(e instanceof Error ? e.message : "unknown error")
+		}
 	}
 
 	isDynamic() {
@@ -233,6 +243,7 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 	}
 
 	createChildChain(seq:number, consumes:string[]) {
+		this.debug("prepare child chain")
 		const localReport = this.getLocalReport()
 
 		const preceedChain = this.children.createContainerChain(seq, consumes)

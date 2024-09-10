@@ -1,6 +1,6 @@
 import CreateOverrideTag from "./override"
 import * as utils from "../utils"
-import {TextElement} from "../html"
+import type {TextElement} from "../html"
 
 export const Script = CreateOverrideTag({
 	name: "script",

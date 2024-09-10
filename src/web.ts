@@ -7,7 +7,7 @@ import DefaultError from "./default_errors"
 
 import VtmlDocument from "./document"
 import FilterContext from "./filter_context"
-import {RootDataset, ResponseError, CookieMap} from "./types"
+import type {RootDataset, ResponseError, CookieMap} from "./types"
 import * as HTML from "./html"
 
 const debug = Debug("vtml")
@@ -151,7 +151,7 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 			}
 		})
 
-		app.get(`/api/${form.name}`, (req, res) => {
+		app.get(`/api/${form.name}`, (_, res) => {
 			res.json({ inputSchema:form.inputSchema })
 		})
 	}
@@ -243,11 +243,11 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 	// - env
 	// - hint
 	// - default (3000)
-	const portStr = options.cliPort?.toString() || process.env.PORT || vtmlDocument.findHint("v-hint-port", "port") || "3000"
+	const portStr = options.cliPort?.toString() || process.env['PORT'] || vtmlDocument.findHint("v-hint-port", "port") || "3000"
 	const port = parseInt(portStr)
 
 	if (isNaN(port)) {
-		throw Error(`Invalid port ${process.env.PORT}`)
+		throw Error(`Invalid port ${port}`)
 	}
 
 	const listenAddr = options.cliListen || "localhost"

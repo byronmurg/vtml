@@ -1,17 +1,9 @@
 import VtmlDocument from "../src/document"
+import {InitRoot} from "./test_lib"
 
-// Just an example context
-const rootDataset = {
-	path: "/",
-	matchedPath: "/",
-	query: {},
-	method: "GET",
-	cookies: {},
-	headers: {},
-	params:{},
-}
 
 test("form", async () => {
+	const rootDataset = InitRoot()
 
 	const exampleHTML = `
 		<form v-name="test1" >
@@ -33,9 +25,10 @@ test("form", async () => {
 })
 
 test("form not found", async () => {
+	const rootDataset = InitRoot()
 
 	const exampleHTML = `
-		<v-nodejs target="foo" >
+		<v-nodejs target="$foo" >
 			return false
 		</v-nodejs>
 		<v-if source="$foo" >
@@ -70,14 +63,16 @@ test("duplicate forms throw errors", async () => {
 		return VtmlDocument.LoadFromString(exampleHTML)
 	}
 
-	expect(innerTest).toThrow("Duplicate v-name in form (<string>:33)")
+	expect(innerTest).toThrow("Duplicate path in form /foo")
 })
 
 
 test("form sets return code successfully", async () => {
+	const rootDataset = InitRoot()
+
 	const exampleHTML = `
 		<form v-name="foo" >
-			<v-return-code-action code="401" />
+			<v-set-status code="401" />
 			<input name="bar" />
 		</form>
 
@@ -91,11 +86,14 @@ test("form sets return code successfully", async () => {
 })
 
 test("form not executed on non-success chain", async () => {
+	const rootDataset = InitRoot()
 	const exampleHTML = `
-		<v-return-code code="400" />
-		<form v-name="foo" >
-			<input name="bar" />
-		</form>
+		<v-json target="$foo" >"foo"</v-json>
+		<v-check-authenticated source="$foo" eq="bar" >
+			<form v-name="foo" >
+				<input name="bar" />
+			</form>
+		</v-check-authenticated>
 
 	`
 
@@ -107,10 +105,11 @@ test("form not executed on non-success chain", async () => {
 })
 
 test("form redirects correctly", async () => {
+	const rootDataset = InitRoot()
 	const exampleHTML = `
 		<form v-name="foo" >
 			<input name="bar" />
-			<v-redirect-action path="/foo" />
+			<v-redirect path="/foo" />
 		</form>
 
 	`
@@ -122,11 +121,53 @@ test("form redirects correctly", async () => {
 	expect(response.redirect).toBe("/foo")
 })
 
-test("form sets cookie correctly", async () => {
+test("form redirects correctly in action", async () => {
+	const rootDataset = InitRoot({ action:true })
 	const exampleHTML = `
 		<form v-name="foo" >
 			<input name="bar" />
-			<v-setcookie-action name="foo" value="baz" />
+			<v-action>
+				<v-redirect path="/foo" />
+			</v-action>
+		</form>
+
+	`
+
+	const doc = VtmlDocument.LoadFromString(exampleHTML)
+
+	const response = await doc.executeFormByName("foo", rootDataset, { bar:"bar" })
+
+	expect(response.redirect).toBe("/foo")
+})
+
+test("form does not redirect outside action", async () => {
+	const rootDataset = InitRoot({ action:false })
+	const exampleHTML = `
+		<form v-name="foo" >
+			<input name="bar" />
+			<v-action>
+				<v-redirect path="/foo" />
+			</v-action>
+		</form>
+
+	`
+
+	const doc = VtmlDocument.LoadFromString(exampleHTML)
+
+	const response = await doc.executeFormByName("foo", rootDataset, { bar:"bar" })
+
+	expect(response.redirect).toBe("")
+})
+
+
+
+
+test("form sets cookie correctly", async () => {
+	const rootDataset = InitRoot()
+	const exampleHTML = `
+		<form v-name="foo" >
+			<input name="bar" />
+			<v-set-cookie name="foo" value="baz" />
 		</form>
 
 	`

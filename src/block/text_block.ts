@@ -1,4 +1,4 @@
-import {Branch, Block, TagBlock, ChainResult, BlockReport, IsolateReponse} from "../types"
+import type {Branch, Block, TagBlock, ChainResult, BlockReport, IsolateReponse} from "../types"
 import * as HTML from "../html"
 import * as Vars from "../variables"
 import FilterContext from "../filter_context"
@@ -106,8 +106,7 @@ class TextBlock implements Block {
 	}
 
 	// @NOTE Can never contain children
-	// eslint-disable-next-line
-	createChildChain(seq:number, consumes:string[]): (ctx:FilterContext) => Promise<ChainResult> {
+	createChildChain(): (ctx:FilterContext) => Promise<ChainResult> {
 		throw Error(`createChildChain called in TextBlock`)
 	}
 

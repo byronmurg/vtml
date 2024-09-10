@@ -1,5 +1,5 @@
 import * as HTML from "../html"
-import {Block} from "../types"
+import type {Block} from "../types"
 import {findTagIfV} from "../find_tag"
 import TextBlock from "./text_block"
 import VtmlBlock from "./vtml_block"

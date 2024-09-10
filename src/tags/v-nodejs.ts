@@ -12,7 +12,7 @@ const VNodeJs = CreateLoaderTag({
 	prepareChain(block) {
 		const body = block.requireOneTextChild()
 		const targetAttr = block.targetAttr()
-		const fnc = NodeFunction(body, block.getName())
+		const fnc = NodeFunction(body)
 
 		return async (ctx) => {
 			const output = await fnc(ctx)

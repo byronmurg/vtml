@@ -1,5 +1,5 @@
 import * as HTML from "../html"
-import {Block, TagBlock, RenderDescription, AttributeSpec} from "../types"
+import type {Block, TagBlock, RenderDescription, AttributeSpec} from "../types"
 import FilterContext from "../filter_context"
 import Debug from "debug"
 import BlockCollection from "./block_collection"
@@ -122,7 +122,6 @@ abstract class TagBlockBase {
 		for (const k in attrs) {
 			const v = attrs[k]
 			const type = spec[k] || {}
-			this.debug("template attribute", k, v)
 
 			// If it's a special or target/source attr
 			if (type.strip || type.target || type.source || type.inject) {
@@ -132,6 +131,7 @@ abstract class TagBlockBase {
 				cpy[k] = v
 			} else if (typeof(v) === "string") {
 				// Template it
+				this.debug("template attribute", k, v)
 				cpy[k] = ctx.templateStringSafe(v)
 			} else {
 				cpy[k] = v

@@ -1,6 +1,6 @@
 import TagBlockBase from "./tag_block_base"
-import {Branch, TagBlock, ChainResult, BlockReport, IsolateReponse, AttributeSpec, RenderDescription, Block} from "../types"
-import {uniq} from "lodash"
+import type {Branch, TagBlock, ChainResult, BlockReport, IsolateReponse, AttributeSpec, RenderDescription, Block} from "../types"
+import uniq from "lodash/uniq"
 import * as Vars from "../variables"
 import * as HTML from "../html"
 import FilterContext from "../filter_context"
