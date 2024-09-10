@@ -76,8 +76,7 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 		}
 		const rootDataset = createRootDataset(req, false)
 
-		const errRoot = { ...rootDataset, error:err }
-		const ctx = FilterContext.Init(errRoot)
+		const ctx = FilterContext.InitError(rootDataset, err)
 		
 		const response = await vtmlDocument.renderDocument(ctx)
 

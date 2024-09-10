@@ -41,6 +41,15 @@ class FilterContext {
 		return new FilterContext({}, dataset)
 	}
 
+	// Initialize with error
+	static InitError(dataset:RootDataset, error:ResponseError) {
+		return new FilterContext({}, dataset, undefined, {
+			...initGlobals(),
+			error,
+			returnCode: error.code,
+		})
+	}
+
 	static TemplateRegex = templateRegex
 
 	// Initialize a copy with a new dataset
