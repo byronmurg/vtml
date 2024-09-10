@@ -53,7 +53,7 @@ function preFilterElements(elements:Element[], dir:string): Element[] {
 			// with the current dir.
 			for (const attr of relativeAttrs) {
 				const value = child.attributes[attr]
-				if (value) {
+				if (value && !value.toString().startsWith("/")) {
 					child.attributes[attr] = path.posix.join(dir, value.toString())
 				}
 			}
