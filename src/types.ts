@@ -78,6 +78,7 @@ type VtmlTag = TagCommon & {
 	providesError?: boolean
 	allowExtraAttributes?: boolean
 	isLoop?: boolean
+	scriptTemplate?: boolean
 
 	prepare: (block:VtmlBlock) => {
 		contains: (ctx:FilterContext) => Promise<ChainResult>

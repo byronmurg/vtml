@@ -24,6 +24,37 @@
 
 		<main class="container" >
 
+			<v-page path="/vars" >
+			<v-json target="$foo" >"FOO"</v-json>
+			<v-json target="$bar" >"BAR"</v-json>
+			<v-json target="$baz" >{ "sub":"BAZ" }</v-json>
+
+			<pre>
+				$foo
+				$baz.sub
+				$(foo)
+				$(baz.sub)
+				$(baz)
+				(some $foo)
+				${some}
+				$(foo).jpg
+				\$inbuilt
+				$foo[0]
+				$(foo[1])
+				$(baz[sub])
+				$.path
+			</pre>
+
+			<v-nodejs>
+				console.log($foo)
+			</v-nodejs>
+
+			<script>
+				console.log($foo)
+			</script>
+
+			</v-page>
+
 			<v-page path="/" >
 				<v-json target="$foo" >22</v-json>
 

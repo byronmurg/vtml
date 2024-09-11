@@ -2,15 +2,19 @@ import get from "lodash/get"
 import type {RootDataset, ResponseError, Cookie, Branch} from "./types"
 import {escapeHtml} from "./html"
 import Debug from "debug"
+import * as Vars from "./variables"
 
-//////////////////////////////////////////////
-// Big special template regex
-//////////////////////////////////////////////
-const templateRegex = /(?<!\\)\$(?!\{|\()[$\w[\].-]*/g
+const templateRegex = /(?<!\\)\$([\w\.\-\[\]]+|\([\w\.\-\[\]]+\))/g
 //                     ^^^^^^^ Cannot come after a backslash (for escaping
 //                            ^^ Match the $ dollar sign
-//                              ^^^^^^^^ Cannot be followed by '{' or '(' (messes with js templates in scripts)
-//                                   ^^^^^^^^^^^ Match legal characters A-z,0-9,[,],.,-
+//                               ^^^^^^^^^^^^ Match legal characters A-z,0-9,[,],.,-
+//                                            ^ OR
+//                                             ^^^^^^^^^^^^^^^^ Match legal characters inside brackets
+
+const scriptRegex = /(?<!\\)\$\w+/g
+//                   ^^^^^^^ Cannot come after a backslash (for escaping
+//                          ^^ Match the $ dollar sign
+//                          ^^^^^ Match legal characters A-z,0-9
 
 type Globals = {
 	setCookies: Record<string, Cookie>
@@ -51,6 +55,7 @@ class FilterContext {
 	}
 
 	static TemplateRegex = templateRegex
+	static ScriptRegex = scriptRegex
 
 	// Initialize a copy with a new dataset
 	private copy(dataset:object): FilterContext {
@@ -160,12 +165,6 @@ class FilterContext {
 		}
 	}
 
-	processLocalKey(token:string): string {
-		const key = token.substr(1)
-		// RE-template the key
-		return this.templateString(key)
-	}
-
 	Merge(rhs:FilterContext): FilterContext {
 		return new FilterContext(
 			{ ...this.dataset, ...rhs.dataset },
@@ -176,14 +175,12 @@ class FilterContext {
 	}
 
 	getKey(token:string) {
-		if (token.startsWith('$.')) {
-			const rootKey = token.substr(2)
+		token = Vars.getPathFromTemplate(token)
+		if (token.startsWith('.')) {
+			const rootKey = token.substr(1)
 			return get(this.rootDataset, rootKey)
-		} else if (token.startsWith("$")) {
-			const key = this.processLocalKey(token)
-			return this.getLocal(key)
 		} else {
-			throw Error(`Variable selectors must start with a '$'`)
+			return this.getLocal(token)
 		}
 	}
 
@@ -218,8 +215,9 @@ class FilterContext {
 		return str.replace(templateRegex, (t) => this.getKeySafe(t))
 	}
 
-	templateStringJson(str:string): string {
-		return str.replace(templateRegex, (t) => this.getKeyJSON(t))
+	templateScript(str:string): string {
+		// @NOTE uses script regex
+		return str.replace(scriptRegex, (t) => this.getKeyJSON(t))
 	}
 
 	filterPass(): Branch {

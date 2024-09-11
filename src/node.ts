@@ -1,8 +1,5 @@
-import type FilterContext from "./filter_context"
+import FilterContext from "./filter_context"
 import nodeInterFace from "./sql"
-
-// A regex for matching vars in v-nodejs
-const nodeVarRegex = /(?<!\\)\$\w+/g
 
 const inbuiltVars: Record<string, unknown> = {
 	require: require,
@@ -12,7 +9,7 @@ const inbuiltVars: Record<string, unknown> = {
 export default
 function prepare(body:string) {
 	// Find ant ctx variables used by the js body
-	const injectVars = body.match(nodeVarRegex) || []
+	const injectVars = body.match(FilterContext.ScriptRegex) || []
 
 	const inbuiltKeys = Object.keys(inbuiltVars)
 

@@ -1,36 +1,27 @@
 ---
 - tag: v-with
   arguments:
-  - default: $
-    name: source
+  - name: source
     templated: true
   description: |
     Include content block if variable is truthy. Sets the variable of children to the target if it is supplied.
 
-    v-with can be thought of as a shorthand for v-use together with v-if.
-
   example: |
-    <v-json target="dog" >
+    <v-json target="$dog" >
       {
         "name": "Freddy"
       }
     </v-json>
 
-    <v-with source="name" >
-      <p>This will display the name : $ </p>
+    <v-with source="$dog.name" as="$name" >
+      <p>This will display the name : $name </p>
     </v-with>
 
-    <v-with source="phone_number" >
+    <v-with source="$dog.phone_number" >
       <p>This would not display anything</p>
     </v-with>
 
-- tag: v-use
-  arguments:
-  - name: source
-    templated: true
-  description: Set the current var to be 'source' for all children.
-
-- tag: v-if/v-unless
+- tag: v-if
   arguments:
   - name: eq
     optional: true
@@ -50,7 +41,33 @@
   - default: $
     name: source
     templated: true
-  description: Logic and stuff.
+  description: |
+    Display the contents only when the condition matches.
+
+    By default the contents are displayed when $source is considered truthy.
+
+- tag: v-unless
+  arguments:
+  - name: eq
+    optional: true
+    templated: true
+  - name: lt
+    optional: true
+    templated: true
+  - name: lte
+    optional: true
+    templated: true
+  - name: gt
+    optional: true
+    templated: true
+  - name: gte
+    optional: true
+    templated: true
+  - default: $
+    name: source
+    templated: true
+  description: |
+    Display the contents only when the condition does not match.
 
 - tag: v-json
   arguments:
@@ -179,7 +196,7 @@
     Useful for creating an error-barrier for resources.
 
   example: |
-    <v-sql target="user" >select * from user where email = $.headers.x-email</v-sql>
+    <v-sql target="$user" >select * from user where email = $.headers.x-email</v-sql>
 
     <v-check-authorized source="$user" >
       <p>Some sensitive information here...</p>
@@ -197,14 +214,14 @@
   description: |
     Rendered when no error has occured. Useful when a section may result in an error.
 
-- tag: v-return-code
+- tag: v-set-status
   actionVariant: true
   arguments:
   - name: code
     description: "Return code to send. Must be numeric."
     templated: true
   description: |
-    Set the return code.
+    Set the status code.
 
     Rendering will continue as normal. If you want to report a non-success status take
     a look at the v-check-* tags instead.

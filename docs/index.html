@@ -117,8 +117,9 @@
 				<v-json target="$tabs" >
 					[
 						{ "icon":"home", "match":"^/$", "link":"/", "name":"Home" },
-						{ "icon":"info", "match":"^/tutorial/\\w+", "link":"/tutorial/getting_started", "name":"Tutorial" },
-						{ "icon":"design_services", "match":"^/reference", "link":"/reference", "name":"Reference" }
+						{ "icon":"summarize", "match":"^/documentation/\\w+", "link":"/documentation/getting_started", "name":"Docs" },
+						{ "icon":"design_services", "match":"^/tutorial/\\w+", "link":"/tutorial/start", "name":"Tutorial" },
+						{ "icon":"quick_reference_all", "match":"^/reference", "link":"/reference", "name":"Reference" }
 					]
 				</v-json>
 
@@ -193,24 +194,24 @@
 		<main class="responsive" style="margin-top:4rem;" >
 			<v-try>
 
-				<v-page path="/tutorial/getting_started" >
-					<v-markdown src="./tutorial/getting_started.md" />
+				<v-page path="/documentation/getting_started" >
+					<v-markdown src="./documentation/getting_started.md" />
 				</v-page>
 
-				<v-page path="/tutorial/variables" >
-					<v-markdown src="./tutorial/variables.md" />
+				<v-page path="/documentation/variables" >
+					<v-markdown src="./documentation/variables.md" />
 				</v-page>
 
-				<v-page path="/tutorial/logic" >
-					<v-markdown src="./tutorial/logic.md" />
+				<v-page path="/documentation/logic" >
+					<v-markdown src="./documentation/logic.md" />
 				</v-page>
 
-				<v-page path="/tutorial/pages" >
-					<v-markdown src="./tutorial/pages.md" />
+				<v-page path="/documentation/pages" >
+					<v-markdown src="./documentation/pages.md" />
 				</v-page>
 
-				<v-page path="/tutorial/forms" >
-					<v-markdown src="./tutorial/forms.md" />
+				<v-page path="/documentation/forms" >
+					<v-markdown src="./documentation/forms.md" />
 				</v-page>
 
 				<v-page path="/reference">
@@ -223,7 +224,7 @@
 			</v-try>
 
 			<v-catch>
-				<h6>$.error.message</h6>
+				<h6 class="center-align" >$error.message</h6>
 			</v-catch>
 
 		</main>

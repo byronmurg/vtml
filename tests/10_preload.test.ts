@@ -1,12 +1,9 @@
 import VtmlDocument from "../src/document"
-import {InitCtx} from "./test_lib"
+import {InitCtx, trimAll} from "./test_lib"
 
 // Just an example context
 const ctx = InitCtx()
 
-function trimAll(str:string): string {
-	return str.split("\n").map((s) => s.trim()).join("")
-}
 
 test("v-include", async () => {
 

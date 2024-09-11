@@ -1,5 +1,5 @@
 import VtmlDocument from "../src/document"
-import {InitCtx} from "./test_lib"
+import {InitCtx, RenderTest} from "./test_lib"
 
 // Just an example context
 const ctx = InitCtx()
@@ -16,28 +16,64 @@ test("Unknown tags throw an error", () => {
 	expect(func).toThrow(`Unknown VTML tag v-dunnome`)
 })
 
-test("v-with", async () => {
+///////////////////////////
+// v-with
+///////////////////////////
 
-	const exampleHTML = `
-		<v-json target="$vars" >
-			"Hi there"
-		</v-json>
+describe("v-with", () => {
+	test("renders when truthy", async () => {
+		const output = await RenderTest(`
+			<v-json target="$numbers" >
+				{ "one":1 }
+			</v-json>
+			<v-with source="$numbers.one" as="$one" >
+				<p>Hello</p>
+			</v-with>
+		`)
+		expect(output).toBe(`<p>Hello</p>`)
+	})
 
-		<v-with source="$vars" as="$sub" >
-			<p>$sub</p>
-		</v-with>
+	test("renders when falsy", async () => {
+		const output = await RenderTest(`
+			<v-json target="$numbers" >
+				{ "zero":0 }
+			</v-json>
+			<v-with source="$numbers.zero" as="$zero" >
+				<p>Hello</p>
+			</v-with>
+		`)
+		expect(output).toBe(`<p>Hello</p>`)
+	})
 
-		<v-with source="$vars.foo" as="$notset" >
-			<p>Shouldn't see me</p>
-		</v-with>
-	`
+	test("does not render when undefined", async () => {
+		const output = await RenderTest(`
+			<v-json target="$numbers" >
+				{ "zero":0 }
+			</v-json>
+			<v-with source="$numbers.one" as="$zero" >
+				<p>Hello</p>
+			</v-with>
+		`)
+		expect(output).toBe(``)
+	})
 
-	const doc = VtmlDocument.LoadFromString(exampleHTML)
-
-	const output = await doc.renderLoaderMl(ctx)
-
-	expect(output).toBe(`<p>Hi there</p>`)
+	test("renders inject variable when defined", async () => {
+		const output = await RenderTest(`
+			<v-json target="$numbers" >
+				{ "zero":0 }
+			</v-json>
+			<v-with source="$numbers.zero" as="$zero" >
+				<p>$zero</p>
+			</v-with>
+		`)
+		expect(output).toBe(`<p>0</p>`)
+	})
 })
+
+///////////////////////////
+// v-hint-port
+///////////////////////////
+
 
 test("v-hint-port", async () => {
 
@@ -52,7 +88,7 @@ test("v-hint-port", async () => {
 	expect(port).toBe(`1337`)
 })
 
-test("v-if", async () => {
+describe("v-if", () => {
 
 	async function testIf(tag:string) {
 		const exampleHTML = `
@@ -68,53 +104,63 @@ test("v-if", async () => {
 		return trimAll(await doc.renderLoaderMl(ctx))
 	}
 
-	const truthyOut = await testIf(`
-		<v-if source="$var" >truthy</v-if>
-	`)
-	expect(truthyOut).toBe(`truthy`)
+	test("render contents when truthy", async () => {
+		const truthyOut = await testIf(`
+			<v-if source="$var" >truthy</v-if>
+		`)
+		expect(truthyOut).toBe(`truthy`)
+	})
 
-	const eqOut = await testIf(`
-		<v-if source="$var" eq="22" >true</v-if>
-	`)
-
-	expect(eqOut).toBe(`true`)
-
-	const gteOut = await testIf(`
-		<v-if source="$var" gte="22" >true</v-if>
-	`)
-
-	expect(gteOut).toBe(`true`)
+	test("render contents when equal", async () => {
+		const eqOut = await testIf(`
+			<v-if source="$var" eq="22" >true</v-if>
+		`)
+		expect(eqOut).toBe(`true`)
+	})
 
 
-	const allOut = await testIf(`
-		<v-if source="$var" eq="22" >
-			(eq 22)
-		</v-if>
-		<v-if source="$var" gt="10" >
-			(gt 10)
-		</v-if>
-		<v-if source="$var" lt="100" >
-			(lt 100)
-		</v-if>
-	`)
+	test("render contents when greater than or equal", async () => {
+		const gteOut = await testIf(`
+			<v-if source="$var" gte="22" >true</v-if>
+		`)
+		expect(gteOut).toBe(`true`)
+	})
 
-	expect(allOut).toBe("(eq 22)(gt 10)(lt 100)")
 
-	const everyOut = await testIf(`
-		<v-if source="$var" eq="22" gt="10" lt="100" >
-			Every selector matches
-		</v-if>
-	`)
+	test("render multiple", async () => {
+		const allOut = await testIf(`
+			<v-if source="$var" eq="22" >
+				(eq 22)
+			</v-if>
+			<v-if source="$var" gt="10" >
+				(gt 10)
+			</v-if>
+			<v-if source="$var" lt="100" >
+				(lt 100)
+			</v-if>
+		`)
 
-	expect(everyOut).toBe("Every selector matches")
+		expect(allOut).toBe("(eq 22)(gt 10)(lt 100)")
+	})
 
-	const oneNotOut = await testIf(`
-		<v-if source="$var" eq="22" gt="10" lte="10" >
-			One doesn't match
-		</v-if>
-	`)
+	test("render when every selector matches", async () => {
+		const everyOut = await testIf(`
+			<v-if source="$var" eq="22" gt="10" lt="100" >
+				Every selector matches
+			</v-if>
+		`)
+		expect(everyOut).toBe("Every selector matches")
+	})
 
-	expect(oneNotOut).toBe("")
+	test("do not render when one doesn't match", async () => {
+		const oneNotOut = await testIf(`
+			<v-if source="$var" eq="22" gt="10" lte="10" >
+				One doesn't match
+			</v-if>
+		`)
+		expect(oneNotOut).toBe("")
+	})
+
 })
 
 

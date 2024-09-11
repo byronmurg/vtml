@@ -6,16 +6,30 @@ function getTemplatesInString(str:string): string[] {
 	return uniq(str.match(FilterContext.TemplateRegex) || [])
 }
 
+
 function getVarFromTemplate(str:string): string {
-	const m = str.match(/\$\w+/)
+	const m = str.match(/\w+/)
 	return m ? m[0] : ""
+}
+
+
+function notRootVar(str:string): boolean {
+	return !str.startsWith("$.")
 }
 
 export
 function getVarsInString(str:string): string[] {
-	return getTemplatesInString(str).map(getVarFromTemplate)
-		.filter((v) => !!v) // @TODO this is stripping root vars too
+	return getTemplatesInString(str)
+		.filter(notRootVar)
+		.map(getVarFromTemplate)
 }
+
+export
+function getPathFromTemplate(str:string): string {
+	const m = str.match(/[\w\.\[\]]+/)
+	return m ? m[0] : ""
+}
+
 
 export
 function getVarsInMap(map:Record<string, unknown>): string[] {

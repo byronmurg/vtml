@@ -12,7 +12,7 @@ export const Script = CreateOverrideTag({
 		return async (ctx) => {
 			const attributes = block.templateAttributes(ctx)
 
-			const textBody = ctx.templateStringJson(body)
+			const textBody = ctx.templateScript(body)
 
 			const textNode: TextElement = {
 				type: "text",

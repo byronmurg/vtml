@@ -107,7 +107,7 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 
 		if (this.tag.consumesError) {
 			consumes.push(`!thrown_error`)
-			injects.push("$error")
+			injects.push("error")
 		}
 
 		if (this.tag.providesError) {
