@@ -118,22 +118,6 @@ class BlockCollection {
 		return { orderSets:realOrder, description }
 	}
 
-
-	createPreceedChain(seq:number): ChainReport {
-		// The element at `seq` has been isolated for
-		// rendering. We need to build the precedence chain
-		// for it and it's consumes.
-
-		// Start by finding the child
-		const target = this.children[seq]
-		const targetReport = target.report()
-		const targetConsumes = targetReport.consumes
-
-		// Once we know the element's consumes the logic is
-		// the same as if it were a container.
-		return this.createContainerChain(seq, targetConsumes)
-	}
-
 	createContainerChain(seq:number, consumes:string[]): ChainReport {
 		// We need to build a precedence chain for an element *inside*
 		// one of the elements in our chain. The element's containers

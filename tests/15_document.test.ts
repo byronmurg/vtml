@@ -21,3 +21,14 @@ test("pages are found", () => {
 
 	expect(doc.getPages().length).toBe(2)
 })
+
+test("components cannot share paths", () => {
+	const exampleHTML = `
+		<v-page path="/bar" ><p>Hey</p></v-page>
+		<v-expose path="/bar" src="somefile.txt" />
+	`
+
+	const fnc = () => VtmlDocument.LoadFromString(exampleHTML)
+
+	expect(fnc).toThrow("Duplicate path in expose /bar")
+})

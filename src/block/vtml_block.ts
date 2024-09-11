@@ -216,7 +216,7 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 		return this._prepared.render(ctx)
 	}
 
-	CheckContains(ctx:FilterContext): Promise<ChainResult> {
+	checkContains(ctx:FilterContext): Promise<ChainResult> {
 		return this._prepared.contains(ctx)
 	}
 
@@ -292,7 +292,7 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 			}
 
 			// Now execute myself and return if not found
-			const containsRes = await this.CheckContains(parentRes.ctx)
+			const containsRes = await this.checkContains(parentRes.ctx)
 			if (! containsRes.found) {
 				return containsRes
 			}

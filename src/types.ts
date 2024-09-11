@@ -111,8 +111,6 @@ interface Block {
 
 	Render(ctx:FilterContext): Promise<Branch>
 
-
-	CheckContains(ctx:FilterContext): Promise<ChainResult>
 	CheckPreceeds(ctx:FilterContext): Promise<FilterContext>
 
 	Isolate(): (ctx:FilterContext) => Promise<IsolateReponse>

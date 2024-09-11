@@ -55,12 +55,6 @@ class RootBlock implements Block {
 		return []
 	}
 
-	CheckContains(ctx:FilterContext) {
-		// Root blocks do not alter the ctx or remove display
-		return Promise.resolve({ ctx, found:true })
-	}
-
-
 	CheckPreceeds(ctx:FilterContext) {
 		// Root blocks do not alter the ctx
 		return Promise.resolve(ctx)
@@ -77,8 +71,12 @@ class RootBlock implements Block {
 		}
 	}
 
-	createChildChain() {
-		return (ctx:FilterContext) => Promise.resolve({ found:true, ctx })
+	createChildChain(seq:number, consumes:string[]) {
+		// Just create and execute the preceed chain assuming it was found.
+		const preceedChain = this.children.createContainerChain(seq, consumes)
+		return (initCtx:FilterContext) => preceedChain.collection.runPreceed(initCtx)
+			.then((ctx) => ({ ctx, found:true }))
+
 	}
 
 	findAncestor(): TagBlock|undefined {

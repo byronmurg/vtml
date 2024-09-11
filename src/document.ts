@@ -32,6 +32,7 @@ class VtmlDocument {
 	public readonly forms: FormDescriptor[]
 	public readonly portals: PortalDescriptor[]
 	public readonly exposes: ExposeDescriptor[]
+	public readonly pages: string[]
 	public readonly oapiSchema: OAPI.OpenAPIObject
 	private rootBlock: Block
 	private pathMap: Record<string, boolean> = {}
@@ -39,6 +40,13 @@ class VtmlDocument {
 	private constructor(root:HTML.Element[]) {
 		this.rootBlock = MakeRootBlock(root)
 		this.forms = this.prepareForms()
+
+		// Prepare pages must come first
+		// as a page can appear multiple times
+		//
+		// @TODO make it not.
+		this.pages = this.preparePages()
+
 		this.portals = this.preparePortals()
 		this.exposes = this.prepareExposes()
 		this.oapiSchema = OAPI.createOpenApiSchema(this)
@@ -48,10 +56,20 @@ class VtmlDocument {
 		return utils.findTitle(this.rootBlock)
 	}
 
-	getPages() {
-		return this.rootBlock.FindAll(utils.matchPage).map(
+	preparePages() {
+		const pages = this.rootBlock.FindAll(utils.matchPage).map(
 			(pageBlock) => pageBlock.attr("path")
 		)
+
+		for (const page of pages) {
+			this.pathMap[page] = true
+		}
+
+		return pages
+	}
+
+	getPages() {
+		return this.pages
 	}
 
 	prepareForms(): FormDescriptor[] {

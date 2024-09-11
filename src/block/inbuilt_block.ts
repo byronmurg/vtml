@@ -89,11 +89,6 @@ class InbuiltBlock extends TagBlockBase implements TagBlock {
 		return { ctx, elements:[resp] }
 	}
 
-	CheckContains(ctx:FilterContext) {
-		// Inbuilt tags cannot alter the ctx or remove display
-		return Promise.resolve({ ctx, found:true })
-	}
-
 	CheckPreceeds(ctx:FilterContext) {
 		// Inbuilt tags cannot alter the ctx
 		return Promise.resolve(ctx)

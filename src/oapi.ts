@@ -26,10 +26,19 @@ function createStringInputSchema(input:TagBlock): [OAPI.SchemaObject, boolean] {
 
 	const property: OAPI.SchemaObject = {
 		type: "string",
-		pattern: input.attr("pattern"),
-		maxLength: input.optNumAttr("maxlength"),
 		minLength,
 	}
+
+	const pattern = input.attr("pattern")
+	if (pattern) {
+		property.pattern = pattern
+	}
+
+	const maxLength = input.optNumAttr("maxlength")
+	if (maxLength) {
+		property.maxLength = maxLength
+	}
+	
 
 	return [property, required]
 }

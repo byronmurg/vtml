@@ -262,3 +262,19 @@ test(`v-set-status`, async () => {
 
 	expect(res.status).toBe(403)
 })
+
+test("v-markdown", async () => {
+	const output = await RenderTest(`<v-markdown src="tests/test_assets/markdown.md">`)
+
+	expect(output).toBe(`<h1>title</h1><p>text</p>`)
+})
+
+test("v-fs-readdir", async () => {
+	const output = await RenderTest(`
+		<v-fs-readdir target="$dir" path="tests/test_assets" />
+		<v-dump source="$dir" />
+	`)
+
+	expect(output).toMatch(`markdown.md`)
+})
+
