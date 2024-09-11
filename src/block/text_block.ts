@@ -101,16 +101,6 @@ class TextBlock implements Block {
 		return []
 	}
 
-	getAllConsumes() {
-		const consumes = [...this.bodyVars]
-		return this.parent.resolveChildConsumes(this.seq, consumes)
-	}
-
-	resolveChildConsumes(seq:number, consumes:string[]) {
-		// @NOTE Dummy, can't have children
-		return this.parent.resolveChildConsumes(seq, consumes)
-	}
-
 	// @NOTE Can never contain children
 	createChildChain(): (ctx:FilterContext) => Promise<ChainResult> {
 		throw Error(`createChildChain called in TextBlock`)

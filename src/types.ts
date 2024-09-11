@@ -115,9 +115,6 @@ interface Block {
 	CheckContains(ctx:FilterContext): Promise<ChainResult>
 	CheckPreceeds(ctx:FilterContext): Promise<FilterContext>
 
-	getAllConsumes(): string[]
-	resolveChildConsumes(seq:number, consumes:string[]): string[]
-
 	Isolate(): (ctx:FilterContext) => Promise<IsolateReponse>
 
 	createChildChain(seq:number, consumes:string[]): (ctx:FilterContext) => Promise<ChainResult>

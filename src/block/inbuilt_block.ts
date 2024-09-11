@@ -103,18 +103,6 @@ class InbuiltBlock extends TagBlockBase implements TagBlock {
 		return this.children.getRenderDescription()
 	}
 
-	getAllConsumes() {
-		const consumes = this.getVarsInAttributes()
-		return uniq(this.parent.resolveChildConsumes(this.seq, consumes))
-	}
-
-	resolveChildConsumes(seq:number, consumes:string[]) {
-		const preceedingConsumes = this.children.getAllConsumesForChild(seq, consumes)
-		const parentConsumes = this.parent.resolveChildConsumes(this.seq, preceedingConsumes)
-		return parentConsumes.concat(preceedingConsumes)
-	}
-
-
 	createChildChain(seq:number, consumes:string[]) {
 		const preceedChain = this.children.createContainerChain(seq, consumes)
 		const blockConsumes = consumes.concat(preceedChain.consumes)

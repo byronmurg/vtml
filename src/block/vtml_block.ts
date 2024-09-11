@@ -224,20 +224,6 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 		return this._prepared.preceeds(ctx)
 	}
 
-	getAllConsumes() {
-		const report = this.report()
-		return uniq(this.parent.resolveChildConsumes(this.seq, report.consumes))
-	}
-
-	resolveChildConsumes(seq:number, consumes:string[]) {
-		const preceedingConsumes = this.children.getAllConsumesForChild(seq, consumes)
-		const localReport = this.getLocalReport()
-
-		const allConsumes = localReport.consumes.concat(preceedingConsumes)
-		return this.parent.resolveChildConsumes(this.seq, allConsumes)
-	}
-
-
 	Isolate() {
 		this.debug("isolate")
 		const report = this.report()

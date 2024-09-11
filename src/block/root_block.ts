@@ -70,14 +70,6 @@ class RootBlock implements Block {
 		return this.children.getRenderDescription()
 	}
 
-	getAllConsumes() {
-		return []
-	}
-
-	resolveChildConsumes(seq:number, consumes:string[]) {
-		return this.children.getAllConsumesForChild(seq, consumes)
-	}
-
 	Isolate() {
 		return async (ctx:FilterContext) => {
 			const renderOutput = await this.Render(ctx)

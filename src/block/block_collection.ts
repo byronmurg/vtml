@@ -119,25 +119,6 @@ class BlockCollection {
 	}
 
 
-	getAllConsumesForChild(seq:number, consumes:string[]) {
-		const next = seq-1
-
-		// Loop backwards through the chain
-	 	for (let i = next; i >= 0; i--) {
-			const child = this.children[i]
-			const report = child.report()
-
-			const inter = intersection(report.provides, consumes)
-
-			if (inter.length) {
-				consumes = consumes.concat(report.consumes)
-			}
-		}
-
-		return consumes
-	}
-
-
 	createPreceedChain(seq:number): ChainReport {
 		// The element at `seq` has been isolated for
 		// rendering. We need to build the precedence chain
