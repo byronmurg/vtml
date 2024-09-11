@@ -241,7 +241,7 @@ function createOpenApiSchema(doc:VtmlDocument): OAPI.OpenAPIObject {
 	}
 
 	for (const form of doc.forms) {
-		apiPaths[`/api${form.oapiPath}`] = {
+		apiPaths[`/_api${form.oapiPath}`] = {
 			post: {
 				operationId: form.name,
 				parameters: form.parameters,

@@ -8,7 +8,7 @@ const inbuiltVars: Record<string, unknown> = {
 
 export default
 function prepare(body:string) {
-	// Find ant ctx variables used by the js body
+	// Find any ctx variables used by the js body
 	const injectVars = body.match(FilterContext.ScriptRegex) || []
 
 	const inbuiltKeys = Object.keys(inbuiltVars)

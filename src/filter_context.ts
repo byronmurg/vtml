@@ -147,6 +147,9 @@ class FilterContext {
 
 
 	SetVar(target:string, data:unknown): FilterContext {
+		// Just return if target is empty
+		if (! target) return this
+
 		const key = target.substr(1)
 		debug("set", key)
 		const newDataset = {[key]: data}

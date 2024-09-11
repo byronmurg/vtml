@@ -55,7 +55,7 @@ function postgresqlInterface(url:URL): NodeSqlInterface {
 	
 	function queryPg(sql:string, vars:unknown[]) {
 		const nicerSQL = slightlyNicerSql(sql)
-		debug(nicerSQL)
+		debug(nicerSQL, vars)
 		return pgPool.query(nicerSQL, vars)
 			.then((res) => res.rows)
 	}

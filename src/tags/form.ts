@@ -39,25 +39,17 @@ export const Form = CreateOverrideTag({
 
 			const fullPath = getFullPath(xName, ctx)
 
-			const actionPath = "/action" + fullPath
-			const ajaxPath = "/ajax" + fullPath
-
-			// @TODO Nothing "provides" these
-			const subCtx = ctx
-				.SetVar("__form_action", actionPath)
-				.SetVar("__form_ajax", ajaxPath)
-
-			const outputAttributes = block.templateAttributes(subCtx)
+			const outputAttributes = block.templateAttributes(ctx)
 
 			if (xAjax) {
 				outputAttributes['onsubmit'] ||= "return false"
 			} else {
 				// @TODO This is an assumption
 				outputAttributes['method'] = "POST"
-				outputAttributes['action'] ||= actionPath
+				outputAttributes['action'] ||= fullPath
 			}
 
-			const children = await block.renderChildren(subCtx)
+			const children = await block.renderChildren(ctx)
 
 			const resp = {
 				name: "form",

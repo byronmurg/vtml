@@ -46,7 +46,7 @@ test("form advanced", async () => {
 		throw Error(`No paths were defined`)
 	}
 
-	const fooPath = paths["/api/foo"]
+	const fooPath = paths["/_api/foo"]
 	if (! fooPath) {
 		throw Error("No foo path was defined")
 	}

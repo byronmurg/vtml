@@ -25,9 +25,9 @@ const VSetCookie = CreateLoaderTag({
 			const days    = toNum(attrs["max-days"], 0)
 
 			const maxAge = (seconds * 1000) + (minutes * 60000) + (hours * 60000 * 60) + (days * 60000 * 60 * 24)
-
 			const name = attrs['name'].toString()
 			const value = attrs['value'].toString()
+			block.debug("set", name, value)
 
 			return ctx.SetCookie(name, value, maxAge)
 		}

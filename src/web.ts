@@ -105,8 +105,8 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 
 	for (const form of postForms) {
 
-		debug(`Create action /action${form.path}`)
-		app.post(`/action${form.path}`, async (req, res) => {
+		debug(`Create action ${form.path}`)
+		app.post(form.path, async (req, res) => {
 			const rootDataset = createRootDataset(req, true)
 
 			const formRes = await form.executeFormEncoded(rootDataset, req.body)
@@ -119,7 +119,7 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 			}
 		})
 
-		app.post(`/ajax${form.path}`, async (req, res) => {
+		app.post(`/_ajax${form.path}`, async (req, res) => {
 
 			const rootDataset = createRootDataset(req, true)
 
@@ -134,7 +134,7 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 			}
 		})
 
-		app.post(`/api${form.path}`, Express.json(), async (req, res) => {
+		app.post(`/_api${form.path}`, Express.json(), async (req, res) => {
 			const rootDataset = createRootDataset(req, true)
 
 			const formRes = await form.execute(rootDataset, req.body)
@@ -150,7 +150,7 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 			}
 		})
 
-		app.get(`/api/${form.name}`, (_, res) => {
+		app.get(`/_api/${form.name}`, (_, res) => {
 			res.json({ inputSchema:form.inputSchema })
 		})
 	}
