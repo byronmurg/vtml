@@ -4,13 +4,16 @@ import CookieParser from "cookie-parser"
 import Debug from "debug"
 import SwaggerUiExpress from "swagger-ui-express"
 import DefaultError from "./default_errors"
+import Multer from "multer"
 
+import type {FileMap} from "./form"
 import VtmlDocument from "./document"
 import FilterContext from "./filter_context"
 import type {RootDataset, ResponseError, CookieMap} from "./types"
 import * as HTML from "./html"
 
-const debug = Debug("vtml")
+const debug = Debug("vtml:web")
+const multer = Multer({ storage:Multer.memoryStorage() })
 
 const matchSearch = (url:string) => (url.match(/\?(.+)/)||[])[1]
 
@@ -41,6 +44,22 @@ function setCookies(res:Express.Response, cookies:CookieMap) {
 		const maxAge = v.maxAge || undefined
 		res.cookie(k, v.value, {maxAge})
 	}
+}
+
+interface MulterFile {
+	buffer: Buffer
+}
+
+function parseFiles(files:Record<string, MulterFile[]>|MulterFile[]|undefined): FileMap {
+	if (files === undefined) return {}
+	if (Array.isArray(files)) return {}
+
+	const map:FileMap = {}
+
+	for (const name in files) {
+		map[name] = files[name][0].buffer.toString("hex")
+	}
+	return map
 }
 
 export
@@ -105,11 +124,25 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 
 	for (const form of postForms) {
 
-		debug(`Create action ${form.path}`)
-		app.post(form.path, async (req, res) => {
-			const rootDataset = createRootDataset(req, true)
+		const middlewares = []
+		if (form.encoding === "multipart/form-data") {
+			debug("Multipart form", form.name)
+			const fields = form.uploadFields.map((field) => ({ name:field.name, maxCount:1 }))
 
-			const formRes = await form.executeFormEncoded(rootDataset, req.body)
+			const fileHandler = form.uploadFields.length
+				? multer.fields(fields)
+				: multer.none()
+				
+			middlewares.push(fileHandler)
+		}
+
+		debug(`Create action ${form.path}`)
+		app.post(form.path, ...middlewares, async (req, res) => {
+			debug("form", form.name, "action")
+			const rootDataset = createRootDataset(req, true)
+			const files = parseFiles(req.files)
+
+			const formRes = await form.executeFormEncoded(rootDataset, req.body, files)
 
 			if (formRes.status < 400) {
 				setCookies(res, formRes.cookies)
@@ -119,11 +152,13 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 			}
 		})
 
-		app.post(`/_ajax${form.path}`, async (req, res) => {
+		app.post(`/_ajax${form.path}`, ...middlewares, async (req, res) => {
+			debug("form", form.name, "ajax")
 
 			const rootDataset = createRootDataset(req, true)
+			const files = parseFiles(req.files)
 
-			const formRes = await form.executeFormEncoded(rootDataset, req.body)
+			const formRes = await form.executeFormEncoded(rootDataset, req.body, files)
 
 			if (formRes.status < 400) {
 				setCookies(res, formRes.cookies)
@@ -135,6 +170,7 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 		})
 
 		app.post(`/_api${form.path}`, Express.json(), async (req, res) => {
+			debug("form", form.name, "api")
 			const rootDataset = createRootDataset(req, true)
 
 			const formRes = await form.execute(rootDataset, req.body)

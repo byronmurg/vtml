@@ -8,6 +8,8 @@ import DefaultError, {ServerError} from "./default_errors"
 
 import FilterContext from "./filter_context"
 
+export type FileMap = { [fieldname:string]: string }
+
 const ajv = new Ajv()
 AjvFormats(ajv)
 
@@ -98,16 +100,29 @@ function parseFormFields(body:Record<string, string>, formFields:TagBlock[]): Bo
 	return newBody
 }
 
+function getFileFields(postForm:TagBlock): FileField[] {
+	return postForm.FindAll(utils.byName("input"))         // Find inputs
+		.filter((block) => block.attr("type") === "file")  // with type="file"
+		.map((block) => ({ name:block.attr("name") }))     // get the name
+}
+
+type FileField = {
+	name: string
+}
+
 export
 type FormDescriptor = {
 	name: string
 	path: string
 	oapiPath: string
+	encoding: string
+
+	uploadFields: FileField[]
 
 	inputSchema: SchemaObject
 	parameters: ParameterObject[]
 	execute: (rootDataset:RootDataset, body:BodyType) => Promise<FormResult>
-	executeFormEncoded: (rootDataset:RootDataset, body:Record<string, string>) => Promise<FormResult>
+	executeFormEncoded: (rootDataset:RootDataset, body:Record<string, string>, files:FileMap) => Promise<FormResult>
 }
 
 export default
@@ -117,6 +132,8 @@ function prepareForm(postForm:TagBlock): FormDescriptor {
 
 	// Get the path of the nearest page
 	const pagePath = postForm.findAncestor(utils.byName("v-page"))?.attr("path") || "/"
+
+	const encoding = postForm.attr("enctype")
 
 	// Figure out the form path suffix
 	const path = utils.joinPaths(pagePath, xName)
@@ -135,6 +152,9 @@ function prepareForm(postForm:TagBlock): FormDescriptor {
 
 	// Find all inputs (and selects, and textareas)
 	const formInputs = postForm.FindAll(matchInputs)
+
+	// Find all file fields
+	const fileFields = getFileFields(postForm)
 
 	// Initialize validator
 	const validator = ajv.compile({ ...inputSchema, $async:true })
@@ -219,10 +239,10 @@ function prepareForm(postForm:TagBlock): FormDescriptor {
 	/*
 	 * Create an executor for when we have a form-encoded body
 	 */
-	async function executeFormEncoded(rootDataset:RootDataset, formBody:Record<string, string>) {
+	async function executeFormEncoded(rootDataset:RootDataset, formBody:Record<string, string>, files:FileMap) {
 		
 		const body = parseFormFields(formBody, formInputs)
-		return execute(rootDataset, body)
+		return execute(rootDataset, { ...body, ...files })
 	}
 
 	return {
@@ -230,6 +250,8 @@ function prepareForm(postForm:TagBlock): FormDescriptor {
 		path,
 		oapiPath,
 		parameters,
+		encoding,
+		uploadFields: fileFields,
 
 		inputSchema,
 		execute,

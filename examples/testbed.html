@@ -1,20 +1,19 @@
 <!DOCTYPE html>
 <html>
-
 	<head>
-
 		<title>Vtml testbed</title>
 
 		<link
-		  rel="stylesheet"
-		  href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"
+			rel="stylesheet"
+			href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"
 		/>
-		<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
-
+		<link
+			rel="stylesheet"
+			href="https://fonts.googleapis.com/icon?family=Material+Icons"
+		/>
 	</head>
 	<body>
-
-		<header class="container" >
+		<header class="container">
 			<nav>
 				<ul>
 					<li><b>Vtml testbed</b></li>
@@ -22,71 +21,77 @@
 			</nav>
 		</header>
 
-		<main class="container" >
+		<main class="container">
 
-			<v-page path="/vars" >
-			<v-json target="$foo" >"FOO"</v-json>
-			<v-json target="$bar" >"BAR"</v-json>
-			<v-json target="$baz" >{ "sub":"BAZ" }</v-json>
+			<v-page path="/file_upload" >
 
-			<pre>
-				$foo
-				$baz.sub
-				$(foo)
-				$(baz.sub)
-				$(baz)
-				(some $foo)
-				${some}
-				$(foo).jpg
-				\$inbuilt
-				$foo[0]
-				$(foo[1])
-				$(baz[sub])
-				$.path
-			</pre>
+				<form v-name="just_multipart" enctype="multipart/form-data" >
+					<input name="foo" />
+					<input name="myfile" type="file" required />
+					<button type="submit" >Go</button>
 
-			<v-nodejs>
-				console.log($foo)
-			</v-nodejs>
-
-			<script>
-				console.log($foo)
-			</script>
+					<v-action>
+						<v-nodejs>
+							console.log($.body)
+						</v-nodejs>
+					</v-action>
+				</form>
 
 			</v-page>
 
-			<v-page path="/" >
-				<v-json target="$foo" >22</v-json>
+			<v-page path="/vars">
+				<v-json target="$foo">"FOO"</v-json>
+				<v-json target="$bar">"BAR"</v-json>
+				<v-json target="$baz">{ "sub":"BAZ" }</v-json>
 
-				<v-with source="$foo" as="$bar" >
-					<v-portal v-name="bar" >
+				<pre>
+					$foo
+					$baz.sub
+					$(foo)
+					$(baz.sub)
+					$(baz)
+					(some $foo)
+					${some}
+					$(foo).jpg
+					\$inbuilt
+					$foo[0]
+					$(foo[1])
+					$(baz[sub])
+					$.path
+				</pre>
+
+				<v-nodejs> console.log($foo) </v-nodejs>
+
+				<script>
+					console.log($foo)
+				</script>
+			</v-page>
+
+			<v-page path="/">
+				<v-json target="$foo">22</v-json>
+
+				<v-with source="$foo" as="$bar">
+					<v-portal v-name="bar">
 						<p>bar= $bar</p>
 					</v-portal>
 				</v-with>
 			</v-page>
 
-			<v-page path="/todos" >
-			<v-sql target="$todos" >
-				select * from simple.todos
-			</v-sql>
+			<v-page path="/todos">
+				<v-sql target="$todos"> select * from simple.todos </v-sql>
 
-			<v-for-each source="$todos" as="$todo" >
-				<p>$todo.text</p>
+				<v-for-each source="$todos" as="$todo">
+					<p>$todo.text</p>
 
-				<form v-name="do_stuff" >
-					<button type="submit" >GO!</button>
+					<form v-name="do_stuff">
+						<button type="submit">GO!</button>
 
-					<v-action>
-						<v-nodejs>
-							console.log("I'm a form")
-						</v-nodejs>
-					</v-action>
-				</form>
-
-			</v-for-each>
+						<v-action>
+							<v-nodejs> console.log("I'm a form") </v-nodejs>
+						</v-action>
+					</form>
+				</v-for-each>
 			</v-page>
-
 		</main>
 	</body>
-
 </html>

@@ -64,6 +64,7 @@ function createInputSchema(input:TagBlock): [OAPI.SchemaObject, boolean]|undefin
 		case "submit": // Don't need submits
 		case "reset": // ...or resets
 		case "button": // ...or buttons
+		case "image": // ...or image
 			return undefined
 		case "range":
 		case "number":
@@ -78,6 +79,8 @@ function createInputSchema(input:TagBlock): [OAPI.SchemaObject, boolean]|undefin
 			return createExoticFormat(input, "time")
 		case "datetime-local":
 			return createExoticFormat(input, "date-time")
+		case "file":
+			return createExoticFormat(input, "binary")
 		case "checkbox":
 			return createBoolInputSchema()
 		default:
@@ -190,7 +193,6 @@ function createPostFormApiSchema(postForm:TagBlock): OAPI.SchemaObject {
 		additionalProperties: false,
 		required: [...requiredSet],
 	}
-
 
 	return inputSchema
 }
