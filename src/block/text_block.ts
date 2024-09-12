@@ -1,6 +1,7 @@
 import type {Branch, Block, TagBlock, ChainResult, BlockReport, IsolateReponse} from "../types"
 import * as HTML from "../html"
 import * as Vars from "../variables"
+import uniq from "lodash/uniq"
 import FilterContext from "../filter_context"
 
 export default
@@ -25,7 +26,7 @@ class TextBlock implements Block {
 	}
 
 	getVarsInBody(): string[] {
-		return Vars.getVarsInString(this.el.text)
+		return uniq(Vars.getVarsInString(this.el.text))
 	}
 
 	getTemplatesInBody(): string[] {
