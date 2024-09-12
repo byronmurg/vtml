@@ -133,19 +133,6 @@ class FilterContext {
 		return this.SetVar(as, newDataset)
 	}
 
-	SplitAs(source:string, as:string): FilterContext[] {
-		const value = this.getKey(source)
-
-		if (!Array.isArray(value)) {
-			// If the dataset is not an array or null just return an empty array
-			return []
-		} else {
-			// Or split the dataset
-			return value.map((sub) => this.SetVar(as, sub))
-		}
-	}
-
-
 	SetVar(target:string, data:unknown): FilterContext {
 		// Just return if target is empty
 		if (! target) return this
