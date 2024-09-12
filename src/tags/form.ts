@@ -40,6 +40,7 @@ export const Form = CreateOverrideTag({
 			const fullPath = getFullPath(xName, ctx)
 
 			const outputAttributes = block.templateAttributes(ctx)
+			delete outputAttributes["v-name"]
 
 			if (xAjax) {
 				outputAttributes['onsubmit'] ||= "return false"
