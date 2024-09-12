@@ -6,6 +6,7 @@ export * from "./v-action"
 export * from "./v-fs-readdir"
 export * from "./v-dump"
 export * from "./v-page"
+export * from "./v-index"
 export * from "./v-markdown"
 export * from "./v-hint-port"
 
