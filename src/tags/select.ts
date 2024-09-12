@@ -1,5 +1,8 @@
 import CreateOverrideTag from "./override"
+import type {TagElement} from "../html"
 import * as utils from "../utils"
+
+const isOption = (el:TagElement) => el.name === "option"
 
 export const Select = CreateOverrideTag({
 	name: "select",
@@ -10,18 +13,16 @@ export const Select = CreateOverrideTag({
 		return async (ctx) => {
 			const attrs = block.templateAttributes(ctx)
 			const children = await block.renderChildren(ctx)
-			//@TODO options don't have to be direct children
-			for (const child of children.elements) {
-				if (child.type === "element" && child.name === "option") {
-					let value = child.attributes['value']
-					// The value may be set as a child
-					if (value === undefined) {
-						value = utils.getText(child)
-					}
 
-					if (value === attrs['value']) {
-						child.attributes['selected'] = "yes"
-					}
+			for (const option of utils.findElementsInList(children.elements, isOption)) {
+				let value = option.attributes['value']
+				// The value may be set as a child
+				if (value === undefined) {
+					value = utils.getText(option)
+				}
+
+				if (value === attrs['value']) {
+					option.attributes['selected'] = "yes"
 				}
 			}
 
