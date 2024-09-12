@@ -27,10 +27,8 @@ const emptyTags: Record<string, string[]> = {
 	input: ["required", "disabled", "autofocus", "checked"],
 	details: ["open"],
 
-	// @TODO why add these. It's only for serialization????
 	form: ["v-ajax"],
 	"v-sql": ["single-row"],
-	"v-sql-action": ["single-row"],
 }
 
 const neverClose = [
