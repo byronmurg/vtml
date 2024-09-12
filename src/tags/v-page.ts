@@ -31,7 +31,7 @@ const VPage = CreateDisplayTag({
 			const matchPath = ctx.getKey("$.matchedPath")
 			if ((matchPath == path) || subPaths.includes(matchPath)) {
 				block.debug("Match on page", path)
-				ctx = ctx.SetVar("__matchedPage", path)
+				ctx = ctx.SetVar("$__matchedPage", path)
 				return block.renderChildren(ctx)
 			} else {
 				return ctx.filterPass()
