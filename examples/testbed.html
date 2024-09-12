@@ -23,6 +23,10 @@
 
 		<main class="container">
 
+			<v-nodejs target=$byron_info >
+				return "Very cool"
+			</v-nodejs>
+
 			<v-page path="/about" >
 				<h3>About</h3>
 
@@ -35,7 +39,7 @@
 				</v-page>
 
 				<v-page path="/about/byron" >
-					Byron
+					Byron is $byron_info
 				</v-page>
 			</v-page>
 

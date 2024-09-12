@@ -221,9 +221,26 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 
 	const pages = vtmlDocument.getPages()
 
-	for (const path of pages) {
-		debug("page found", path)
-		app.all(path, renderLoader())
+	for (const page of pages) {
+		debug("page found", page.path)
+		app.all(page.path, renderLoader())
+
+		app.get(`/_ajax${page.path}`, async (req, res) => {
+			const rootDataset = createRootDataset(req, false)
+			// Override the path as it doesn't match now
+			rootDataset.path = req.path.replace(/^\/_ajax/, '')
+			rootDataset.matchedPath = req.route.path.replace(/^\/_ajax/, '')
+
+			const pageRes = await page.load(rootDataset)
+			
+			if (pageRes.status < 400) {
+				setCookies(res, pageRes.cookies)
+				res.status(pageRes.status)
+				HTML.serialize(pageRes.elements, res)
+			} else {
+				res.status(pageRes.status).send(pageRes.error || DefaultError(pageRes.status))
+			}
+		})
 	}
 
 	if (pages.length === 0) {
