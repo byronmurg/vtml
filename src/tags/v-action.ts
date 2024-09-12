@@ -19,10 +19,8 @@ const VAction: VtmlTag = {
 
 			async render(ctx) {
 				if (ctx.rootDataset.action) {
-					// @TODO should this be calling some
-					// action version that renders in sequence?
 					debug("In action")
-					return branch.renderChildren(ctx)
+					return branch.renderChildrenInOrder(ctx)
 				} else {
 					return ctx.filterPass()
 				}

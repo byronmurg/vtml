@@ -61,6 +61,10 @@ abstract class TagBlockBase {
 		return this.children.renderAll(ctx)
 	}
 
+	renderChildrenInOrder(ctx:FilterContext) {
+		return this.children.renderInOrder(ctx)
+	}
+
 	getPath() {
 		const ancestorPath = this.parent.getPath()
 		return ancestorPath.concat(`${this.el.name}(${this.seq})`)

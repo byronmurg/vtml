@@ -23,6 +23,19 @@
 
 		<main class="container">
 
+			<v-page path="/select_test" >
+				
+				<v-json target="$foo" >"FOO"</v-json>
+
+				<select value="$foo" >
+					<optgroup>
+						<option>BAR</option>
+						<option>FOO</option>
+					</optgroup>
+				</select>
+
+			</v-page>
+
 			<v-page path="/file_upload" >
 
 				<form v-name="just_multipart" enctype="multipart/form-data" >

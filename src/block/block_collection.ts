@@ -44,6 +44,20 @@ class BlockCollection {
 		)
 	}
 
+	async renderInOrder(ctx:FilterContext): Promise<Branch> {
+		// Render all children in natural order
+
+		let subCtx = ctx
+		let elements: HTML.Element[] = []
+		for (const child of this.children) {
+			const response = await child.Render(subCtx)
+			subCtx = response.ctx
+			elements.push(...response.elements)
+			
+		}
+		return { ctx, elements }
+	}
+
 	makeRenderOrder(): MakeRenderOrderOutput {
 		// This method groups the children into sets based
 		// on which other elements they depend upon.
@@ -201,13 +215,14 @@ class BlockCollection {
 
 	async renderAll(ctx:FilterContext) {
 		const branchSets: Branch[] = []
+		let subCtx = ctx
 
 		// Iterate through the rendering order sets
 		for (const set of this.childRenderOrder) {
 			// Asynchronously render each set
 			const outputs = await Promise.all(
 				set.map(async (child) => ({
-					branch: await child.block.Render(ctx),
+					branch: await child.block.Render(subCtx),
 					seq: child.seq,
 				}))
 			)
@@ -216,7 +231,7 @@ class BlockCollection {
 			// and merge the variable outputs
 			for (const output of outputs) {
 				branchSets[output.seq] = output.branch
-				ctx = ctx.Merge(output.branch.ctx)
+				subCtx = subCtx.Merge(output.branch.ctx)
 			}
 		}
 
