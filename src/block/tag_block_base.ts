@@ -38,7 +38,7 @@ abstract class TagBlockBase {
 	FindAll(check:(el:TagBlock) => boolean): TagBlock[] {
 		const self = this as unknown as TagBlock
 		if (check(self)) {
-			return [self]
+			return [self].concat(this.FindChildren(check))
 		} else {
 			return this.FindChildren(check)
 		}
