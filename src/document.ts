@@ -137,6 +137,7 @@ class VtmlDocument {
 			elements,
 			status: ctx.GetReturnCode(),
 			cookies: ctx.GetCookies(),
+			redirect: ctx.GetRedirect(),
 		}
 
 	}
