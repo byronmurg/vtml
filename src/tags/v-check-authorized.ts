@@ -2,5 +2,5 @@ import CreateCheckTag from "./check"
 
 export const VCheckAuthorized = CreateCheckTag({
 	name: "v-check-authorized",
-	code: 401,
+	code: 403,
 })
