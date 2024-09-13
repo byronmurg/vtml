@@ -15,6 +15,10 @@ const VTry:VtmlTag = {
 			contains: (ctx) => Promise.resolve({ctx, found:true}),
 
 			async render(ctx) {
+				// Dont render if error is set
+				if (ctx.InError()) {
+					return ctx.filterPass()
+				}
 				
 				try {
 					block.debug("started")
