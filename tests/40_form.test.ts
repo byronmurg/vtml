@@ -8,6 +8,7 @@ test("form", async () => {
 	const exampleHTML = `
 		<form v-name="test1" >
 			<input name="name" type="text" />
+			<v-action/>
 		</form>
 	`
 
@@ -34,6 +35,7 @@ test("form not found", async () => {
 		<v-if source="$foo" >
 			<form v-name="test1" >
 				<input name="name" type="text" />
+				<v-action/>
 			</form>
 		</v-if>
 
@@ -55,8 +57,8 @@ test("form not found", async () => {
 test("duplicate forms throw errors", async () => {
 
 	const exampleHTML = `
-		<form v-name="foo" ></form>
-		<form v-name="foo" ></form>
+		<form v-name="foo" ><v-action/></form>
+		<form v-name="foo" ><v-action/></form>
 	`
 
 	function innerTest() {
@@ -68,12 +70,14 @@ test("duplicate forms throw errors", async () => {
 
 
 test("form sets return code successfully", async () => {
-	const rootDataset = InitRoot()
+	const rootDataset = InitRoot({ action:true })
 
 	const exampleHTML = `
 		<form v-name="foo" >
-			<v-set-status code="401" />
 			<input name="bar" />
+			<v-action>
+				<v-set-status code="401" />
+			</v-action>
 		</form>
 
 	`
@@ -92,6 +96,7 @@ test("form not executed on non-success chain", async () => {
 		<v-check-authenticated source="$foo" eq="bar" >
 			<form v-name="foo" >
 				<input name="bar" />
+				<v-action/>
 			</form>
 		</v-check-authenticated>
 
@@ -101,24 +106,7 @@ test("form not executed on non-success chain", async () => {
 
 	const response = await doc.executeFormByName("foo", rootDataset, { bar:"bar" })
 
-	expect(response.status).toBe(400)
-})
-
-test("form redirects correctly", async () => {
-	const rootDataset = InitRoot()
-	const exampleHTML = `
-		<form v-name="foo" >
-			<input name="bar" />
-			<v-redirect path="/foo" />
-		</form>
-
-	`
-
-	const doc = VtmlDocument.LoadFromString(exampleHTML)
-
-	const response = await doc.executeFormByName("foo", rootDataset, { bar:"bar" })
-
-	expect(response.redirect).toBe("/foo")
+	expect(response.status).toBe(401)
 })
 
 test("form redirects correctly in action", async () => {
@@ -163,11 +151,13 @@ test("form does not redirect outside action", async () => {
 
 
 test("form sets cookie correctly", async () => {
-	const rootDataset = InitRoot()
+	const rootDataset = InitRoot({ action:true })
 	const exampleHTML = `
 		<form v-name="foo" >
 			<input name="bar" />
-			<v-set-cookie name="foo" value="baz" />
+			<v-action>
+				<v-set-cookie name="foo" value="baz" />
+			</v-action>
 		</form>
 
 	`
