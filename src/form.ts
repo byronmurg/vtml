@@ -141,8 +141,16 @@ function prepareForm(postForm:TagBlock): FormDescriptor {
 	// The oapi path is slightly different
 	const oapiPath = expressToOapiPath(path)
 
-	// Create the action filter
-	const isolate = postForm.Isolate()
+	// Find the action element
+	const vAction = postForm.Find(utils.byName("v-action"))
+
+	// Throw if no action was found (it wouldn't do anything)
+	if (! vAction) {
+		throw Error(`No v-action defined in vtml form`)
+	}
+
+	// Create the action isolate
+	const isolate = vAction.Isolate()
 
 	// Create OAPI schema
 	const inputSchema = createPostFormApiSchema(postForm)
