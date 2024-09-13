@@ -38,6 +38,7 @@ class VtmlDocument {
 	public readonly oapiSchema: OAPI.OpenAPIObject
 	private rootBlock: Block
 	private pathMap: Record<string, boolean> = {}
+	public readonly hasCatch: boolean
 
 	private constructor(root:HTML.Element[]) {
 		this.rootBlock = MakeRootBlock(root)
@@ -46,6 +47,7 @@ class VtmlDocument {
 		this.portals = this.preparePortals()
 		this.exposes = this.prepareExposes()
 		this.oapiSchema = OAPI.createOpenApiSchema(this)
+		this.hasCatch = !!this.rootBlock.Find(utils.byName("v-catch"))
 	}
 
 	get title() {

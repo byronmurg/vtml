@@ -89,14 +89,27 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 	}
 
 	async function filterResponseError(req:Express.Request, res:Express.Response, status:number, error:string|undefined = undefined) {
+
+		// If the document does not have a catch block at all then we can assume that
+		// there is no way for the page to handle the error, and re-rendering might cause
+		// the error to be thrown again.
+
+		if (! vtmlDocument.hasCatch) {
+			res.status(status).send(`
+				<h3>${error}</h3>
+			`)
+			return
+		}
+
+		// Build an error FilterContext
 		const err: ResponseError = {
 			code: status,
 			message: error || DefaultError(status),
 		}
 		const rootDataset = createRootDataset(req, false)
-
 		const ctx = FilterContext.InitError(rootDataset, err)
 		
+		// Render with the error context
 		const response = await vtmlDocument.renderDocument(ctx)
 
 		debug("response", response.status)
