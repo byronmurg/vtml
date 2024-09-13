@@ -12,13 +12,18 @@ function createExoticFormat(input:TagBlock, format:string): [OAPI.SchemaObject, 
 		format,
 	}
 
+	const maxLength = input.optNumAttr("maxlength") || input.optNumAttr("v-maxsize")
+	if (maxLength) {
+		property.maxLength = maxLength
+	}
+
 	return [property, required]
 }
 
 function createStringInputSchema(input:TagBlock): [OAPI.SchemaObject, boolean] {
 	const required = input.boolAttr("required")
 
-	let minLength = input.optNumAttr("minLength")
+	let minLength = input.optNumAttr("minlength")
 
 	if (required && !minLength) {
 		minLength = 1
@@ -34,7 +39,7 @@ function createStringInputSchema(input:TagBlock): [OAPI.SchemaObject, boolean] {
 		property.pattern = pattern
 	}
 
-	const maxLength = input.optNumAttr("maxlength")
+	const maxLength = input.optNumAttr("maxlength") || input.optNumAttr("v-maxsize")
 	if (maxLength) {
 		property.maxLength = maxLength
 	}
