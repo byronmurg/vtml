@@ -304,6 +304,15 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 		filterResponseError(req, res, 404)
 	})
 
+	// For handling express errors
+	app.use((err:Error, req:Express.Request, res:Express.Response, next:Express.NextFunction) => {
+		if (res.headersSent) {
+			return next(err)
+		}
+
+		filterResponseError(req, res, 500, err.message)
+	})
+
 
 	// Determine the listen port in order of
 	// - cli arg
