@@ -185,6 +185,8 @@ function prepareForm(postForm:TagBlock): FormDescriptor {
 			// preceeding this form.
 			const {elements, found, ctx} = await isolate(preCtx)
 
+			const cookies = ctx.GetCookies()
+
 			// If any elements in the chain set the error
 			// then we should assume that the form
 			// would otherwise not be available.
@@ -192,7 +194,7 @@ function prepareForm(postForm:TagBlock): FormDescriptor {
 				return {
 					status: ctx.GetReturnCode(),
 					error: ctx.GetErrorMessage(),
-					cookies: {},
+					cookies,
 					elements: [],
 				}
 			}
@@ -201,7 +203,6 @@ function prepareForm(postForm:TagBlock): FormDescriptor {
 			// loader then it is in a 'not found' state and therefore
 			// should return 404.
 			if (! found) {
-				const cookies = ctx.GetCookies()
 				return { status:404, cookies, elements:[], error:DefaultError(404) }
 			}
 
@@ -216,14 +217,13 @@ function prepareForm(postForm:TagBlock): FormDescriptor {
 			if (chainRedirect) {
 				return {
 					status: 307,
-					cookies: {},
+					cookies,
 					elements: [],
 					redirect: chainRedirect,
 				}
 			}
 			
 			// Extract globals from the Context and create a RenderResponse
-			const cookies = ctx.GetCookies()
 			const status = ctx.GetReturnCode()
 			const redirect = ctx.GetRedirect()
 

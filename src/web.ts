@@ -42,6 +42,7 @@ function setCookies(res:Express.Response, cookies:CookieMap) {
 	for (const k in cookies) {
 		const v = cookies[k]
 		const maxAge = v.maxAge || undefined
+		debug("set cookie", k, v.value)
 		res.cookie(k, v.value, {maxAge})
 	}
 }
@@ -79,6 +80,7 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 		const response = await vtmlDocument.renderDocument(ctx)
 
 		debug("response", response.status)
+		setCookies(res, response.cookies)
 		if (response.redirect) {
 			debug("response redirect", response.redirect)
 			res.redirect(307, response.redirect)
@@ -157,8 +159,8 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 
 			const formRes = await form.executeFormEncoded(rootDataset, req.body, files)
 
+			setCookies(res, formRes.cookies)
 			if (formRes.status < 400) {
-				setCookies(res, formRes.cookies)
 				res.redirect(307, formRes.redirect  || "back")
 			} else {
 				await filterResponseError(req, res, formRes.status, formRes.error)
@@ -173,8 +175,8 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 
 			const formRes = await form.executeFormEncoded(rootDataset, req.body, files)
 
+			setCookies(res, formRes.cookies)
 			if (formRes.status < 400) {
-				setCookies(res, formRes.cookies)
 				res.status(formRes.status)
 				HTML.serialize(formRes.elements, res)
 			} else {
@@ -188,8 +190,8 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 
 			const formRes = await form.execute(rootDataset, req.body)
 
+			setCookies(res, formRes.cookies)
 			if (formRes.status < 400) {
-				setCookies(res, formRes.cookies)
 				res.status(formRes.status).json({})
 			} else {
 				res.status(formRes.status).json({

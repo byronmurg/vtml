@@ -29,6 +29,8 @@ function preparePortal(portalTag:TagBlock): PortalDescriptor {
 
 			// Execute chain
 			const {elements, found, ctx} = await isolate(preCtx)
+			const cookies = ctx.GetCookies()
+
 
 			// If any elements in the chain set the error
 			// then we should assume that the portal
@@ -36,7 +38,7 @@ function preparePortal(portalTag:TagBlock): PortalDescriptor {
 			if (ctx.InError()) {
 				return {
 					status: ctx.GetReturnCode(),
-					cookies: {},
+					cookies,
 					elements: [],
 				}
 			}
@@ -45,7 +47,6 @@ function preparePortal(portalTag:TagBlock): PortalDescriptor {
 			// loader then it is in a 'not found' state and therefore
 			// should return 404.
 			if (! found) {
-				const cookies = ctx.GetCookies()
 				return { status:404, cookies, elements:[] }
 			}
 
@@ -59,14 +60,13 @@ function preparePortal(portalTag:TagBlock): PortalDescriptor {
 			if (chainRedirect) {
 				return {
 					status: 307,
-					cookies: {},
+					cookies,
 					elements: [],
 					redirect: chainRedirect,
 				}
 			}
 			
 			// Extract globals from the Context and create a RenderResponse
-			const cookies = ctx.GetCookies()
 			const status = ctx.GetReturnCode()
 			const redirect = ctx.GetRedirect()
 

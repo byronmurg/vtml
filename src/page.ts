@@ -22,6 +22,7 @@ function preparePage(pageTag:TagBlock): PageDescriptor {
 
 			// Execute chain
 			const {elements, found, ctx} = await isolate(preCtx)
+			const cookies = ctx.GetCookies()
 
 			// If any elements in the chain set the error
 			// then we should assume that the page
@@ -29,7 +30,7 @@ function preparePage(pageTag:TagBlock): PageDescriptor {
 			if (ctx.InError()) {
 				return {
 					status: ctx.GetReturnCode(),
-					cookies: {},
+					cookies,
 					elements: [],
 				}
 			}
@@ -52,14 +53,13 @@ function preparePage(pageTag:TagBlock): PageDescriptor {
 			if (chainRedirect) {
 				return {
 					status: 307,
-					cookies: {},
+					cookies,
 					elements: [],
 					redirect: chainRedirect,
 				}
 			}
 			
 			// Extract globals from the Context and create a RenderResponse
-			const cookies = ctx.GetCookies()
 			const status = ctx.GetReturnCode()
 			const redirect = ctx.GetRedirect()
 

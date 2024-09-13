@@ -33,6 +33,7 @@ function prepareExpose(expose:TagBlock): ExposeDescriptor {
 
 			// Execute chain
 			const {ctx, found} = await isolate(preCtx)
+			const cookies = ctx.GetCookies()
 
 			// If any elements in the chain set the error
 			// then we should assume that the expose
@@ -40,7 +41,7 @@ function prepareExpose(expose:TagBlock): ExposeDescriptor {
 			if (ctx.InError()) {
 				return {
 					status: ctx.GetReturnCode(),
-					cookies: {},
+					cookies,
 					sendFile: "",
 				}
 			}
@@ -64,14 +65,13 @@ function prepareExpose(expose:TagBlock): ExposeDescriptor {
 			if (chainRedirect) {
 				return {
 					status: 307,
-					cookies: {},
+					cookies,
 					sendFile: "",
 					redirect: chainRedirect,
 				}
 			}
 			
 			// Extract globals from the Context and create a RenderResponse
-			const cookies = ctx.GetCookies()
 			const status = ctx.GetReturnCode()
 			const redirect = ctx.GetRedirect()
 
