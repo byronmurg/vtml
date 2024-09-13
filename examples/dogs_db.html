@@ -32,13 +32,13 @@
 						<input name="q" value="$.query.q" placeholder="search" />
 					</form>
 
-					<v-sql target="dogs" >
+					<v-sql target="$dogs" >
 						select * from dogs where $.query.q::text is null or name ~ $.query.q::text
 					</v-sql>
 
 					<ul>
-						<v-for-each source="$dogs" >
-							<li><a href="/dog/$id/view" >$name</a></li>
+						<v-for-each source="$dogs" as=$dog >
+							<li><a href="/dog/$dog.id/view" >$dog.name</a></li>
 						</v-for-each>
 					</ul>
 
@@ -46,7 +46,7 @@
 
 				<v-page path="/dog/:id" >
 
-					<v-sql target="dog" single-row >
+					<v-sql target="$dog" single-row >
 						select * from dogs where id = $.params.id
 					</v-sql>
 
@@ -59,8 +59,8 @@
 					<v-check-found source="$dog" message="No such dog" >
 						<v-page path="/dog/:id/view" >
 							<article>
-								<h5>$name</h5>
-								<a role="button" href="/dog/$id/edit" >Edit</a>
+								<h5>$dog.name</h5>
+								<a role="button" href="/dog/$dog.id/edit" >Edit</a>
 							</article>
 						</v-page>
 
@@ -77,10 +77,12 @@
 
 									<button type="submit" >Update</button>
 
-									<v-sql-action>
-										update dogs set dinner_time = $.body.dinner_time, name = $.body.name, cheeky = $.body.cheeky, dob = $.body.dob
-										where id = $.params.id
-									</v-sql-action>
+									<v-action>
+										<v-sql>
+											update dogs set dinner_time = $.body.dinner_time, name = $.body.name, cheeky = $.body.cheeky, dob = $.body.dob
+											where id = $.params.id
+										</v-sql>
+									</v-action>
 								</form>
 							</article>
 						</v-page>
@@ -92,11 +94,8 @@
 
 			</v-try>
 			<v-catch>
-				<!-- 
-				<img src="https://httpstatusdogs.com/img/$.error.code.jpg" />
-				-->
-
-				<p>$.error.message</p>
+				<img src="https://httpstatusdogs.com/img/$(error.code).jpg" alt=$error.message />
+				<a href="/" >Back</a>
 			</v-catch>
 
 		</main>

@@ -27,6 +27,36 @@
 				return "Very cool"
 			</v-nodejs>
 
+
+			<v-nodejs target="$vars" >
+				return {
+					one: 1,
+					two: 2,
+					three: 3,
+
+					text: "I'm some text",
+
+					array: ["one", "two", "three"],
+
+					object: {
+						foo: "FOO",
+						bar: "BAR"
+					},
+				}
+			</v-nodejs>
+
+			<v-page path="/for_each_test" >
+
+				<v-for-each source="$vars.array" as="$txt" keyas="$key" >
+					<p>$key: $txt</p>
+				</v-for-each>
+
+				<v-for-each source="$vars.object" as="$txt" keyas="$key" >
+					<p>$key: $txt</p>
+				</v-for-each>
+
+			</v-page>
+
 			<v-page path="/about" >
 				<h3>About</h3>
 

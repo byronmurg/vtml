@@ -53,6 +53,12 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 			}
 		}
 
+		for (const provide of localReport.provides) {
+			if (inputs.includes(provide)) {
+				this.error(`${provide} redefined`)
+			}
+		}
+
 		const childInputs = inputs.concat(localReport.injects)
 		this.children.checkAllConsumer(childInputs)
 	}

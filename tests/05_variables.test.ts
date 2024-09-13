@@ -54,6 +54,17 @@ test("javascript templates are unaffected", async () => {
 	expect(output).toBe('${foo}.jpg')
 })
 
+test("redefining a variable throws an error", async () => {
+	const testVtml = `
+		<v-json target="$one" >1</v-json>
+		<v-json target="$one" >2</v-json>
+	`
+
+	const fnc = () => RenderTest(testVtml)
+
+	expect(fnc).toThrow(`one redefined in <string>:v-json(1)`)
+})
+
 test("references render in order", () => {
 	const testVtml = `
 		<v-json target="$one" >1</v-json>

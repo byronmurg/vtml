@@ -6,6 +6,7 @@ test("form basic", async () => {
 	const exampleHTML = `
 		<form method="POST" v-name="foo" >
 			<input name="bar" type="text" required />
+			<v-action/>
 		</form>
 	`
 
@@ -32,6 +33,7 @@ test("form advanced", async () => {
 
 			<input name="radio-enum" type="radio" value="foo" />
 			<input name="radio-enum" type="radio" value="bar" />
+			<v-action/>
 		</form>
 	`
 
