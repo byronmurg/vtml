@@ -38,6 +38,7 @@ const neverClose = [
 	"progress",
 	"span",
 	"p",
+	"div",
 	"head",
 	"header",
 	"footer",
