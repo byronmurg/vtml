@@ -36,7 +36,7 @@ export const InputTag = CreateOverrideTag({
 					resp.attributes['value'] = v.substr(0, 10)
 				}
 
-				return { ctx, elements:[] }
+				return { ctx, elements:[resp] }
 			}
 
 		} else {
