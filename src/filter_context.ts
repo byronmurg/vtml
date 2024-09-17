@@ -11,10 +11,15 @@ const templateRegex = /(?<!\\)\$([\w\.\-\[\]]+|\([\w\.\-\[\]]+\))/g
 //                                            ^ OR
 //                                             ^^^^^^^^^^^^^^^^ Match legal characters inside brackets
 
-const scriptRegex = /(?<!\\)\$\w+/g
+const scriptRegex = /(?<!\\)\$[\.\w]+/g
 //                   ^^^^^^^ Cannot come after a backslash (for escaping
 //                          ^^ Match the $ dollar sign
-//                          ^^^^^ Match legal characters A-z,0-9
+//                            ^^^^^^ Match legal characters A-z,0-9,.
+
+const nodeRegex = /(?<!\\)\$\w+/g
+//                 ^^^^^^^ Cannot come after a backslash (for escaping
+//                        ^^ Match the $ dollar sign
+//                          ^^^ Match legal characters A-z,0-9
 
 type Globals = {
 	setCookies: Record<string, Cookie>
@@ -56,6 +61,7 @@ class FilterContext {
 
 	static TemplateRegex = templateRegex
 	static ScriptRegex = scriptRegex
+	static NodeRegex = nodeRegex
 
 	// Initialize a copy with a new dataset
 	private copy(dataset:object): FilterContext {
