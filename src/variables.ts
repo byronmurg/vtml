@@ -30,6 +30,22 @@ function getPathFromTemplate(str:string): string {
 	return m ? m[0] : ""
 }
 
+export
+function getTemplatesInMap(map:Record<string, unknown>): string[] {
+	let vars:string[] = []
+
+	for (const k in map) {
+		const v = map[k]
+
+		if (typeof(v) === "string") {
+			const attrVars = getTemplatesInString(v)
+
+			vars = vars.concat(attrVars)
+		}
+	}
+
+	return vars
+}
 
 export
 function getVarsInMap(map:Record<string, unknown>): string[] {

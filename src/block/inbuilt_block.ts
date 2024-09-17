@@ -32,7 +32,7 @@ class InbuiltBlock extends TagBlockBase implements TagBlock {
 	constructor(el:HTML.TagElement, seq:number, parent:Block) {
 		super(el, seq, parent)
 
-		const myVars = this.getVarsInAttributes()
+		const myVars = this.getTemplatesInAttributes()
 		this.dynamic = (myVars.length > 0) || this.children.anyDynamic()
 	}
 	
@@ -67,6 +67,10 @@ class InbuiltBlock extends TagBlockBase implements TagBlock {
 
 	getVarsInAttributes() {
 		return uniq(Vars.getVarsInMap(this.el.attributes))
+	}
+
+	getTemplatesInAttributes() {
+		return uniq(Vars.getTemplatesInMap(this.el.attributes))
 	}
 
 	async Render(ctx:FilterContext): Promise<Branch> {
