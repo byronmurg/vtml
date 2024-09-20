@@ -167,7 +167,7 @@
     Although form is an inbuilt tag we do alter it's behaviour. Defining a form with
     method="POST" and an v-name attribute will create an action endpoint.
 
-- tag: v-check-{found,authorized,allowed,authenticated}
+- tag: v-check-*
   arguments:
   - name: eq
     optional: true

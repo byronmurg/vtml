@@ -1,0 +1,12 @@
+<div class="grid large-space" >
+	<v-yaml src="./features.yaml" target="$features" />
+
+	<v-for-each source="$features" as="$feature" >
+		<article class="s12 m6 $(feature.color)-container" >
+			<h6>$feature.title</h6>
+			<pre><code class="language-html" >$feature.code</code></pre>
+			<p>$feature.text</p>
+		</article>
+	</v-for-each>
+
+</div>

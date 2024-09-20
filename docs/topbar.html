@@ -1,0 +1,39 @@
+<header class="topbar" >
+	<nav>
+		<button data-ui="#sidebar" class="circle transparent" >
+			<i>menu</i>
+		</button>
+
+		<div class="max" >
+			<a href="/" >
+				<img src="/assets/vtml_logo.svg" alt="VTML" style="height:3rem;" />
+			</a>
+		</div>
+
+		<a href="https://github.com/byronmurg/vtml" aria-label="Github link" >
+			<img src="/assets/github-mark-white.svg" style="height:2rem;" alt="Github icon">
+		</a>
+
+		<v-json target="$tabs" >
+			[
+				{ "icon":"summarize", "match":"^/documentation/\\w+", "link":"/documentation/variables", "name":"Docs" },
+				{ "icon":"design_services", "match":"^/tutorial/\\w+", "link":"/tutorial/start", "name":"Tutorial" },
+				{ "icon":"quick_reference_all", "match":"^/reference", "link":"/reference", "name":"Reference" }
+			]
+		</v-json>
+
+		<div class="tabs m l" >
+		<v-for-each source="$tabs" as="$tab" >
+
+			<v-nodejs target="$isactive" >
+				return $.path.match($tab.match) ? "active" : ""
+			</v-nodejs>
+
+			<a href="$tab.link" class="$isactive" >
+				<i>$tab.icon</i>
+				<span>$tab.name</span>
+			</a>
+		</v-for-each>
+		</div>
+	</nav>
+</header>

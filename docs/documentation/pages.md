@@ -57,6 +57,27 @@ This is because pages are defined at loading time not on request.
 </v-page>
 ```
 
+
+The tag `v-index` can be used when we want to match a page path exactly.
+
+```
+<v-page path="/user" >
+    <!-- This header will show for all /user pages -->
+    <header>Users page</header>
+
+    <!-- This will only show when the path is '/user' -->
+    <v-index>
+        Select a user to continue
+    </v-index>
+
+    <!-- This will only show when the path is '/user/:userid' -->
+    <v-page path="/user/:userid">
+        <p>Viewing user $.params.userid</p>
+    </v-page>
+</v-page>
+```
+
+
 When a form is used inside an `v-page` tag the page path is included in the action path so it's params can be accesed inside the form (more on this later).
 
 ```

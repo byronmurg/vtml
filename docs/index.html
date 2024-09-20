@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<v-expose src="/assets/vtml_icon.png" path="/favicon.ico" />
-<v-expose src="/assets/$.params.name" path="/assets/:name" />
+<v-expose src="assets/vtml_icon.png" path="/favicon.ico" />
+<v-expose path="/assets/:name" src="assets/$.params.name" />
 <html lang="en">
 
 	<head>
@@ -31,22 +31,22 @@
 
 		<style>
 			:root, body.dark {
-			--primary:#c87137f7;
+			--primary:#c87137;
 			--on-primary:#003258;
-			--primary-container:#00497d;
+			--primary-container:#c8713773;
 			--on-primary-container:#d1e4ff;
 			--secondary:#bbc7db;
 			--on-secondary:#253140;
-			--secondary-container:#3b4858;
+			--secondary-container:#bbc7db73;
 			--on-secondary-container:#d7e3f7;
 			--tertiary:#d6bee4;
 			--on-tertiary:#3b2948;
-			--tertiary-container:#523f5f;
+			--tertiary-container:#d6bee473;
 			--on-tertiary-container:#f2daff;
 			--error:#ffb4ab;
 			--on-error:#690005;
-			--error-container:#93000a;
-			--on-error-container:#ffb4ab;
+			--error-container:#ffb4ab73;
+			--on-error-container:#fae7e5;
 			--background:#1a1c1e;
 			--on-background:#e2e2e6;
 			--surface:#121316;
@@ -100,103 +100,15 @@
 	</head>
 	<body hx-boost="true" >
 
-		<header class="topbar" >
-			<nav>
-				<button data-ui="#sidebar" class="circle transparent" >
-					<i>menu</i>
-				</button>
-
-				<div class="max" >
-					<img src="/assets/vtml_logo.svg" alt="VTML" style="height:3rem;" />
-				</div>
-
-				<a href="https://github.com/byronmurg/vtml" aria-label="Github link" >
-					<img src="/assets/github-mark-white.svg" style="height:2rem;" alt="Github icon">
-				</a>
-
-				<v-json target="$tabs" >
-					[
-						{ "icon":"home", "match":"^/$", "link":"/", "name":"Home" },
-						{ "icon":"summarize", "match":"^/documentation/\\w+", "link":"/documentation/getting_started", "name":"Docs" },
-						{ "icon":"design_services", "match":"^/tutorial/\\w+", "link":"/tutorial/start", "name":"Tutorial" },
-						{ "icon":"quick_reference_all", "match":"^/reference", "link":"/reference", "name":"Reference" }
-					]
-				</v-json>
-
-				<div class="tabs m l" >
-				<v-for-each source="$tabs" as="$tab" >
-
-					<v-nodejs target="$isactive" >
-						return $.path.match($tab.match) ? "active" : ""
-					</v-nodejs>
-
-					<a href="$tab.link" class="$isactive" >
-						<i>$tab.icon</i>
-						<span>$tab.name</span>
-					</a>
-				</v-for-each>
-				</div>
-			</nav>
-		</header>
-
-			<dialog id="sidebar" class="left" >
-
-				<div class="max" >
-					<a href="/" >
-						<img src="/assets/vtml_logo.svg" alt="VTML" style="height:3rem;" />
-					</a>
-				</div>
-
-				<article>
-					<v-nodejs target="$open" >return $.path.startsWith("/tutorial")</v-nodejs>
-					<details open="$open" >
-						<summary class="none" >Tutorial</summary>
-						<hr>
-
-						<v-json target="$tutorials" >
-							[
-								{ "path":"getting_started", "name":"Getting started" },
-								{ "path":"variables", "name":"Variables" },
-								{ "path":"logic", "name":"Logic" },
-								{ "path":"pages", "name":"Pages" },
-								{ "path":"forms", "name":"Forms" }
-							]
-						</v-json>
-
-						<v-for-each source="$tutorials" as="$tutorial" >
-							<v-if source="$.path" eq="/tutorial/$tutorial.path" >
-								<a class="row link-selected" href="/tutorial/$tutorial.path">$tutorial.name</a>
-							</v-if>
-							<v-unless source="$.path" eq="/tutorial/$tutorial.path" >
-								<a class="row" href="/tutorial/$tutorial.path">$tutorial.name</a>
-							</v-unless>
-						</v-for-each>
-
-					</details>
-				</article>
-
-				<article>
-					<v-yaml src="./reference.yaml" target="$tags" />
-
-					<v-nodejs target="$open" >return $.path.startsWith("/reference")</v-nodejs>
-					<details open="$open" >
-						<summary class="none" >Reference</summary>
-						<hr>
-						<v-for-each source="$tags" as="$entry" >
-							<a class="row" href="/reference#$entry.tag">$entry.tag</a>
-						</v-for-each>
-					</details>
-				</article>
-
-			</dialog>
-
+		<v-include src="./topbar.html" />
+		<v-include src="./sidebar.html" />
 
 		<main class="responsive" style="margin-top:4rem;" >
 			<v-try>
-
-				<v-page path="/documentation/getting_started" >
-					<v-markdown src="./documentation/getting_started.md" />
+				<v-page path="/tutorial/start" >
+					<v-markdown src="./tutorial/start.md" />
 				</v-page>
+
 
 				<v-page path="/documentation/variables" >
 					<v-markdown src="./documentation/variables.md" />
@@ -220,9 +132,12 @@
 
 				<v-page path="/" >
 					<v-markdown src="./intro.md" />
+					<div class="middle-align row" >
+						<h5>Features</h5>
+					</div>
+					<v-include src="./features.html" />
 				</v-page>
 			</v-try>
-
 			<v-catch>
 				<h6 class="center-align" >$error.message</h6>
 			</v-catch>
