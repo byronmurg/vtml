@@ -43,14 +43,8 @@ type ProcessedSQL = {
 
 function postgresqlInterface(url:URL): NodeSqlInterface {
 
-	const database = url.pathname ? url.pathname.substr(1) : undefined;
-
 	const pgPool = new Pool({
-		user: url.username,
-		password: url.password,
-		host: url.host,
-		port: parseInt(url.port),
-		database,
+		connectionString: url.href,
 	})
 	
 	function queryPg(sql:string, vars:unknown[]) {
