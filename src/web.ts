@@ -96,6 +96,8 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 		// there is no way for the page to handle the error, and re-rendering might cause
 		// the error to be thrown again.
 
+		error = error || DefaultError(status)
+
 		if (! vtmlDocument.hasCatch) {
 			res.status(status).send(`
 				<h3>${error}</h3>
@@ -106,7 +108,7 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 		// Build an error FilterContext
 		const err: ResponseError = {
 			code: status,
-			message: error || DefaultError(status),
+			message: error,
 		}
 		const rootDataset = createRootDataset(req, false)
 		const ctx = FilterContext.InitError(rootDataset, err)
