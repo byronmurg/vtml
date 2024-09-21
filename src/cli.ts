@@ -4,10 +4,11 @@ import type {exposeOptions} from "./web"
 import {printRenderDescription} from "./description"
 import {program} from "commander"
 import starterTemplate from "./template"
+import meta from "../package.json"
 
 program.name("vtml")
 	.description("Vtml runtime cli")
-	.version("0.1.0")
+	.version(meta.version)
 	.argument("<file>", "html start file")
 	.option("--template", "Print the starter template")
 	.option("--describe", "Describe rendering")
