@@ -1,6 +1,3 @@
-<img alt="VTML" src="/assets/vtml_logo.svg" class="center" />
-
-<h3 class="center-align" >Web development made simple</h3>
 
 ```html
 <h3>VTML is...</h3>

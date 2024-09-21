@@ -1,77 +1,83 @@
-<dialog id="sidebar" class="left" >
+<a href="/" class="row middle-align" >
+	<img src="/assets/vtml_logo.svg" alt="VTML" style="height:3rem;" />
+</a>
 
-	<div class="max" >
-		<a href="/" >
-			<img src="/assets/vtml_logo.svg" alt="VTML" style="height:3rem;" />
-		</a>
-	</div>
+<div class="row padding" >
+	<a href="https://github.com/byronmurg/vtml" aria-label="Github link" >
+		<img src="/assets/github-mark-white.svg" style="height:2rem;" alt="Github icon">
+	</a>
+	<a href="/tutorial/start" aria-label="Download" class="button circle transparent" >
+		<i class="large" >download</i>
+	</a>
+</div>
 
-	<article>
-		<v-nodejs target="$open" >return $.path.startsWith("/documentation")</v-nodejs>
-		<details open="$open" >
-			<summary class="none" >Documentation</summary>
-			<hr>
+<div class="space" />
 
-			<v-json target="$docsection" >
-				[
-					{ "path":"variables", "name":"Variables" },
-					{ "path":"logic", "name":"Logic" },
-					{ "path":"pages", "name":"Pages" },
-					{ "path":"forms", "name":"Forms" }
-				]
-			</v-json>
+<article>
+	<v-nodejs target="$open" >return $.path.startsWith("/documentation")</v-nodejs>
+	<details open="$open" >
+		<summary class="none" >Documentation</summary>
+		<hr>
 
-			<v-for-each source="$docsection" as="$doc" >
-				<v-if source="$.path" eq="/tutorial/$doc.path" >
-					<a class="row link-selected" href="/documentation/$doc.path">$doc.name</a>
-				</v-if>
-				<v-unless source="$.path" eq="/documentation/$doc.path" >
-					<a class="row" href="/documentation/$doc.path">$doc.name</a>
-				</v-unless>
-			</v-for-each>
+		<v-json target="$docsection" >
+			[
+				{ "path":"variables", "name":"Variables" },
+				{ "path":"logic", "name":"Logic" },
+				{ "path":"pages", "name":"Pages" },
+				{ "path":"forms", "name":"Forms" }
+			]
+		</v-json>
 
-		</details>
-	</article>
+		<v-for-each source="$docsection" as="$doc" >
+			<v-if source="$.path" eq="/documentation/$doc.path" >
+				<a class="row link-selected" href="/documentation/$doc.path">$doc.name</a>
+			</v-if>
+			<v-unless source="$.path" eq="/documentation/$doc.path" >
+				<a class="row" href="/documentation/$doc.path">$doc.name</a>
+			</v-unless>
+		</v-for-each>
 
+	</details>
+</article>
 
-	<article>
-		<v-nodejs target="$open" >return $.path.startsWith("/tutorial")</v-nodejs>
-		<details open="$open" >
-			<summary class="none" >Tutorial</summary>
-			<hr>
+<div class="space" />
 
-			<v-json target="$docsection" >
-				[
-					{ "path":"start", "name":"Getting started" }
-				]
-			</v-json>
+<article>
+	<v-nodejs target="$open" >return $.path.startsWith("/tutorial")</v-nodejs>
+	<details open="$open" >
+		<summary class="none" >Tutorial</summary>
+		<hr>
 
-			<v-for-each source="$docsection" as="$doc" >
-				<v-if source="$.path" eq="/tutorial/$doc.path" >
-					<a class="row link-selected" href="/tutorial/$doc.path">$doc.name</a>
-				</v-if>
-				<v-unless source="$.path" eq="/tutorial/$doc.path" >
-					<a class="row" href="/tutorial/$doc.path">$doc.name</a>
-				</v-unless>
-			</v-for-each>
+		<v-json target="$docsection" >
+			[
+				{ "path":"start", "name":"Getting started" }
+			]
+		</v-json>
 
-		</details>
-	</article>
+		<v-for-each source="$docsection" as="$doc" >
+			<v-if source="$.path" eq="/tutorial/$doc.path" >
+				<a class="row link-selected" href="/tutorial/$doc.path">$doc.name</a>
+			</v-if>
+			<v-unless source="$.path" eq="/tutorial/$doc.path" >
+				<a class="row" href="/tutorial/$doc.path">$doc.name</a>
+			</v-unless>
+		</v-for-each>
 
+	</details>
+</article>
 
-	<article>
-		<v-yaml src="./reference.yaml" target="$tags" />
+<div class="space" />
 
-		<v-nodejs target="$open" >return $.path.startsWith("/reference")</v-nodejs>
-		<details open="$open" >
-			<summary class="none" >Reference</summary>
-			<hr>
-			<v-for-each source="$tags" as="$entry" >
-				<a class="row" href="/reference#$entry.tag">$entry.tag</a>
-			</v-for-each>
-		</details>
-	</article>
+<article>
+	<v-yaml src="./reference.yaml" target="$tags" />
 
-</dialog>
-
+	<v-nodejs target="$open" >return $.path.startsWith("/reference")</v-nodejs>
+	<details open="$open" >
+		<summary class="none" >Reference</summary>
+		<hr>
+		<v-for-each source="$tags" as="$entry" >
+			<a class="row" href="/reference#$entry.tag">$entry.tag</a>
+		</v-for-each>
+	</details>
+</article>
 

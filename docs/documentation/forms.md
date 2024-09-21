@@ -12,9 +12,11 @@ Let's start with an example.
     <form v-name="say_hi" >
         <input name="myname" type="text" placeholder="Your name is..." />
 
-        <v-nodejs-action>
-            console.log("Hello", $.body.myname)
-        </v-nodejs-action>
+        <v-action>
+            <v-nodejs>
+                console.log("Hello", $.body.myname)
+            </v-nodejs>
+        </v-action>
 
         <button type="submit" >Greet</button>
     </form>
@@ -38,7 +40,7 @@ In Addition to creating the formencoding and ajax routes we also create a json a
 
 By default an OAPI helper page is displayed at `/api-docs/` when running your app.
 
-You can also see the schema itself at `/api/_schema.json`.
+You can also see the schema itself at `/_api/_schema.json`.
 
 form
 
@@ -84,11 +86,11 @@ form
 ## Ajax and other request types
 
 
-| Prefix            | Description                         | Input type        | Output                |
-|-------------------|-------------------------------------|-------------------|-----------------------|
-| /action           | The default form behaviour          | v-formencoded     | Re-renders whole page |
-| /ajax             | For perfoming isolated actions      | v-formencoded     | Render only form      |
-| /api              | Only machine input                  | application/json  | None                  |
+| Prefix  | Description                         | Input type        | Output                |
+|---------|-------------------------------------|-------------------|-----------------------|
+| /       | The default form behaviour          | v-formencoded     | Re-renders whole page |
+| /\_ajax | For perfoming isolated actions      | v-formencoded     | Render only form      |
+| /\_api  | Only machine input                  | application/json  | None                  |
 
 
 Here's an example using HTMX to handle the ajax.
@@ -98,7 +100,7 @@ Here's an example using HTMX to handle the ajax.
     v-name="update_text"
     v-ajax
 	hx-trigger="focusout"
-    hx-post="$__form_ajax"
+    hx-post="/_ajax/update_text"
 >
     ...
     <input type="text" value="$.body.text" />
@@ -112,7 +114,7 @@ The basic attributes
 
 And some HTMX specific ones which I will give a brief explanation of.
 - hx-trigger: Trigger on a focusout event (when the focus leaves this form)
-- hx-post: POST to this address. We're using `$__form_ajax` which is a special variable attached to all forms. It simply resolves to the ajax route which in this case would be `/ajax/update_text`.
+- hx-post: POST to this address.
 
 Finally there is the `v-ajax` attribute which disabled the usual added attributes.
 
@@ -125,12 +127,12 @@ Vtml only searches for forms with an v-name attribute. Therefore if we want to c
     <input name="q" />
 </form>
 
-<v-sql target="todos" >
+<v-sql target=$todos >
     -- I'm being a bit lazy here and having the DB check if q is null
     select * from todos where $.search.q is null or text like $.search.q
 </v-sql>
 
-<v-for-each source="todos" >
+<v-for-each source=$todos >
     ...
 </v-for-each>
 ```
@@ -143,13 +145,28 @@ Any page parameter can be used by referencing the `params` root variable.
 ```
 <v-page path="/todos/:id" >
     <form v-name="update_text" >
-        <v-sql-action>
-            update todos set text = $.body.text where id = $.params.id
-        </v-sql-action>
-
         <input type="text" maxlength="128" required />
 
         <button type="submit" >Update</button>
+
+        <v-action>
+            <v-sql>
+                update todos set text = $.body.text where id = $.params.id
+            </v-sql>
+        </v-action>
+    </form>
+</v-page>
+```
+
+When setting the action path yourself you must include any containing paths.
+
+```
+<v-page path="/todos/:id" >
+    <form
+        v-name="update_todo_text"
+        action="/todos/:id/update_text"
+    >
+        ...
     </form>
 </v-page>
 ```

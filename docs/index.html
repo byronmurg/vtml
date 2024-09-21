@@ -100,10 +100,20 @@
 	</head>
 	<body hx-boost="true" >
 
-		<v-include src="./topbar.html" />
-		<v-include src="./sidebar.html" />
+		<nav class="left drawer m l scroll" >
+			<v-include src="./sidebar.html" />
+		</nav>
 
-		<main class="responsive" style="margin-top:4rem;" >
+		<dialog id="sidebar" class="left s" >
+			<v-include src="./sidebar.html" />
+		</dialog>
+
+		<header class="topbar s" >
+			<v-include src="./topbar.html" />
+		</header>
+
+
+		<main class="responsive" style="margin-top:4rem;margin-bottom:8rem" >
 			<v-try>
 				<v-page path="/tutorial/start" >
 					<v-markdown src="./tutorial/start.md" />
@@ -131,19 +141,24 @@
 				</v-page>
 
 				<v-page path="/" >
+					<img alt="VTML" src="/assets/vtml_logo.svg" class="center" />
+
+					<h3 class="center-align" >Web development made simple</h3>
+
 					<v-markdown src="./intro.md" />
+
 					<div class="middle-align row" >
 						<h5>Features</h5>
 					</div>
 					<v-include src="./features.html" />
 				</v-page>
+
 			</v-try>
 			<v-catch>
 				<h6 class="center-align" >$error.message</h6>
 			</v-catch>
 
 		</main>
-
 
 		<footer>
 			All rights reserved blah blah.

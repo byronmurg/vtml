@@ -2,7 +2,6 @@ import Express from "express"
 import BodyParser from "body-parser"
 import CookieParser from "cookie-parser"
 import Debug from "debug"
-import SwaggerUiExpress from "swagger-ui-express"
 import DefaultError from "./default_errors"
 import Multer from "multer"
 
@@ -232,8 +231,30 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 	}
 
 	// Expose api docs
-	app.use("/api-docs", SwaggerUiExpress.serve, SwaggerUiExpress.setup(vtmlDocument.oapiSchema))
-	app.use("/api/_schema.json", (_, res) => res.json(vtmlDocument.oapiSchema))
+	app.use("/_api/_schema.json", (_, res) => res.json(vtmlDocument.oapiSchema))
+	app.get("/_api/", (_, res) => {
+		res.send(`
+			<!doctype html>
+			<html lang="en">
+			  <head>
+				<meta charset="utf-8">
+				<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+				<title>Elements in HTML</title>
+			  
+				<script src="https://unpkg.com/@stoplight/elements/web-components.min.js"></script>
+				<link rel="stylesheet" href="https://unpkg.com/@stoplight/elements/styles.min.css">
+			  </head>
+			  <body>
+
+				<elements-api
+				  apiDescriptionUrl="_schema.json"
+				  router="hash"
+				/>
+
+			  </body>
+			</html>
+		`)
+	})
 
 
 	const pages = vtmlDocument.getPages()
