@@ -56,6 +56,7 @@ export const Form = CreateOverrideTag({
 				name: "form",
 				type: el.type,
 				filename: el.filename,
+				linenumber: el.linenumber,
 				attributes: outputAttributes,
 				elements: children.elements,
 			}

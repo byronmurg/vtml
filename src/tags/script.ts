@@ -18,6 +18,7 @@ export const Script = CreateOverrideTag({
 				type: "text",
 				text: textBody,
 				filename: el.filename,
+				linenumber: el.linenumber,
 			}
 
 			const resp = {

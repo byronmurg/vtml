@@ -48,7 +48,7 @@ class BlockCollection {
 		// Render all children in natural order
 
 		let subCtx = ctx
-		let elements: HTML.Element[] = []
+		const elements: HTML.Element[] = []
 		for (const child of this.children) {
 			const response = await child.Render(subCtx)
 			subCtx = response.ctx

@@ -30,6 +30,7 @@ export const Select = CreateOverrideTag({
 				name: "select",
 				type: el.type,
 				filename: el.filename,
+				linenumber: el.linenumber,
 				attributes: attrs,
 				elements: children.elements,
 			}

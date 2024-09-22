@@ -1,12 +1,14 @@
 import * as htmlparser2 from "htmlparser2"
 import type { Document, ChildNode, Element as DomElement } from "domhandler"
 import type {Writable} from "stream"
+import LineMap from "./linemap"
 
 export
 type TextElement = {
 	type: "text"
 	text: string
 	filename: string
+	linenumber: number
 }
 
 export
@@ -16,6 +18,7 @@ type TagElement = {
 	attributes: Record<string, string | boolean>
 	elements: Element[]
 	filename: string
+	linenumber: number
 }
 
 export
@@ -62,6 +65,8 @@ function toAttributes(el: DomElement): TagElement["attributes"] {
 		const v = el.attribs[k]
 		if (v === "" && canBeEmptyAttribute(el.name, k)) {
 			ret[k] = true
+		} else if (k.startsWith("") && v === "") {
+			ret["source"] = k
 		} else {
 			ret[k] = v
 		}
@@ -70,12 +75,13 @@ function toAttributes(el: DomElement): TagElement["attributes"] {
 	return ret
 }
 
-function childrenToElements(children: ChildNode[], filename:string): Element[] {
+function childrenToElements(children: ChildNode[], filename:string, lineMap:LineMap): Element[] {
 	// Convert nodes created by htmlparser2 into our Element type
 
 	const ret: Element[] = []
 
 	for (const child of children) {
+		const linenumber = lineMap.GetLine(child.startIndex || 0)
 		switch (child.type) {
 			case "tag":
 			case "script":
@@ -83,9 +89,10 @@ function childrenToElements(children: ChildNode[], filename:string): Element[] {
 				ret.push({
 					type: "element",
 					name: child.name,
-					elements: childrenToElements(child.children, filename),
+					elements: childrenToElements(child.children, filename, lineMap),
 					attributes: toAttributes(child),
 					filename,
+					linenumber,
 				})
 				break
 
@@ -97,6 +104,7 @@ function childrenToElements(children: ChildNode[], filename:string): Element[] {
 					type: "text",
 					text: child.data,
 					filename,
+					linenumber,
 				})
 				break
 		}
@@ -105,14 +113,20 @@ function childrenToElements(children: ChildNode[], filename:string): Element[] {
 	return ret
 }
 
-function toElement(doc: Document, filename:string): Element[] {
-	return childrenToElements(doc.children, filename)
+function toElement(doc: Document, filename:string, lineMap:LineMap): Element[] {
+	try {
+		return childrenToElements(doc.children, filename, lineMap)
+	} catch (e) {
+		const msg = e instanceof Error ? e.message : e
+		throw Error(`Parse error ${msg} in ${filename}`)
+	}
 }
 
 export
 function parse(htmlString: string, filename:string) {
-	const dom = htmlparser2.parseDocument(htmlString, { recognizeSelfClosing:true })
-	return toElement(dom, filename)
+	const lineMap = LineMap.FromString(htmlString)
+	const dom = htmlparser2.parseDocument(htmlString, { recognizeSelfClosing:true, withStartIndices:true })
+	return toElement(dom, filename, lineMap)
 }
 
 export

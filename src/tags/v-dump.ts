@@ -20,12 +20,14 @@ const VDump = CreateDisplayTag({
 				type: "element",
 				name: "pre",
 				filename: el.filename,
+				linenumber: el.linenumber,
 				attributes: attrs,
 				elements: [
 					{
 						type: "text",
 						text: JSON.stringify(data, null, 2),
 						filename: el.filename,
+						linenumber: el.linenumber,
 					},
 				],
 			}
