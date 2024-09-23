@@ -55,10 +55,26 @@ function createBoolInputSchema(): [OAPI.SchemaObject, boolean] {
 	return [property, true]
 }
 
-function createNumberInputSchema(): [OAPI.SchemaObject, boolean] {
+function createNumberInputSchema(input:TagBlock): [OAPI.SchemaObject, boolean] {
 	const property: OAPI.SchemaObject = {
 		type: "number"
 	}
+
+	const min = input.optNumAttr("min")
+	if (min !== undefined) {
+		property.minimum = min
+	}
+
+	const max = input.optNumAttr("max")
+	if (max !== undefined) {
+		property.maximum = max
+	}
+
+	const step = input.optNumAttr("step")
+	if (step !== undefined) {
+		property.multipleOf = step
+	}
+
 	return [property, true]
 }
 
@@ -73,7 +89,7 @@ function createInputSchema(input:TagBlock): [OAPI.SchemaObject, boolean]|undefin
 			return undefined
 		case "range":
 		case "number":
-			return createNumberInputSchema()
+			return createNumberInputSchema(input)
 		case "email":
 			return createExoticFormat(input, "email")
 		case "date":
