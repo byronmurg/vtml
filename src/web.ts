@@ -1,6 +1,7 @@
 import Express from "express"
 import BodyParser from "body-parser"
 import CookieParser from "cookie-parser"
+import Compression from "compression"
 import Debug from "debug"
 import DefaultError from "./default_errors"
 import Multer from "multer"
@@ -66,8 +67,10 @@ export
 function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 
 	const app = Express()
+	app.use(Compression())
 	app.use(BodyParser.urlencoded({ extended:true }))
 	app.use(CookieParser())
+	app.disable("x-powered-by")
 
 	//
 	// Basic responses

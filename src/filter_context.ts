@@ -1,7 +1,6 @@
 import get from "lodash/get"
 import type {RootDataset, ResponseError, Cookie, Branch} from "./types"
 import {escapeHtml} from "./html"
-import Debug from "debug"
 import * as Vars from "./variables"
 
 const templateRegex = /(?<!\\)\$([\w.\-[\]]+|\([\w.\-[\]]+\))/g
@@ -33,8 +32,6 @@ const initGlobals = (): Globals => ({
 	redirect: "",
 	returnCode: 200,
 })
-
-const debug = Debug("vtml:filter_context")
 
 export default
 class FilterContext {
