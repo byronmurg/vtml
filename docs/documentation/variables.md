@@ -24,8 +24,8 @@ $foo.baz
 
 Some tags can set variables to be used in subsequent tags.
 
-Here is an example that uses `<v-json>` which parses it's body and sets the variable in the `target` attribute
-```
+Here is an example that uses <a class="link" href="/reference#v-json" >&lt;v-json&gt;</a> which parses it's body and sets the variable in the `target` attribute
+```html
 <v-json target=$foo >
 { "bar":22 }
 </v-json>
@@ -70,14 +70,16 @@ A variable cannot be used from a higher frame.
 For all inbult HTML tags (and any tags not starting with v-) all attributes and the body can use variables.
 
 e.g.
-```
-<div style="color:$color" >$name</div> <!-- Using both the $color and $name variables -->
+```html
+<!-- Using both the $color and $name variables -->
+<div style="color:$color" >$name</div>
 ```
 
 **However** Attribute names can not be templated.
 e.g.
-```
-<div $attr="color:red" ></div> <!-- BAD: Cannot template attribute name. No templating will happen -->
+```html
+<!-- BAD: Cannot template attribute name. No templating will happen -->
+<div $attr="color:red" ></div>
 ```
 
 For `v-` tags you may need to refer to the [reference page](/reference) as some attributes and bodies can be templated and some can not. Also there are a few tags with special templating rules like [v-nodejs](/reference#v-nodejs).
@@ -87,8 +89,16 @@ For `v-` tags you may need to refer to the [reference page](/reference) as some 
 
 There are some special cases around forms where the attributes cannot be templated.
 
-Such as the name on inputs/switches `<input name="$foo" /> <!-- BAD: Cannot template name -->`
-And the method of forms `<form method="$method" >...</form> <!-- BAD: Cannot template method -->`
+Such as the name on inputs/switches
+```
+<!-- BAD: Cannot template name -->
+<input name="$foo" />
+```
+And the method of forms
+```
+<!-- BAD: Cannot template method -->
+<form method="$method" >...</form>
+```
 
 See the [forms](/tutorial/forms) page for more information
 
@@ -111,6 +121,6 @@ Root variables are globaly available variables that describe the incoming reques
 
 Root variables are always available by using the `$.` prefix on variables.
 
-```
+```html
 <p>Request path is $.path </p>
 ```

@@ -1,50 +1,53 @@
 # Forms
 
-Creating server-side interactions is as simple as creating a form.
+Creating server-side interactions is as simple as creating a <a class="link" href="/reference#form" >&lt;form&gt;</a>.
 
 Whenever we define a form with `v-name="name-here"` we automatically create the server-side routes.
 
 Let's start with an example.
-```
-<html><body>
+```html
+<html>
+  <head>
     <title>Say hi example</title>
+  </head>
+  <body>
 
     <form v-name="say_hi" >
-        <input name="myname" type="text" placeholder="Your name is..." />
+      <input name="myname" type="text" placeholder="Your name is..." />
 
-        <v-action>
-            <v-nodejs>
-                console.log("Hello", $.body.myname)
-            </v-nodejs>
-        </v-action>
+      <v-action>
+        <v-nodejs>
+          console.log("Hello", $.body.myname)
+        </v-nodejs>
+      </v-action>
 
-        <button type="submit" >Greet</button>
+      <button type="submit" >Greet</button>
     </form>
-</body></html>
+  </body>
+</html>
 ```
 
-This will display a small form with one text input and a button. When the user clicks the button and submits the form a message will be displayed on the server console.
+This will display a small <a class="link" href="/reference#form" >&lt;form&gt;</a> with one text input and a button. When the user clicks the button and submits the <a class="link" href="/reference#form" >&lt;form&gt;</a> a message will be displayed on the server console.
 
 ## Validation
 
 To add validation on input fields we just need to add the corresponding HTML attributes.
 
-```
+```html
 <input name="myname" maxlength="64" required />
 ```
+
 In this case for our "myname" field we are specifying that the field is required and must be at most 64 characters in length and is a required field.
 
 ## Api
 
 In Addition to creating the formencoding and ajax routes we also create a json api and an OAPI schema definition.
 
-By default an OAPI helper page is displayed at `/api-docs/` when running your app.
+By default an OAPI helper page is displayed at `/_api/` when running your app.
 
 You can also see the schema itself at `/_api/_schema.json`.
 
-form
-
-```
+```json
 {
   "openapi": "3.1.0",
   "info": {
@@ -122,52 +125,52 @@ Finally there is the `v-ajax` attribute which disabled the usual added attribute
 
 Vtml only searches for forms with an v-name attribute. Therefore if we want to create a GET form that just adds search parameters to the url we can just omit the `v-name` attribute.
 
-```
+```html
 <form>
-    <input name="q" />
+  <input name="q" />
 </form>
 
 <v-sql target=$todos >
-    -- I'm being a bit lazy here and having the DB check if q is null
-    select * from todos where $.search.q is null or text like $.search.q
+  -- I'm being a bit lazy here and having the DB check if q is null
+  select * from todos where $.search.q is null or text like $.search.q
 </v-sql>
 
-<v-for-each source=$todos >
-    ...
+<v-for-each $todos >
+  ...
 </v-for-each>
 ```
 
 
 ### Using page parameters
 
-Any page parameter can be used by referencing the `params` root variable.
+Any page parameter can be used by referencing the **$.params** root variable.
 
-```
+```html
 <v-page path="/todos/:id" >
-    <form v-name="update_text" >
-        <input type="text" maxlength="128" required />
+  <form v-name="update_text" >
+    <input type="text" maxlength="128" required />
 
-        <button type="submit" >Update</button>
+    <button type="submit" >Update</button>
 
-        <v-action>
-            <v-sql>
-                update todos set text = $.body.text where id = $.params.id
-            </v-sql>
-        </v-action>
-    </form>
+    <v-action>
+      <v-sql>
+        update todos set text = $.body.text where id = $.params.id
+      </v-sql>
+    </v-action>
+  </form>
 </v-page>
 ```
 
 When setting the action path yourself you must include any containing paths.
 
-```
+```html
 <v-page path="/todos/:id" >
-    <form
-        v-name="update_todo_text"
-        action="/todos/:id/update_text"
-    >
-        ...
-    </form>
+  <form
+    v-name="update_todo_text"
+    action="/todos/:id/update_text"
+  >
+   ...
+  </form>
 </v-page>
 ```
 
@@ -178,7 +181,7 @@ In order to properly explain how the HTML inputs correlate to jsonschema types l
 
 ### Text inputs
 
-```
+```html
 <input
     maxlength="64"
     minlength="3"
@@ -186,7 +189,7 @@ In order to properly explain how the HTML inputs correlate to jsonschema types l
 />
 ```
 
-```
+```json
 {
     "type":"string",
     "maxLength": 64,
@@ -196,28 +199,25 @@ In order to properly explain how the HTML inputs correlate to jsonschema types l
 ```
 
 ### Select
-```
+```html
 <select>
     <option>Foo</option>
     <option value="bar" >Bar</option>
 </select> 
 ```
 
-```
+```json
 { "type":"string", "enum":["Foo", "bar"] } |
 ```
 
 ### Checkbox
 
-```
+```html
 <input type="checkbox" />
 ```
 
-```
+```json
 {
     "type": "boolean"
 }
 ```
-
-
-

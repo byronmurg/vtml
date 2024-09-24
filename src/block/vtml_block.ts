@@ -131,7 +131,6 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 	}
 
 	checkAttributes() {
-		this.debug("check attributes")
 
 		for (const k in this.tag.attributes) {
 			const type = this.tag.attributes[k]
@@ -218,7 +217,6 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 	}
 
 	async Render(ctx:FilterContext): Promise<Branch> {
-		this.debug("render")
 		return this._prepared.render(ctx)
 	}
 

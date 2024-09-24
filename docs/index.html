@@ -101,7 +101,7 @@
 	</head>
 	<body hx-boost="true" >
 
-		<nav class="left drawer m l scroll" >
+		<nav class="left drawer m l scroll surface-container-lowest" >
 			<v-include src="./sidebar.html" />
 		</nav>
 
@@ -113,28 +113,46 @@
 			<v-include src="./topbar.html" />
 		</header>
 
+		<div class="error padding row m l" >
+			<i>warning</i>
+			<p>VTML and vtml.org is in alpha and under active development. Use at your own risk</p>
+		</div>
 
 		<main class="responsive" style="margin-top:4rem;margin-bottom:8rem" >
+			<div class="error padding row s" >
+				<i>warning</i>
+				<p>VTML and vtml.org is in alpha and under active development. Use at your own risk</p>
+			</div>
+
 			<v-try>
-				<v-page path="/tutorial/start" >
-					<v-markdown src="./tutorial/start.md" />
+				<v-page path="/tutorial" >
+					<v-page path="/tutorial/start" >
+						<v-markdown src="./tutorial/start.md" />
+					</v-page>
+					<v-page path="/tutorial/hello_world" >
+						<v-markdown src="./tutorial/hello.md" />
+					</v-page>
+					<v-page path="/tutorial/first_site" >
+						<v-markdown src="./tutorial/first_site.md" />
+					</v-page>
 				</v-page>
 
+				<v-page path="/documentation" >
+					<v-page path="/documentation/variables" >
+						<v-markdown src="./documentation/variables.md" />
+					</v-page>
 
-				<v-page path="/documentation/variables" >
-					<v-markdown src="./documentation/variables.md" />
-				</v-page>
+					<v-page path="/documentation/logic" >
+						<v-markdown src="./documentation/logic.md" />
+					</v-page>
 
-				<v-page path="/documentation/logic" >
-					<v-markdown src="./documentation/logic.md" />
-				</v-page>
+					<v-page path="/documentation/pages" >
+						<v-markdown src="./documentation/pages.md" />
+					</v-page>
 
-				<v-page path="/documentation/pages" >
-					<v-markdown src="./documentation/pages.md" />
-				</v-page>
-
-				<v-page path="/documentation/forms" >
-					<v-markdown src="./documentation/forms.md" />
+					<v-page path="/documentation/forms" >
+						<v-markdown src="./documentation/forms.md" />
+					</v-page>
 				</v-page>
 
 				<v-page path="/reference">

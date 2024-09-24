@@ -105,6 +105,7 @@ function postgresqlInterface(url:URL): NodeSqlInterface {
 }
 
 function sqliteInterface(url:URL): NodeSqlInterface {
+	debug("SQLITE connect", url.host)
 	const sqliteDb = new SQLiteDatabase(url.host)
 
 	async function sqliteQuery(sql:string, vars:unknown[]): Promise<unknown[]> {

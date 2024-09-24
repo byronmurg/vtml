@@ -26,10 +26,8 @@ function CreateLogicTag(tag:LogicTag): VtmlTag {
 				render: async (ctx) => {
 					const match = await check(ctx)
 					if (match) {
-						block.debug("match")
 						return block.renderChildren(ctx)
 					} else {
-						block.debug("pass")
 						return ctx.filterPass()
 					}
 				}

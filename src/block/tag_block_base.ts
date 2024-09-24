@@ -57,6 +57,10 @@ abstract class TagBlockBase {
 		}
 	}
 
+	areAnyChildrenDynamic() {
+		return this.children.anyDynamic()
+	}
+
 	renderChildren(ctx:FilterContext) {
 		return this.children.renderAll(ctx)
 	}
@@ -135,7 +139,6 @@ abstract class TagBlockBase {
 				cpy[k] = v
 			} else if (typeof(v) === "string") {
 				// Template it
-				this.debug("template attribute", k, v)
 				cpy[k] = ctx.templateStringSafe(v)
 			} else {
 				cpy[k] = v

@@ -1,4 +1,5 @@
 ---
+
 - tag: v-with
   arguments:
   - name: source
@@ -22,7 +23,7 @@
     </v-with>
 
 - tag: v-if
-  arguments:
+  arguments: &logicAttrs
   - name: eq
     optional: true
     templated: true
@@ -38,8 +39,7 @@
   - name: gte
     optional: true
     templated: true
-  - default: $
-    name: source
+  - name: source
     templated: true
   description: |
     Display the contents only when the condition matches.
@@ -48,26 +48,26 @@
 
 - tag: v-unless
   arguments:
-  - name: eq
-    optional: true
-    templated: true
-  - name: lt
-    optional: true
-    templated: true
-  - name: lte
-    optional: true
-    templated: true
-  - name: gt
-    optional: true
-    templated: true
-  - name: gte
-    optional: true
-    templated: true
-  - default: $
-    name: source
-    templated: true
+    *logicAttrs
   description: |
     Display the contents only when the condition does not match.
+
+- tag: v-for-each
+  arguments:
+  - name: source
+    templated: true
+  - name: as
+  - name: keyas
+  description: |
+    Repeat the content of the block for each element of source array or varible.
+  example: |
+    <v-json target=$simpsons >["Marge, "Homer", "Lisa", "Bart", "Maggie"]</v-json>
+    <ul>
+      <v-for-each $simpsons as=$character keyas=$i >
+        <li>$i : $character</li>
+      </v-for-each>
+    </ul>
+
 
 - tag: v-json
   arguments:
@@ -169,24 +169,7 @@
 
 - tag: v-check-*
   arguments:
-  - name: eq
-    optional: true
-    templated: true
-  - name: lt
-    optional: true
-    templated: true
-  - name: lte
-    optional: true
-    templated: true
-  - name: gt
-    optional: true
-    templated: true
-  - name: gte
-    optional: true
-    templated: true
-  - default: $
-    name: source
-    templated: true
+    *logicAttrs
   description: |
     Similar to the v-if tags the v-check-* tags will conditionally display a block.
 
@@ -196,7 +179,9 @@
     Useful for creating an error-barrier for resources.
 
   example: |
-    <v-sql target="$user" >select * from user where email = $.headers.x-email</v-sql>
+    <v-sql target=$user single-row >
+      select * from user where email = $.headers.x-email
+    </v-sql>
 
     <v-check-authorized source="$user" >
       <p>Some sensitive information here...</p>

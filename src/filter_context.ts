@@ -4,14 +4,14 @@ import {escapeHtml} from "./html"
 import Debug from "debug"
 import * as Vars from "./variables"
 
-const templateRegex = /(?<!\\)\$([\w\.\-\[\]]+|\([\w\.\-\[\]]+\))/g
+const templateRegex = /(?<!\\)\$([\w.\-[\]]+|\([\w.\-[\]]+\))/g
 //                     ^^^^^^^ Cannot come after a backslash (for escaping
 //                            ^^ Match the $ dollar sign
-//                               ^^^^^^^^^^^^ Match legal characters A-z,0-9,[,],.,-
-//                                            ^ OR
-//                                             ^^^^^^^^^^^^^^^^ Match legal characters inside brackets
+//                               ^^^^^^^^^^ Match legal characters A-z,0-9,[,],.,-
+//                                         ^ OR
+//                                          ^^^^^^^^^^^^^^^ Match legal characters inside brackets
 
-const scriptRegex = /(?<!\\)\$[\.\w]+/g
+const scriptRegex = /(?<!\\)\$[.\w]+/g
 //                   ^^^^^^^ Cannot come after a backslash (for escaping
 //                          ^^ Match the $ dollar sign
 //                            ^^^^^^ Match legal characters A-z,0-9,.
@@ -144,7 +144,6 @@ class FilterContext {
 		if (! target) return this
 
 		const key = target.substr(1)
-		debug("set", key)
 		const newDataset = {[key]: data}
 
 		return this.copy(newDataset)

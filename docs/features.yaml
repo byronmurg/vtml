@@ -1,14 +1,38 @@
 ---
+- title: "Inbuilt routing"
+  color: "tertiary"
+  text: |
+    Create simple routing structures with ease.
+  code: |
+    <header>Routing<header>
+    <main>
+      <h3>VTML can be</h3>
+
+      <v-index>
+        Great
+      </v-index>
+
+      <v-page path="/speed" >
+        Quick
+      </v-page>
+
+      <v-page path="/readability" >
+        Simple
+      </v-page>
+    </main>
+
 - title: "Automatic form endpoints"
   color: "primary"
   text: |
-    Server-side validation is based on form inputs.
+    Server-side validation is generated from form inputs. Define the interaction once and
+    let VTML take care of the REST.
   code: |
     <form v-name="say hi" action="/sayhi" >
       <input
         name="message"
         type="text"
         maxlength=128
+        required
       />
 
       <v-action>
@@ -23,36 +47,34 @@
   color: "secondary"
   text: |
     Forms, pages and portals can all be isolated and rendered independently
-    of the rest of the page. VTML can figure out which tags need to be executed
+    of the rest of the page. VTML can determine which tags need to be executed
     to produce only the parts of the page you need.
   code: |
     <v-nodejs target=$not_important >
       return "Trivial data"
     </v-nodejs>
+
     <v-nodejs target=$important >
       return "Important data"
     </v-nodejs>
 
     <v-portal>
-      <p>$important</p>
+      <p>I only need $important</p>
     </v-portal>
 
-- title: "Simple asynchronous templating"
-  color: "tertiary"
-  code: |
-    <div>
-      <v-include src="./my_very_huge_widgets.vtml" />
-      <v-include src="./an_even_bigger_thing.vtml" />
-      <v-include src="./humungous_page_stuff.vtml" />
-    </div>
-
-- title: "Error handling"
+- title: "Declarative asynchronous templating"
   color: "error"
+  text: |
+    The VTML reference engine can detect the optimum order of component execution
+    to deliver lightning fast load times.
   code: |
-    <v-try>
-      <v-sql>selecto tableo</v-sql>
-    </v-try>
-    <v-catch>
-      <p>$error.message</p>
-    </v-catch>
+    <v-sql>
+      select lotsof, data from very_big_table;
+    </v-sql>
+
+    <v-nodejs>
+      return fetch("https://very.slow/api")
+    </v-nodejs>
+
+    <v-include src="./more/massive/stuff.vtml" />
 

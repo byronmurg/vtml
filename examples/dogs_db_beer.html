@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+
+		<title>Dogs DB</title>
+
+		<link href="https://cdn.jsdelivr.net/npm/beercss@3.7.8/dist/cdn/beer.min.css" rel="stylesheet">
+
+		<script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.7.8/dist/cdn/beer.min.js"></script>
+
+		<script type="module" src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.2/dist/cdn/material-dynamic-colors.min.js"></script>
+
+	</head>
+	<body>
+
+		<header>
+			<nav>
+				<b>Dogs DB</b></li>
+			</nav>
+		</header>
+
+		<main class="responsive" >
+			<v-try>
+
+				<v-page path="/tutorial" >
+
+					<v-sql target=$dogs >
+						select * from dogs;
+					</v-sql>
+
+					<button data-ui="#create_dog_overlay" >create dog</button>
+					<dialog id="create_dog_overlay" >
+						<form v-name="create_dog" >
+							<div class="field label border" >
+								<input name="name" type="text" required />
+								<label>name</label>
+							</div>
+
+							<div class="field textarea label border" >
+								<textarea name="description" required />
+								<label>Description</label>
+							</div>
+
+							<label>smelly</label>
+							<label class="slider" >
+								<input name="smelly" type="range" min=0 max=10 value=5 step=1 required />
+								<span></span>
+								<div class="tooltip" />
+							</label>
+
+							<label>cheeky</label>
+							<label class="slider" >
+								<input name="cheeky" type="range" min=0 max=10 value=5 step=1 required />
+								<span></span>
+								<div class="tooltip" />
+							</label>
+
+							<button type="submit" >create</button>
+
+							<v-action>
+								<v-sql>
+									insert into dogs (name, description, smelly, cheeky) values (
+										$.body.name,
+										$.body.description,
+										$.body.smelly,
+										$.body.cheeky
+									);
+								</v-sql>
+							</v-action>
+						</form>
+					</dialog>
+
+					<v-for-each $dogs as=$dog >
+						<article>
+							<header>
+								<h3 class="max" >$dog.name</h3>
+
+							</header>
+							<div class="grid" >
+								<img src="http://localhost:3456/assets/vtml_logo.svg" class="s12 m4" width=200 alt=$dog.name />
+								<p class="s12 m4" >$dog.description</p>
+								<div class="s12 m4" >
+									<label>smelly</label>
+									<progress value=$dog.smelly max=10 />
+
+									<label>cheeky</label>
+									<progress value=$dog.cheeky max=10 />
+								</div>
+							</div>
+							<form v-name="delete_dog" method="POST" class="s12" >
+								<input type="hidden" value=$dog.id name="id" />
+
+								<button type="submit" ><i>delete</i></button>
+								<v-action>
+									<v-sql>
+										delete from dogs where id = $.body.id
+									</v-sql>
+								</v-action>
+							</form>
+
+						</article>
+					</v-for-each>
+
+
+				</v-page>
+
+
+
+			</v-try>
+			<v-catch>
+				<img src="https://httpstatusdogs.com/img/$(error.code).jpg" alt=$error.message />
+				<a href="/" >Back</a>
+			</v-catch>
+
+		</main>
+	</body>
+
+</html>

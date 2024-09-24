@@ -33,7 +33,7 @@ class InbuiltBlock extends TagBlockBase implements TagBlock {
 		super(el, seq, parent)
 
 		const myVars = this.getTemplatesInAttributes()
-		this.dynamic = (myVars.length > 0) || this.children.anyDynamic()
+		this.dynamic = (myVars.length > 0) || this.areAnyChildrenDynamic()
 	}
 	
 
