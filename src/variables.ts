@@ -26,7 +26,7 @@ function getVarsInString(str:string): string[] {
 
 export
 function getPathFromTemplate(str:string): string {
-	const m = str.match(/[\w\.\[\]]+/)
+	const m = str.match(/[\w.[\]]+/)
 	return m ? m[0] : ""
 }
 
