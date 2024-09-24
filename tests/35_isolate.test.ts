@@ -47,11 +47,13 @@ describe("v-portal", () => {
 			name: "p",
 			attributes: {},
 			filename: "<test_string>",
+			linenumber: 7,
 			elements: [
 				{
 					type: "text",
 					text: "22",
 					filename: "<test_string>",
+					linenumber: 7,
 				}
 			],
 		})
@@ -103,16 +105,19 @@ describe("inbuilt isolate", () => {
 			name: "div",
 			attributes: {},
 			filename: "<test_string>",
+			linenumber: 6,
 			elements: [
 				{
 				type: "element",
 				name: "p",
 				attributes: {},
 				filename: "<test_string>",
+				linenumber: 7,
 				elements: [
 					{
 						type: "text",
 						text: "22",
+						linenumber: 7,
 						filename: "<test_string>",
 					}
 				]

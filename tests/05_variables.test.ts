@@ -18,7 +18,7 @@ test("error thrown when undefined", async () => {
 		$foo
 	`)
 
-	expect(fnc).toThrow(`foo not defined in <string>:#text(0)`)
+	expect(fnc).toThrow(`foo not defined in <string>:1`)
 })
 
 test("no error thrown when referencing root variable", async () => {
@@ -62,7 +62,7 @@ test("redefining a variable throws an error", async () => {
 
 	const fnc = () => RenderTest(testVtml)
 
-	expect(fnc).toThrow(`one redefined in <string>:v-json(1)`)
+	expect(fnc).toThrow(`one redefined in <string>:3`)
 })
 
 test("references render in order", () => {
