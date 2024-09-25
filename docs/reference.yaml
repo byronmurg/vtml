@@ -4,8 +4,12 @@
   arguments:
   - name: source
     templated: true
+  - name: as
+    optional: true
   description: |
-    Include content block if variable is truthy. Sets the variable of children to the target if it is supplied.
+    Include content block if variable is truthy.
+
+    Can also abbreviate long variable paths with the `as` attribute.
 
   example: |
     <v-json target="$dog" >
@@ -14,11 +18,11 @@
       }
     </v-json>
 
-    <v-with source="$dog.name" as="$name" >
+    <v-with source=$dog.name as=$name >
       <p>This will display the name : $name </p>
     </v-with>
 
-    <v-with source="$dog.phone_number" >
+    <v-with source=$dog.phone_number >
       <p>This would not display anything</p>
     </v-with>
 
@@ -46,11 +50,29 @@
 
     By default the contents are displayed when $source is considered truthy.
 
+    If multiple check arguments are supplied then all must match.
+  example: |
+    <v-json target=$number >22</v-json>
+
+    <v-if $number gt=3 gte=22 lt=100 lte=80 >
+      <p>All true!</p>
+    </v-if>
+
 - tag: v-unless
   arguments:
     *logicAttrs
   description: |
     Display the contents only when the condition does not match.
+
+    Works exactly the same way as v-if but negated.
+  example: |
+    <v-nodejs target=$data >
+      return { foo:"Foo" }
+    </v-nodejs>
+
+    <v-unless $data.bar >
+      No bar is the data
+    </v-unless>
 
 - tag: v-for-each
   arguments:
@@ -68,6 +90,28 @@
       </v-for-each>
     </ul>
 
+- tag: v-portal
+  arguments:
+  - name: v-name
+  description: |
+    Define a section of the page that can be requested independently of the rest of
+    the page.
+
+    It is useful when you want to be able to refresh part of the client page using ajax.
+
+  example: |
+    <form v-name="create_thingy" >
+
+    <v-sql target=$thingys >
+      select * from thingys;
+    </v-sql>
+
+    <v-portal v-name="/thingys" >
+      <v-for-each $thingys >
+        <p>$thingy.name</p>
+      </v-for-each>
+    </v-portal>
+
 
 - tag: v-json
   arguments:
@@ -76,6 +120,14 @@
     optional: true
     relative: true
   description: Create a new variable at target from a json body or using the src argument
+  example: |
+    <v-json target=$inline >
+      {
+        iam: "some json"
+      }
+    </v-json>
+
+    <v-json target=$fromfile src="./some/file.json" />
 
 - tag: v-yaml
   arguments:
@@ -86,14 +138,37 @@
     Create a new variable at target from a yaml document specified by the src argument.
 
     Cannot use a body due to confusing indenting.
+  example: |
+    <v-yaml target=$data src="./my_data.yml" />
+
+    <h3>$data.title</h3>
 
 - tag: v-markdown
   arguments:
   - name: src
+    optional: true
+    relative: true
+  - name: source
+    optional: true
   description: |
     Load in-place a markdown document.
 
-    This is currently not templated at all.
+    No templating occurs on the markdown document.
+
+    You can load markdown either from a src file, a variable, or the element body.
+
+    When using the element body make sure that the tag is left-aligned.
+  example: |
+    <v-markdown>
+    # Title
+    ```
+    Some code
+    ```
+    </v-markdown>
+
+    <v-markdown src="./some/markdown.md" />
+
+    <v-markdown $a_markdown_var />
 
 - tag: v-sql
   arguments:
@@ -101,6 +176,10 @@
   - name: single-row
     optional: true
   description: Execute sql query and set a new variable at target
+  example:
+    <v-sql target=$people >
+      select * from people where occupation = 'developer';
+    </v-sql>
 
 - tag: v-nodejs
   arguments:
@@ -110,18 +189,35 @@
   description: Embed a nodejs function and set target to the return value
 
 - tag: v-dump
+  arguments:
+  - name: source
+    templated: true
   description: Dump the current variable as json inside a pre tag
+  example: |
+    <v-json target=$data >{ "foo":"Foo", "bar":"Bar" }</v-json>
+    <v-dump source=$data />
 
 - tag: v-hint-port
   arguments:
-  - default: "3000"
-    name: port
-  description: A hint to the siskin engine to listen on this port
+  - name: port
+  description: A hint to the VTML engine to listen on this port
+  example: |
+    <v-hint-port port="1066" />
 
 - tag: v-page
   arguments:
   - name: path
-  description: Define a page within the document.
+  description: |
+    Define a page within the document.
+
+    See the **[Pages documentation](/documentation/pages)** form more details.
+  example: |
+    <v-page path="/cats" >
+      <p>Cat page!</p>
+    </v-page>
+    <v-page path="/dogs" >
+      <p>I'm the Dog page</p>
+    </v-page>
 
 - tag: v-expose
   arguments:
@@ -131,6 +227,8 @@
   - name: src
   description: Expose a file specified at (src) at http (path)
   special: true
+  example: |
+    <v-expose path="/favicon.ico" src="./assets/vtml_icon.png" content-type="image/png" />
 
 - tag: v-set-cookie
   form-ony: true
@@ -151,11 +249,19 @@
     Set a response cookie.
 
     The maximum cookie age will be set to the sum of the max-* attribute values.
+  example: |
+    <v-set-cookie
+        name="session_key"
+        value=$session_key
+        max-days=365
+    />
 
 - tag: v-include
-  description: Include an external siskin-xml file. This tag is processed before anything
+  description: Include an external vtml file. This tag is processed before anything
     else.
   pre-process: true
+  example: |
+    <v-include src="./some/other/file.vtml" />
 
 - tag: form
   arguments:
@@ -190,14 +296,34 @@
 
 - tag: v-catch
   description: |
-    Rendered when an error has occured. The root variables `$.error.code` and `$.error.message`
-    will be available to display.
+    Rendered when an error has occured.
 
-    This tag is roughly equivilent to calling `<v-if source="$.error" >...</v-if>`
+    The special variable `$error` will be available to display.
+
+    The error variable contains:
+    - code: The error status code e.g. 404
+    - message: A client safe error message e.g. Not found
+
+    You **don't** need to set the error code to the page with `<v-set-status>`.
+
+  example: |
+    <v-catch>
+      <p>Error $error.message</p>
+    </v-catch>
 
 - tag: v-try
   description: |
     Rendered when no error has occured. Useful when a section may result in an error.
+
+    Can be used in conjunction with `v-catch` to catch errors that may occur within it's
+    contents.
+  example:
+    <v-try>
+      <v-sql>Im invalid SQL</v-sql>
+    </v-try>
+    <v-catch>
+      <p>Error $error.message</p>
+    </v-catch>
 
 - tag: v-set-status
   actionVariant: true
@@ -210,6 +336,13 @@
 
     Rendering will continue as normal. If you want to report a non-success status take
     a look at the v-check-* tags instead.
+  example: |
+    <form v-name="noddy" >
+      <v-action>
+        <v-sql>insert into mytable values (22)</v-sql>
+        <v-set-status code=201 />
+      </v-action>
+    </form>
 
 - tag: v-redirect
   arguments:
@@ -218,3 +351,18 @@
     templated: true
   description:
     Redirect the client to the specied path.
+
+    The path is templated and can be used to redirect after an action
+    or when a page needs a fallback.
+  example: |
+    <form v-name="noddy" >
+      <input type="text" name="name" />
+
+      <v-action>
+        <v-sql target=$newdog >
+          insert into dogs (name) values ($.body.name);
+        </v-sql>
+
+        <v-redirect path="/dogs/view/$newdog.id" />
+      </v-action>
+    </form>

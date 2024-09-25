@@ -11,14 +11,14 @@
 			<span class="chip">form-only</span>
 		</v-if>
 
-		<p>$entry.description</p>
+		<v-markdown $entry.description />
 
 		<v-if $entry.arguments >
 			<table class="arg-table">
 				<thead>
 					<tr>
 						<th scope="col">name</th>
-						<th scope="col">default</th>
+						<th scope="col">required</th>
 						<th scope="col">templated</th>
 					</tr>
 				</thead>
@@ -28,13 +28,8 @@
 							<td>$arg.name</td>
 
 							<td>
-								<v-if $arg.default >$arg.default</v-with>
-								<v-unless $arg.default >
-									<v-if $arg.optional > optional </v-if>
-									<v-unless $arg.optional >
-										<b>required</b>
-									</v-unless>
-								</v-unless>
+								<v-if $arg.optional >no</v-if>
+								<v-unless $arg.optional >yes</v-unless>
 							</td>
 
 							<v-if $arg.templated >

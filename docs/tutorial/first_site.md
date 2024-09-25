@@ -78,7 +78,7 @@ Now we need to actually render the rows. Replace <a class="link" href="/referenc
   <article>
     <header><h3>$dog.name</h3></header>
     <div class="grid" >
-      <img src="http://localhost:3456/assets/vtml_logo.svg" class="dog_image" width=200 alt=$dog.name />
+      <img src="https://vtml.org/assets/vtml_logo.svg" class="dog_image" width=200 alt=$dog.name />
       <v-if $dog.description >
         <p>$dog.description</p>
       </v-if>
@@ -116,7 +116,7 @@ Next a grid div which will just lay out the article.
 ```
 Then an image which just displays the vtml dog but we use the dog's name as an alt attribute.
 ```html
-<img src="http://localhost:3456/assets/vtml_logo.svg" width=200 alt=$dog.name />
+<img src="https://vtml.org/assets/vtml_logo.svg" width=200 alt=$dog.name />
 ```
 Display the dog's description 
 ```html
