@@ -2,19 +2,38 @@ import CreateDisplayTag from "./display"
 import * as HTML from "../html"
 import {parse as mdParse} from "marked"
 
+function mdToHtml(md:string, filename:string) {
+	const rawHTML = mdParse(HTML.escapeHtml(md)) as string
+	return HTML.parse(rawHTML, filename)
+}
+
 export
 const VMarkdown = CreateDisplayTag({
 	name: "v-markdown",
 	attributes: {
 		"src": { special:true, relative:true },
+		"source": { source:true },
 	},
 
 	prepareRender(block) {
-		const md = block.bodyOrSrc()
 		const filename = block.element().filename
-		const rawHTML = mdParse(HTML.escapeHtml(md)) as string
-		const html = HTML.parse(rawHTML, filename)
+		const source = block.sourceAttr()
 
-		return (ctx) => Promise.resolve({ ctx, elements:html })
+		if (source) {
+			return async (ctx) => {
+				const md = ctx.getKey(source)
+				if (md) {
+					const html = mdToHtml(md, filename)
+					return { ctx, elements:html }
+				} else {
+					return ctx.filterPass()
+				}
+			}
+		} else {
+			const md = block.bodyOrSrc()
+			const html = mdToHtml(md, filename)
+
+			return (ctx) => Promise.resolve({ ctx, elements:html })
+		}
 	}
 })
