@@ -47,7 +47,7 @@ And of course a `main.vtml` file (which can be empty)
 We need to tell VTML where our new database is using the `DB_URL` variable.
 
 ```bash
-$ DB_URL="sqlite://dogsdb.sqlite" vtml index.vtml
+$ DB_URL="sqlite://dogsdb.sqlite" vtml --dev index.vtml
 ```
 
 ## Starting with some data

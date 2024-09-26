@@ -22,10 +22,18 @@ the following.
 
 Now in your terminal simply run:
 
-`$ vtml index.vtml`
+`$ vtml --dev index.vtml`
 
 If you now open your browser and navigate to *http://localhost:3000* you should see a very
 simple page
+
+<article class="secondary-container" >
+<i>info</i>
+The --dev argument tells the vtml cli to restart whenever a change occurs in the directory.
+</article>
+
+
+
 
 ## A bit of style
 
