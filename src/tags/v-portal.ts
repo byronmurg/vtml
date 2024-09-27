@@ -4,6 +4,6 @@ export
 const VPortal = CreatePassthroughTag({
 	name: "v-portal",
 	attributes: {
-		"v-name": { required:true, special:true },
+		"path": { required:true, special:true },
 	},
 })

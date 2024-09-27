@@ -136,7 +136,11 @@ function prepareForm(postForm:TagBlock): FormDescriptor {
 	const encoding = postForm.attr("enctype")
 
 	// Figure out the form path suffix
-	const path = utils.joinPaths(pagePath, xName)
+	const path = postForm.attr("action") || utils.joinPaths(pagePath, xName)
+
+	if (!path.startsWith(pagePath)) {
+		postForm.error(`Form action ${path} must extend it's parent page ${pagePath}`)
+	}
 
 	// The oapi path is slightly different
 	const oapiPath = expressToOapiPath(path)

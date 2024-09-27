@@ -21,7 +21,7 @@ function prepareExpose(expose:TagBlock): ExposeDescriptor {
 
 	// Figure out the form path suffix
 	if (!path.startsWith(pagePath)) {
-		expose.error(`Must start with page path (${pagePath})`)
+		expose.error(`v-expose path ${path} must extend it's parent page ${pagePath}`)
 	}
 
 	const isolate = expose.Isolate()

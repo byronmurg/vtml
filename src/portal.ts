@@ -12,13 +12,15 @@ type PortalDescriptor = {
 export default
 function preparePortal(portalTag:TagBlock): PortalDescriptor {
 
-	const xName = portalTag.attr("v-name")
+	// Figure out the form path suffix
+	const path = portalTag.attr("path")
 
 	// Get the path of the nearest page
 	const pagePath = portalTag.findAncestor(utils.byName("v-page"))?.attr("path") || "/"
 
-	// Figure out the form path suffix
-	const path = utils.joinPaths(pagePath, xName)
+	if (!path.startsWith(pagePath)) {
+		portalTag.error(`v-portal path ${path} must extend it's parent page ${pagePath}`)
+	}
 
 	const isolate = portalTag.Isolate()
 

@@ -9,7 +9,7 @@ describe("v-portal", () => {
 
 		<p>before</p>
 
-		<v-portal v-name="test_portal" >
+		<v-portal path="/test_portal" >
 			<p>$foo</p>
 		</v-portal>
 	`

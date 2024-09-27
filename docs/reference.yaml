@@ -92,7 +92,7 @@
 
 - tag: v-portal
   arguments:
-  - name: v-name
+  - name: path
   description: |
     Define a section of the page that can be requested independently of the rest of
     the page.
@@ -106,7 +106,7 @@
       select * from thingys;
     </v-sql>
 
-    <v-portal v-name="/thingys" >
+    <v-portal path="/thingys" >
       <v-for-each $thingys >
         <p>$thingy.name</p>
       </v-for-each>
