@@ -1,6 +1,4 @@
 import {RenderTest} from "./test_lib"
-import RootBlock from "../src/block/root_block"
-import * as HTML from "../src/html"
 
 test("basic variable references", async () => {
 	
