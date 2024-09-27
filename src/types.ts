@@ -2,6 +2,7 @@ import type {ParsedQs} from "qs"
 import type { TagElement, Element } from "./html"
 import type FilterContext from "./filter_context"
 import type {VtmlBlock} from "./block"
+import type * as HTML from "./html"
 
 export type InputValue = string|string[]|number|boolean
 
@@ -110,6 +111,7 @@ interface Block {
 	error(msg:string): never
 
 	Render(ctx:FilterContext): Promise<Branch>
+	RenderConstant(): HTML.Element
 
 	CheckPreceeds(ctx:FilterContext): Promise<FilterContext>
 

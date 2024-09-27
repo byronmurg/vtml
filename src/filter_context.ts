@@ -3,23 +3,6 @@ import type {RootDataset, ResponseError, Cookie, Branch} from "./types"
 import {escapeHtml} from "./html"
 import * as Vars from "./variables"
 
-const templateRegex = /(?<!\\)\$([\w.\-[\]]+|\([\w.\-[\]]+\))/g
-//                     ^^^^^^^ Cannot come after a backslash (for escaping
-//                            ^^ Match the $ dollar sign
-//                               ^^^^^^^^^^ Match legal characters A-z,0-9,[,],.,-
-//                                         ^ OR
-//                                          ^^^^^^^^^^^^^^^ Match legal characters inside brackets
-
-const scriptRegex = /(?<!\\)\$[.\w]+/g
-//                   ^^^^^^^ Cannot come after a backslash (for escaping
-//                          ^^ Match the $ dollar sign
-//                            ^^^^^^ Match legal characters A-z,0-9,.
-
-const nodeRegex = /(?<!\\)\$\w+/g
-//                 ^^^^^^^ Cannot come after a backslash (for escaping
-//                        ^^ Match the $ dollar sign
-//                          ^^^ Match legal characters A-z,0-9
-
 type Globals = {
 	setCookies: Record<string, Cookie>
 	redirect: string
@@ -55,10 +38,6 @@ class FilterContext {
 			returnCode: error.code,
 		})
 	}
-
-	static TemplateRegex = templateRegex
-	static ScriptRegex = scriptRegex
-	static NodeRegex = nodeRegex
 
 	// Initialize a copy with a new dataset
 	private copy(dataset:object): FilterContext {
@@ -166,8 +145,11 @@ class FilterContext {
 		)
 	}
 
-	getKey(token:string) {
-		token = Vars.getPathFromTemplate(token)
+	getKey = (token:string) => {
+		if (token.startsWith("$")) {
+			token = token.substr(1)
+		}
+
 		if (token.startsWith('.')) {
 			const rootKey = token.substr(1)
 			return get(this.rootDataset, rootKey)
@@ -176,7 +158,7 @@ class FilterContext {
 		}
 	}
 
-	getKeySafe(token:string) {
+	getKeySafe = (token:string) => {
 		const value = this.getKey(token)
 
 		if (value instanceof Date) {
@@ -194,22 +176,21 @@ class FilterContext {
 		}
 	}
 
-	getKeyJSON(token:string) {
+	getKeyJSON = (token:string) => {
 		const value = this.getKey(token)
 		return JSON.stringify(value)
 	}
 
 	templateString(str:string): string {
-		return str.replace(templateRegex, (t) => this.getKey(t))
+		return Vars.basicTemplate.replaceStr(str, this.getKey)
 	}
 
 	templateStringSafe(str:string): string {
-		return str.replace(templateRegex, (t) => this.getKeySafe(t))
+		return Vars.basicTemplate.replaceStr(str, this.getKeySafe)
 	}
 
 	templateScript(str:string): string {
-		// @NOTE uses script regex
-		return str.replace(scriptRegex, (t) => this.getKeyJSON(t))
+		return Vars.scriptTemplate.replaceStr(str, this.getKeyJSON)
 	}
 
 	filterPass(): Branch {

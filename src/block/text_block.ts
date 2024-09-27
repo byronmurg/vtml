@@ -1,7 +1,6 @@
 import type {Branch, Block, TagBlock, ChainResult, BlockReport, IsolateReponse} from "../types"
 import * as HTML from "../html"
 import * as Vars from "../variables"
-import uniq from "lodash/uniq"
 import FilterContext from "../filter_context"
 
 export default
@@ -26,11 +25,11 @@ class TextBlock implements Block {
 	}
 
 	getVarsInBody(): string[] {
-		return uniq(Vars.getVarsInString(this.el.text))
+		return Vars.basicTemplate.findVars(this.el.text)
 	}
 
 	getTemplatesInBody(): string[] {
-		return Vars.getTemplatesInString(this.el.text)
+		return Vars.basicTemplate.findTemplates(this.el.text)
 	}
 
 	async Render(ctx:FilterContext): Promise<Branch> {
@@ -40,6 +39,15 @@ class TextBlock implements Block {
 			text,
 		}
 		return { ctx, elements:[resp] }
+	}
+
+	RenderConstant(): HTML.TextElement {
+		const safeText = Vars.basicTemplate.sanitize(this.el.text)
+		const resp:HTML.Element = {
+			...this.el,
+			text: safeText,
+		}
+		return resp
 	}
 
 	checkConsumers(inputs:string[]) {

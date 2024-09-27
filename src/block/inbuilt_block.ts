@@ -28,12 +28,17 @@ export default
 class InbuiltBlock extends TagBlockBase implements TagBlock {
 
 	private dynamic: boolean
+	private constant: HTML.Element|undefined
 
 	constructor(el:HTML.TagElement, seq:number, parent:Block) {
 		super(el, seq, parent)
 
 		const myVars = this.getTemplatesInAttributes()
 		this.dynamic = (myVars.length > 0) || this.areAnyChildrenDynamic()
+
+		if (!this.dynamic) {
+			this.constant = this.RenderConstant()
+		}
 	}
 	
 
@@ -66,18 +71,18 @@ class InbuiltBlock extends TagBlockBase implements TagBlock {
 	}
 
 	getVarsInAttributes() {
-		return uniq(Vars.getVarsInMap(this.el.attributes))
+		return Vars.basicTemplate.findVarsInMap(this.el.attributes)
 	}
 
 	getTemplatesInAttributes() {
-		return uniq(Vars.getTemplatesInMap(this.el.attributes))
+		return Vars.basicTemplate.findTemplatesInMap(this.el.attributes)
 	}
 
 	async Render(ctx:FilterContext): Promise<Branch> {
 		// If this is not a dynamic element then we can
 		// just return it as-is.
-		if (!this.dynamic) {
-			return { ctx, elements:[this.el] }
+		if (this.constant) {
+			return { ctx, elements:[this.constant] }
 		}
 
 
@@ -91,6 +96,26 @@ class InbuiltBlock extends TagBlockBase implements TagBlock {
 		}
 
 		return { ctx, elements:[resp] }
+	}
+
+	RenderConstant(): HTML.Element {
+		const children = this.children.renderAllConstant()
+
+		const attrs:HTML.TagElement["attributes"] = {}
+		for (const k in this.el.attributes) {
+			const v = this.el.attributes[k]
+			if (typeof(v) === "string") {
+				attrs[k] = Vars.basicTemplate.sanitize(v)
+			} else {
+				attrs[k] = v
+			}
+		}
+
+		return {
+			...this.el,
+			elements: children,
+			attributes: attrs,
+		}
 	}
 
 	CheckPreceeds(ctx:FilterContext) {

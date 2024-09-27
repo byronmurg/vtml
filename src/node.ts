@@ -1,5 +1,6 @@
 import FilterContext from "./filter_context"
 import nodeInterFace from "./sql"
+import * as Vars from "./variables"
 
 const inbuiltVars: Record<string, unknown> = {
 	require: require,
@@ -9,8 +10,8 @@ const inbuiltVars: Record<string, unknown> = {
 export default
 function prepare(body:string) {
 	// Find any ctx variables used by the js body
-	const injectVars = body.match(FilterContext.NodeRegex) || []
-
+	const injectVars = Vars.nodeTemplate.findVars(body)
+		.map((v) => "$"+v) // Add the dollar back on
 	const inbuiltKeys = Object.keys(inbuiltVars)
 
 	const buildFunction = () => {

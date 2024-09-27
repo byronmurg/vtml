@@ -1,6 +1,7 @@
 import {Pool} from "pg"
 import { Database as SQLiteDatabase } from "bun:sqlite"
 import Debug from "debug"
+import * as Vars from "./variables"
 import FilterContext from "./filter_context"
 import {URL} from "url"
 
@@ -66,7 +67,7 @@ function postgresqlInterface(url:URL): NodeSqlInterface {
 
 	function vtmlToPgQuery(sql:string, ctx:FilterContext): ProcessedSQL {
 		const vars: unknown[] = []
-		const matches = sql.match(FilterContext.TemplateRegex)
+		const matches = Vars.basicTemplate.findTemplates(sql)
 		if (! matches) {
 			return {sql, vars}
 		}
@@ -118,7 +119,7 @@ function sqliteInterface(url:URL): NodeSqlInterface {
 
 	function vtmlToSqliteQuery(sql:string, ctx:FilterContext): ProcessedSQL {
 		const vars: unknown[] = []
-		const matches = sql.match(FilterContext.TemplateRegex)
+		const matches = Vars.basicTemplate.findTemplates(sql)
 		if (! matches) {
 			return {sql, vars}
 		}

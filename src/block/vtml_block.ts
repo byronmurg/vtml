@@ -92,7 +92,7 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 
 			if (!value) continue
 
-			const vars = Vars.getVarsInString(value.toString())
+			const vars = Vars.basicTemplate.findVars(value.toString())
 
 			if (!vars.length) continue
 
@@ -141,7 +141,7 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 					this.error(`Missing required attribute '${k}'`)
 				}
 			} else {
-				const vars = Vars.getTemplatesInString(value.toString())
+				const vars = Vars.basicTemplate.findTemplates(value.toString())
 
 				if (type.source && vars.length !== 1) {
 					this.error(`Source attributes must select just one variable`)
@@ -218,6 +218,10 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 
 	async Render(ctx:FilterContext): Promise<Branch> {
 		return this._prepared.render(ctx)
+	}
+
+	RenderConstant(): HTML.Element {
+		throw Error(`RenderConstant called in VtmlBlock`)
 	}
 
 	checkContains(ctx:FilterContext): Promise<ChainResult> {

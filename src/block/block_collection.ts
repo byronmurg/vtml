@@ -285,5 +285,9 @@ class BlockCollection {
 	anyDynamic(): boolean {
 		return this.children.some((child) => child.isDynamic())
 	}
+
+	renderAllConstant(): HTML.Element[] {
+		return this.children.map((child) => child.RenderConstant())
+	}
 }
 

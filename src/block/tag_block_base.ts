@@ -1,4 +1,5 @@
 import * as HTML from "../html"
+import * as Vars from "../variables"
 import type {Block, TagBlock, RenderDescription, AttributeSpec} from "../types"
 import FilterContext from "../filter_context"
 import Debug from "debug"
@@ -134,14 +135,14 @@ abstract class TagBlockBase {
 			// If it's a special or target/source attr
 			if (type.strip || type.target || type.source || type.inject) {
 				continue
+			} else if (typeof(v) === "boolean") {
+				cpy[k] = v
 			} else if (type.special) {
 				// Special attributes are not templated
-				cpy[k] = v
+				cpy[k] = Vars.basicTemplate.sanitize(v)
 			} else if (typeof(v) === "string") {
 				// Template it
 				cpy[k] = ctx.templateStringSafe(v)
-			} else {
-				cpy[k] = v
 			}
 		}
 

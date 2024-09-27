@@ -47,6 +47,10 @@ class RootBlock implements Block {
 		return this.children.renderAll(ctx)
 	}
 
+	RenderConstant(): HTML.Element {
+		throw Error(`RootBlock cannot render constant`)
+	}
+
 	getName() {
 		return "<root>"
 	}

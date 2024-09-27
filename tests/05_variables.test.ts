@@ -32,11 +32,9 @@ test("no error thrown when referencing root variable", async () => {
 
 
 test("variables can be escaped", async () => {
-	// @TODO should really replace with one slash
-	
 	const output = await RenderTest(`\\$foo`)
 
-	expect(output).toBe(`\\$foo`)
+	expect(output).toBe(`$foo`)
 })
 
 test("variables can use bracket notation", async () => {
