@@ -171,7 +171,6 @@ type BlockReport = {
 
 export type RenderDescription = {
 	name: string
-	seq: number
 	report: BlockReport
 	order: RenderDescription[]
 }

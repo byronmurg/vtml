@@ -80,3 +80,24 @@ test("v-nodejs throw", async () => {
 		expect(e.message).toMatch(`Error in v-node: See me`)
 	}
 })
+
+test("v-nodejs multiple throw", async () => {
+	const exampleHTML = `
+		<v-nodejs target="$foo" >
+			throw Error("See me")
+		</v-nodejs>
+
+		<v-nodejs target="$bar" >
+			throw Error("not me")
+		</v-nodejs>
+
+		<p>$foo $bar</p>
+	`
+	try {
+		const doc = VtmlDocument.LoadFromString(exampleHTML)
+		await doc.renderDocument(ctx)
+	} catch (err) {
+		const e = err as Error
+		expect(e.message).toMatch(`Error in v-node: See me`)
+	}
+})

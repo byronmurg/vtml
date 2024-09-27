@@ -62,31 +62,3 @@ test("redefining a variable throws an error", async () => {
 
 	expect(fnc).toThrow(`one redefined in <string>:3`)
 })
-
-test("references render in order", () => {
-	const testVtml = `
-		<v-json target="$one" >1</v-json>
-		<v-json target="$two" >2</v-json>
-		<v-nodejs target="$three" >return $one + $two</v-nodejs>
-	`
-
-	const html = HTML.parse(testVtml, "<test>")
-	const root = new RootBlock(html)
-
-	const description = root.getRenderDescription()
-
-	expect(description).toMatchObject([
-		{
-			name: "v-json",
-			seq: 0,
-		},
-		{
-			name: "v-json",
-			seq: 0,
-		},
-		{
-			name: "v-nodejs",
-			seq: 1,
-		}	
-	])
-})

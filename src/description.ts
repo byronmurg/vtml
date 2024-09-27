@@ -11,7 +11,7 @@ function printRenderDescriptionRow(
 	const indentStr = makeIndentString(indent)
 
 	const report = desc.report
-	const parts = [`(${desc.seq})${desc.name}`]
+	const parts = [desc.name]
 
 	if (report.provides.length) {
 		const provides = desc.report.provides.join(" ")
