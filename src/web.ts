@@ -88,6 +88,7 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 			res.redirect(307, response.redirect)
 		} else {
 			res.status(response.status)
+			res.contentType("text/html")
 			HTML.serializeHTML(response.elements, res)
 		}
 	}
@@ -124,6 +125,7 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 			res.redirect(307, response.redirect)
 		} else {
 			res.status(status)
+			res.contentType("text/html")
 			HTML.serializeHTML(response.elements, res)
 		}
 	}
