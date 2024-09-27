@@ -23,6 +23,15 @@
 
 		<main class="container">
 
+			<v-page path="/stuff" >
+				<v-nodejs target=$stuff >
+					return YAML.stringify({ some:"struff", more:"stuff" })
+				</v-nodejs>
+				<pre>$stuff</pre>
+			</v-page>
+
+
+
 			<v-nodejs target=$byron_info >
 				return "Very cool"
 			</v-nodejs>

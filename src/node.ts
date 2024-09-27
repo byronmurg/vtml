@@ -1,10 +1,12 @@
 import FilterContext from "./filter_context"
 import nodeInterFace from "./sql"
 import * as Vars from "./variables"
+import YAML from "yaml"
 
 const inbuiltVars: Record<string, unknown> = {
 	require: require,
 	sql: nodeInterFace,
+	YAML,
 }
 
 export default
@@ -16,7 +18,12 @@ function prepare(body:string) {
 
 	const buildFunction = () => {
 		try {
-			return new Function("$", ...inbuiltKeys, ...injectVars, `return (async () => {\n ${body} \n})()`)
+			return new Function(
+				"$",
+				...inbuiltKeys,
+				...injectVars,
+				`return (async () => {\n ${body} \n})()`
+			)
 		} catch (err) {
 			const e = err as Error
 			throw Error(`Syntax error in v-node: ${e.message}`)
