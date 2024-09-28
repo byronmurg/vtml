@@ -17,8 +17,7 @@ function mkProcess() {
 function start() {
 	const ps = mkProcess()
 	ps.stdout.on("data", (d) => console.log(d.toString()))
-	ps.stderr.on("data", (d) => console.error(d.toString()))
-	ps.on("close", () => console.error("process crashed"))
+	ps.stderr.on("data", (d) => console.log(d.toString()))
 	return ps
 }
 
