@@ -69,7 +69,6 @@ class WebFormHandler extends WebRouter {
 
 	FormApi = async (client:WebClient) => {
 		const dataset = client.createActionDataset()
-		console.log({ dataset })
 		const formRes = await this.form.execute(dataset, client.body)
 
 		client.setCookies(formRes.cookies)
