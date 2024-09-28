@@ -37,6 +37,8 @@ export const Form = CreateOverrideTag({
 				return block.defaultBehaviour(ctx)
 			}
 
+			const method = block.attr("method")
+
 			const fullPath = getFullPath(xName, ctx)
 
 			const outputAttributes = block.templateAttributes(ctx)
@@ -45,8 +47,7 @@ export const Form = CreateOverrideTag({
 			if (xAjax) {
 				outputAttributes['onsubmit'] ||= "return false"
 			} else {
-				// @TODO This is an assumption
-				outputAttributes['method'] = "POST"
+				outputAttributes['method'] = method
 				outputAttributes['action'] ||= fullPath
 			}
 

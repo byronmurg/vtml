@@ -9,6 +9,8 @@ import DefaultError, {ServerError} from "./default_errors"
 import FilterContext from "./filter_context"
 
 export type FileMap = { [fieldname:string]: string }
+export type Method = "post"|"put"|"delete"|"patch"
+
 
 const ajv = new Ajv()
 AjvFormats(ajv)
@@ -106,6 +108,17 @@ function getFileFields(postForm:TagBlock): FileField[] {
 		.map((block) => ({ name:block.attr("name") }))     // get the name
 }
 
+const validMethods:Method[] = [
+	"post",
+	"delete",
+	"put",
+	"patch",
+]
+
+function isValidMethod(method:string): method is Method {
+	return validMethods.includes(method as Method)
+}
+
 type FileField = {
 	name: string
 }
@@ -116,6 +129,7 @@ type FormDescriptor = {
 	path: string
 	oapiPath: string
 	encoding: string
+	method: Method
 
 	uploadFields: FileField[]
 
@@ -129,11 +143,17 @@ export default
 function prepareForm(postForm:TagBlock): FormDescriptor {
 	
 	const xName = postForm.attr("v-name")
+	const method = postForm.attr("method").toLowerCase() || "post"
 
 	// Get the path of the nearest page
 	const pagePath = postForm.findAncestor(utils.byName("v-page"))?.attr("path") || "/"
 
 	const encoding = postForm.attr("enctype")
+
+	// Error if method is not valid
+	if (!isValidMethod(method)) {
+		postForm.error(`Form method '${method}' is not valid. Must be one of ${validMethods.join(", ")}`)
+	}
 
 	// Figure out the form path suffix
 	const path = postForm.attr("action") || utils.joinPaths(pagePath, xName)
@@ -260,6 +280,7 @@ function prepareForm(postForm:TagBlock): FormDescriptor {
 	return {
 		name: xName,
 		path,
+		method,
 		oapiPath,
 		parameters,
 		encoding,

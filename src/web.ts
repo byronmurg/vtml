@@ -157,8 +157,10 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 			middlewares.push(fileHandler)
 		}
 
+		const formMethod = form.method
+
 		debug(`Create action ${form.path}`)
-		app.post(form.path, ...middlewares, async (req, res) => {
+		app[formMethod](form.path, ...middlewares, async (req, res) => {
 			debug("form", form.name, "action")
 			const rootDataset = createRootDataset(req, true)
 			const files = parseFiles(req.files)
@@ -173,7 +175,7 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 			}
 		})
 
-		app.post(`/_ajax${form.path}`, ...middlewares, async (req, res) => {
+		app[formMethod](`/_ajax${form.path}`, ...middlewares, async (req, res) => {
 			debug("form", form.name, "ajax")
 
 			const rootDataset = createRootDataset(req, true)
@@ -190,7 +192,7 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 			}
 		})
 
-		app.post(`/_api${form.path}`, Express.json(), async (req, res) => {
+		app[formMethod](`/_api${form.path}`, Express.json(), async (req, res) => {
 			debug("form", form.name, "api")
 			const rootDataset = createRootDataset(req, true)
 
