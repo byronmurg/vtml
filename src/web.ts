@@ -186,6 +186,7 @@ function exposeVtmlDocument(vtmlDocument:VtmlDocument, options:exposeOptions) {
 			setCookies(res, formRes.cookies)
 			if (formRes.status < 400) {
 				res.status(formRes.status)
+				res.contentType("text/html")
 				HTML.serialize(formRes.elements, res)
 			} else {
 				res.status(formRes.status).send(formRes.error || DefaultError(formRes.status))
