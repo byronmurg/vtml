@@ -1,10 +1,11 @@
 import {createPostFormApiSchema, createPathParameters, expressToOapiPath} from "./oapi"
 import type {SchemaObject, ParameterObject} from "./oapi"
-import type {RootDataset, InputValue, BodyType, TagBlock, FormResult} from "./types"
+import type {RootDataset, BodyType, TagBlock, FormResult} from "./types"
 import * as utils from "./utils"
 import Ajv, {ValidationError} from "ajv"
 import AjvFormats from "ajv-formats"
 import DefaultError, {ServerError} from "./default_errors"
+import httpEncParser from "./http_encoding"
 
 import FilterContext from "./filter_context"
 
@@ -19,7 +20,6 @@ function formatValidationError(e:ValidationError): string {
 	return e.message +" : "+ e.errors[0].message
 }
 
-
 export
 function matchInputs(block:TagBlock): boolean {
 	const inputTypes = ["input", "select", "textarea"]
@@ -30,77 +30,10 @@ function matchInputs(block:TagBlock): boolean {
 	return inputTypes.includes(name) && !excludedTypes.includes(type)
 }
 
-
-function simpleToTime(timeStr:string): string {
-	// This function is neccesary due to the slightly different
-	// ways that browsers can shorten "time" input values.
-	//
-	// They can come out as 
-	// - 00:00
-	// --- or ---
-	// - 00:00:00
-
-	if (timeStr.length < 6) {
-		timeStr += ":00"
-	}
-
-	if (timeStr.length < 9) {
-		timeStr += ".000"
-	}
-
-	return timeStr + "Z"
+function findInputs(block:TagBlock){
+	return block.FindAll(matchInputs)
 }
 
-function parseFormInput(value:string, input:TagBlock): boolean|string|number {
-	const type = input.attr("type")
-	switch (type) {
-		case "checkbox":
-			return (value === "on")
-		case "time":
-			return simpleToTime(value)
-		case "datetime-local":
-			return value +":00.000Z"
-		case "number":
-		case "range":
-			return parseFloat(value)
-		default:
-			return value
-	}
-}
-
-function asArray(v:string|string[]): string[] {
-	return Array.isArray(v)? v : [v]
-}
-
-function parseFormSelect(value:string, field:TagBlock): string|string[] {
-	const isMulti = field.boolAttr("multiple")
-	return isMulti ? asArray(value) : value
-}
-
-function parseFormField(value:string, field:TagBlock): InputValue {
-	const name = field.getName()
-	if (name === "input") {
-		return parseFormInput(value, field)
-	} else if (name === "select") {
-		return parseFormSelect(value, field)
-	} else {
-		return value
-	}
-}
-
-function parseFormFields(body:Record<string, string>, formFields:TagBlock[]): BodyType {
-	const newBody: BodyType = {}
-
-	for (const field of formFields) {
-		const name = field.attr("name")
-		if (! name) continue
-
-		const value = body[name]
-		newBody[name] = parseFormField(value, field)
-	}
-
-	return newBody
-}
 
 function getFileFields(postForm:TagBlock): FileField[] {
 	return postForm.FindAll(utils.byName("input"))         // Find inputs
@@ -182,8 +115,11 @@ function prepareForm(postForm:TagBlock): FormDescriptor {
 	// Create OAPI parameters
 	const parameters = createPathParameters(pagePath)
 
-	// Find all inputs (and selects, and textareas)
-	const formInputs = postForm.FindAll(matchInputs)
+	// Find all relevent inputs
+	const formInputs = findInputs(postForm)
+
+	// Create http encoding parser
+	const encParser = httpEncParser(formInputs)
 
 	// Find all file fields
 	const fileFields = getFileFields(postForm)
@@ -273,7 +209,7 @@ function prepareForm(postForm:TagBlock): FormDescriptor {
 	 */
 	async function executeFormEncoded(rootDataset:RootDataset, formBody:Record<string, string>, files:FileMap) {
 		
-		const body = parseFormFields(formBody, formInputs)
+		const body = encParser(formBody)
 		return execute(rootDataset, { ...body, ...files })
 	}
 

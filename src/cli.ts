@@ -1,5 +1,5 @@
 import VtmlDocument from "./document"
-import {exposeVtmlDocument} from "./web"
+import {serveVtmlDocument} from "./web"
 import type {exposeOptions} from "./web"
 import {printRenderDescription} from "./description"
 import {program} from "commander"
@@ -41,7 +41,7 @@ program.name("vtml")
 			cliListen: options.listen,
 		}
 
-		exposeVtmlDocument(vtmlDocument, cliOptions)
+		serveVtmlDocument(vtmlDocument, cliOptions)
 	})
 
 program.parse()

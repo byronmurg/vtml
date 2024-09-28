@@ -37,12 +37,16 @@ export type CookieMap = Record<string, Cookie>
 /////////////////////
 
 export
-type RenderResponse = {
-	elements: Element[]
+type ResponseBasic = {
 	status: number
 	cookies: CookieMap
 	redirect?: string
 	error?: string
+}
+
+export
+type RenderResponse = ResponseBasic & {
+	elements: Element[]
 }
 
 // AttributeOptions
@@ -204,14 +208,9 @@ export
 type PortalResult = RenderResponse
 
 export
-type ExposeResult = {
+type ExposeResult = ResponseBasic & {
 	sendFile: string
 	contentType?: string
-
-	status: number
-	cookies: CookieMap
-	redirect?: string
-	error?: string
 }
 
 export
