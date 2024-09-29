@@ -9,6 +9,7 @@ export * from "./v-page"
 export * from "./v-index"
 export * from "./v-markdown"
 export * from "./v-hint-port"
+export * from "./v-output"
 
 export * from "./v-with"
 

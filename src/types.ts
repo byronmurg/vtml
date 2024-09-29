@@ -202,7 +202,9 @@ type ChainResult = {
 }
 
 export
-type FormResult = RenderResponse
+type FormResult = RenderResponse & {
+	output?: unknown
+}
 
 export
 type PortalResult = RenderResponse

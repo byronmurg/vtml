@@ -2,6 +2,7 @@ import type { TagBlock } from "./types"
 import type VtmlDocument from "./document"
 import * as OAPI from "openapi3-ts/oas31"
 import {matchInputs} from "./form"
+import type {FormDescriptor} from "./form"
 export * from "openapi3-ts/oas31"
 
 function createExoticFormat(input:TagBlock, format:string): [OAPI.SchemaObject, boolean] {
@@ -237,6 +238,81 @@ function expressToOapiPath(path:string): string {
 	return path.replace(/:\w+/g, (p) => `{${p.substr(1)}}`)	
 }
 
+const defaultOutputSchema = {
+	type: "object",
+	properties: { code:{ type:"number" } },
+}
+
+function createFormApi(form:FormDescriptor): OAPI.OperationObject {
+	const headers: OAPI.ResponseObject["headers"] = {}
+
+	if (form.setCookie) {
+		headers["Set-Cookie"] = {
+			schema: {
+				type:"string",
+			}
+		}
+	}
+
+	return {
+		operationId: form.name,
+		parameters: form.parameters,
+		requestBody: {
+			required: true,
+			content: {
+				"application/json": {
+					schema: form.inputSchema,
+				}
+			}
+		},
+		responses: {
+			"200": {
+				description: "Successful operation",
+				headers,
+				content: {
+					"application/json": {
+						schema: form.outputSchema || defaultOutputSchema
+					}
+				}
+			},
+			"400": {
+				description: "Invalid input",
+				content: {
+					"application/json": {
+				  		schema: { $ref:"#/components/schemas/error" }
+					}
+				},
+			},
+			"401": {
+				description: "Unauthorized",
+				content: {
+					"application/json": {
+				  		schema: { $ref:"#/components/schemas/error" }
+					}
+				},
+			},
+			"403": {
+				description: "Forbidden",
+				content: {
+					"application/json": {
+				  		schema: { $ref:"#/components/schemas/error" }
+					}
+				},
+			},
+			"404": {
+				description: "Target not found",
+				content: {
+					"application/json": {
+				  		schema: { $ref:"#/components/schemas/error" }
+					}
+				},
+			},
+			// @TODO rest of these
+		}
+	}
+	
+}
+
 export
 function createOpenApiSchema(doc:VtmlDocument): OAPI.OpenAPIObject {
 	const title = doc.title || "Vtml"
@@ -265,56 +341,7 @@ function createOpenApiSchema(doc:VtmlDocument): OAPI.OpenAPIObject {
 
 	for (const form of doc.forms) {
 		apiPaths[`/_api${form.oapiPath}`] = {
-			[form.method]: {
-				operationId: form.name,
-				parameters: form.parameters,
-				requestBody: {
-					required: true,
-					content: {
-						"application/json": {
-							schema: form.inputSchema,
-						}
-					}
-				},
-				responses: {
-					"200": {
-						description: "Successful operation",
-					},
-					"400": {
-						description: "Invalid input",
-						content: {
-							"application/json": {
-						  		schema: { $ref:"#/components/schemas/error" }
-							}
-						},
-					},
-					"401": {
-						description: "Unauthorized",
-						content: {
-							"application/json": {
-						  		schema: { $ref:"#/components/schemas/error" }
-							}
-						},
-					},
-					"403": {
-						description: "Forbidden",
-						content: {
-							"application/json": {
-						  		schema: { $ref:"#/components/schemas/error" }
-							}
-						},
-					},
-					"404": {
-						description: "Target not found",
-						content: {
-							"application/json": {
-						  		schema: { $ref:"#/components/schemas/error" }
-							}
-						},
-					},
-					// @TODO rest of these
-				}
-			}
+			[form.method]: createFormApi(form)
 		}
 	}
 

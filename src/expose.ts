@@ -53,23 +53,6 @@ function prepareExpose(expose:TagBlock): ExposeDescriptor {
 				const cookies = ctx.GetCookies()
 				return { status:404, cookies, sendFile:"" }
 			}
-
-
-			// If the chain Would otherwise redirect before rendering
-			// the form we must assume that it is not visible and return
-			// the redirect.
-			//
-			// This would be for things such as redirecting to a login
-			// page when a session has expired.
-			const chainRedirect = ctx.GetRedirect()
-			if (chainRedirect) {
-				return {
-					status: 307,
-					cookies,
-					sendFile: "",
-					redirect: chainRedirect,
-				}
-			}
 			
 			// Extract globals from the Context and create a RenderResponse
 			const status = ctx.GetReturnCode()

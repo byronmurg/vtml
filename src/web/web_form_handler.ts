@@ -75,10 +75,14 @@ class WebFormHandler extends WebRouter {
 		client.setStatus(formRes.status)
 
 		if (formRes.status < 400) {
-			client.sendJson({
-				code: formRes.status,
-				message: formRes.error,
-			})
+			if (this.form.outputSchema) {
+				client.sendJson(formRes.output)
+			} else {
+				client.sendJson({
+					code: formRes.status,
+					message: formRes.error,
+				})
+			}
 		} else {
 			client.sendJson({})
 		} 

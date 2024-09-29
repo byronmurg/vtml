@@ -8,6 +8,7 @@ type Globals = {
 	redirect: string
 	returnCode: number
 	error?: ResponseError
+	apiOutput?: unknown
 }
 
 const initGlobals = (): Globals => ({
@@ -68,6 +69,10 @@ class FilterContext {
 		return this
 	}
 
+	SetApiOutput(v:unknown) {
+		this.globals.apiOutput = v
+	}
+
 	GetCookies() {
 		return {...this.globals.setCookies}
 	}
@@ -92,6 +97,10 @@ class FilterContext {
 
 	GetErrorMessage() {
 		return this.globals.error?.message
+	}
+
+	GetApiOutput() {
+		return this.globals.apiOutput
 	}
 
 

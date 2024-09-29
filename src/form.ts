@@ -63,8 +63,10 @@ type FormDescriptor = {
 	oapiPath: string
 	encoding: string
 	method: Method
+	setCookie: boolean
 
 	uploadFields: FileField[]
+	outputSchema?: SchemaObject
 
 	inputSchema: SchemaObject
 	parameters: ParameterObject[]
@@ -127,6 +129,14 @@ function prepareForm(postForm:TagBlock): FormDescriptor {
 	// Initialize validator
 	const validator = ajv.compile({ ...inputSchema, $async:true })
 
+	// Figure out if it will set a cookie
+	const setCookie = !!vAction.Find(utils.byName("v-set-cookie"))
+
+	// Find if it has an output tag
+	const outputTag = vAction.Find(utils.byName("v-output"))
+	const outputSchemaBody = outputTag?.requireOneTextChild()
+	const outputSchema = outputSchemaBody ? JSON.parse(outputSchemaBody) : undefined
+
 	/*
 	 * Create an executor to call this form with a parsed (but not validated) body
 	 */
@@ -165,29 +175,13 @@ function prepareForm(postForm:TagBlock): FormDescriptor {
 			if (! found) {
 				return { status:404, cookies, elements:[], error:DefaultError(404) }
 			}
-
-
-			// If the chain Would otherwise redirect before rendering
-			// the form we must assume that it is not visible and return
-			// the redirect.
-			//
-			// This would be for things such as redirecting to a login
-			// page when a session has expired.
-			const chainRedirect = ctx.GetRedirect()
-			if (chainRedirect) {
-				return {
-					status: 307,
-					cookies,
-					elements: [],
-					redirect: chainRedirect,
-				}
-			}
 			
 			// Extract globals from the Context and create a RenderResponse
 			const status = ctx.GetReturnCode()
 			const redirect = ctx.GetRedirect()
+			const output = ctx.GetApiOutput()
 
-			return { status, cookies, elements, redirect }
+			return { status, cookies, elements, redirect, output }
 
 		} catch (e:unknown) {
 			console.error(e)
@@ -221,8 +215,10 @@ function prepareForm(postForm:TagBlock): FormDescriptor {
 		parameters,
 		encoding,
 		uploadFields: fileFields,
+		setCookie,
 
 		inputSchema,
+		outputSchema,
 		execute,
 		executeFormEncoded,
 	}
