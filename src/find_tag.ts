@@ -12,7 +12,7 @@ export
 function findTagIfV(el:HTML.TagElement) {
 	const tag = findTag(el)
 	if (el.name.startsWith("v-") && !tag) {
-		throw Error(`Unknown VTML tag ${el.name}`)
+		throw Error(`Unknown VTML tag ${el.name} at ${el.filename}:${el.linenumber}`)
 	}
 	return tag
 }
