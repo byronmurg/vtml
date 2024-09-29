@@ -83,3 +83,50 @@ test("form advanced", async () => {
 		required: true,
 	})
 })
+
+test("selects", async () => {
+
+	const exampleHTML = `
+		<form method="POST" v-name="foo" >
+			<select name="enum" >
+				<option>one</option>
+				<option value="2" >two</option>
+			</select>
+
+			<v-json target=$v >22</v-json>
+
+			<select name="dynamic" maxlength=32 >
+				<option>one</option>
+				<option value=$v >two</option>
+			</select>
+
+			<v-action/>
+		</form>
+	`
+
+	const doc = VtmlDocument.LoadFromString(exampleHTML)
+
+	const form = doc.forms.find((form) => form.name === "foo")
+
+	if (! form) {
+		throw Error(`Form not found`)
+	}
+
+	const inputSchema = form.inputSchema
+
+	const enumProp = inputSchema.properties?.['enum']
+
+	if (! enumProp) {
+		throw Error(`Enum prop not found`)
+	}
+
+	expect(enumProp).toMatchObject({ type:"string", enum:["one", "2"] })
+
+	const dynamicProp = inputSchema.properties?.['dynamic']
+
+	if (! dynamicProp) {
+		throw Error(`Dynamic prop not found`)
+	}
+
+	expect(dynamicProp).toMatchObject({ type:"string", maxLength:32 })
+})

@@ -3,6 +3,7 @@ import type VtmlDocument from "./document"
 import * as OAPI from "openapi3-ts/oas31"
 import {matchInputs} from "./form"
 import type {FormDescriptor} from "./form"
+import * as Vars from "./variables"
 export * from "openapi3-ts/oas31"
 
 function createExoticFormat(input:TagBlock, format:string): [OAPI.SchemaObject, boolean] {
@@ -138,10 +139,31 @@ function createSelectSchema(input:TagBlock): [OAPI.SchemaObject, boolean] {
 		}
 	}
 
+	// If any of the enum options contains a template then
+	// the select is considered dynamic and cannot be an enum
+	const isDynamic = enumOptions.find((op) => Vars.basicTemplate.findTemplates(op).length)
+
 	const enumProperty: OAPI.SchemaObject = {
 		type: "string",
-		enum: enumOptions,
+		enum: isDynamic ? undefined: enumOptions,
 	}
+
+	// The format can be set by the tag itself.
+	const format = input.attr("format")
+	if (format) {
+		enumProperty.format = format
+	}
+
+	const pattern = input.attr("pattern")
+	if (pattern) {
+		enumProperty.pattern = pattern
+	}
+
+	const maxLength = input.optNumAttr("maxlength") || input.optNumAttr("v-maxsize")
+	if (maxLength) {
+		enumProperty.maxLength = maxLength
+	}
+
 
 	const isMulti = input.boolAttr("multiple")
 

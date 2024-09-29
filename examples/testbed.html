@@ -86,12 +86,20 @@
 				
 				<v-json target="$foo" >"FOO"</v-json>
 
-				<select value="$foo" >
-					<optgroup>
-						<option>BAR</option>
-						<option>FOO</option>
-					</optgroup>
-				</select>
+				<form v-name="select_test" >
+					<select name="foo" value=$foo maxlength=32 >
+						<optgroup>
+							<option>BAR</option>
+							<option value=$byron_info >FOO</option>
+						</optgroup>
+					</select>
+
+					<v-action>
+						<v-nodejs>
+							console.log($.body)
+						</v-nodejs>
+					</v-action>
+				</form>
 
 			</v-page>
 
@@ -149,21 +157,6 @@
 				</v-with>
 			</v-page>
 
-			<v-page path="/todos">
-				<v-sql target="$todos"> select * from simple.todos </v-sql>
-
-				<v-for-each source="$todos" as="$todo">
-					<p>$todo.text</p>
-
-					<form v-name="do_stuff">
-						<button type="submit">GO!</button>
-
-						<v-action>
-							<v-nodejs> console.log("I'm a form") </v-nodejs>
-						</v-action>
-					</form>
-				</v-for-each>
-			</v-page>
 		</main>
 	</body>
 </html>

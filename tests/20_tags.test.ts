@@ -238,7 +238,7 @@ test("v-page", async () => {
 test(`select`, async () => {
 	const exampleHTML = `
 		<v-json target="$foo" >"foo"</v-json>
-		<select value="$foo" >
+		<select name="foo_test" value="$foo" >
 			<option>foo</option>
 			<option>bar</option>
 		</select>
@@ -248,7 +248,7 @@ test(`select`, async () => {
 
 	const output = await doc.renderLoaderMl(ctx)
 
-	expect(output).toBe(`<select value="foo"><option selected="yes">foo</option><option>bar</option></select>`)
+	expect(output).toBe(`<select name="foo_test" value="foo"><option selected="yes">foo</option><option>bar</option></select>`)
 })
 
 test(`v-set-status`, async () => {
