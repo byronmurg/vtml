@@ -58,5 +58,5 @@ test("redefining a variable throws an error", async () => {
 
 	const fnc = () => RenderTest(testVtml)
 
-	expect(fnc).toThrow(`one redefined in <string>:3`)
+	expect(fnc).toThrow(`one redefined in v-json at <string>:3`)
 })

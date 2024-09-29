@@ -82,7 +82,7 @@ abstract class TagBlockBase {
 	error(message:string): never {
 		const linenumber = this.el.linenumber
 		const filename = this.el.filename
-		throw Error(`${message} in ${filename}:${linenumber}`)
+		throw Error(`${message} in ${this.el.name} at ${filename}:${linenumber}`)
 	}
 
 	hasAttr(name:string): boolean {
