@@ -1,12 +1,11 @@
 import uniq from "lodash/uniq"
 
-function getVarFromTemplate(str:string): string {
+function getVarFromTemplate(str: string): string {
 	const m = str.match(/\w+/)
 	return m ? m[0] : ""
 }
 
-
-function notRootVar(str:string): boolean {
+function notRootVar(str: string): boolean {
 	return !str.startsWith("$.")
 }
 
@@ -18,12 +17,12 @@ type TemplateSetOptions = {
 class TemplateSet {
 	constructor(private options: TemplateSetOptions) {}
 
-	private matchVars(str:string, cbk:(s:string) => string): string {
+	private matchVars(str: string, cbk: (s: string) => string): string {
 		let ret = ""
 		let inEscape = false
 		let currVar = ""
 		for (const c of str) {
-			if (c === '\\') {
+			if (c === "\\") {
 				if (inEscape) {
 					ret += c
 					inEscape = false
@@ -70,76 +69,76 @@ class TemplateSet {
 		return ret
 	}
 
-	sanitize(str:string): string {
-		return this.matchVars(str, (v) => { throw Error(`Variable found in sanitize ${v}`) })
+	sanitize(str: string): string {
+		return this.matchVars(str, (v) => {
+			throw Error(`Variable found in sanitize ${v}`)
+		})
 	}
 
-	replaceStr(str:string, cbk:(s:string) => string): string {
+	replaceStr(str: string, cbk: (s: string) => string): string {
 		return this.matchVars(str, cbk)
 	}
 
-	findTemplates(str:string): string[] {
-		const vars:string[] = []
-		this.matchVars(str, (v) => {vars.push(v); return ""})
+	findTemplates(str: string): string[] {
+		const vars: string[] = []
+		this.matchVars(str, (v) => {
+			vars.push(v)
+			return ""
+		})
 		return vars
 	}
 
-	findVars(str:string): string[] {
-		 const vars = this.findTemplates(str)
+	findVars(str: string): string[] {
+		const vars = this.findTemplates(str)
 			.filter(notRootVar)
 			.map(getVarFromTemplate)
 		return uniq(vars)
 	}
 
-	findVarsInMap(map:Record<string, unknown>) {
-		let vars:string[] = []
+	findVarsInMap(map: Record<string, unknown>) {
+		let vars: string[] = []
 
+		for (const k in map) {
+			const v = map[k]
 
-       for (const k in map) {
-               const v = map[k]
+			if (typeof v === "string") {
+				const attrVars = this.findVars(v)
 
-               if (typeof(v) === "string") {
-                       const attrVars = this.findVars(v)
+				vars = vars.concat(attrVars)
+			}
+		}
 
-                       vars = vars.concat(attrVars)
-               }
-       }
-
-	   return uniq(vars)
+		return uniq(vars)
 	}
 
-	findTemplatesInMap(map:Record<string, unknown>) {
-		let vars:string[] = []
+	findTemplatesInMap(map: Record<string, unknown>) {
+		let vars: string[] = []
 
+		for (const k in map) {
+			const v = map[k]
 
-       for (const k in map) {
-               const v = map[k]
+			if (typeof v === "string") {
+				const attrVars = this.findTemplates(v)
 
-               if (typeof(v) === "string") {
-                       const attrVars = this.findTemplates(v)
+				vars = vars.concat(attrVars)
+			}
+		}
 
-                       vars = vars.concat(attrVars)
-               }
-       }
-
-	   return uniq(vars)
+		return uniq(vars)
 	}
 }
 
-export
-const basicTemplate = new TemplateSet({
+export const basicTemplate = new TemplateSet({
 	validCharacters: /[\w.[\]-]/,
 	allowBrackets: true,
 })
 
-export
-const nodeTemplate = new TemplateSet({
+export const nodeTemplate = new TemplateSet({
 	validCharacters: /\w/,
 	allowBrackets: false,
 })
 
-export
-const scriptTemplate = new TemplateSet({
+export const scriptTemplate = new TemplateSet({
 	validCharacters: /[\w.]/,
 	allowBrackets: false,
 })
