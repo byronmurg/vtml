@@ -24,10 +24,17 @@
 		<main class="container">
 
 			<v-page path="/stuff" >
-				<v-nodejs target=$stuff >
-					return YAML.stringify({ some:"struff", more:"stuff" })
-				</v-nodejs>
-				<pre>$stuff</pre>
+
+				<form v-name="stuff" >
+					<input type="text" name="name" />
+
+					<v-action>
+						<v-nodejs>
+							console.log($.body.name)
+						</v-nodejs>
+					</v-action>
+				</form>
+
 			</v-page>
 
 

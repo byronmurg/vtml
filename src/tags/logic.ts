@@ -17,6 +17,7 @@ function CreateLogicTag(tag:LogicTag): VtmlTag {
 			const check = tag.prepareLogic(block)
 
 			return {
+				injectGlobals: () => [],
 				preceeds: (ctx) => Promise.resolve(ctx),
 				contains: async (ctx) => {
 					const match = await check(ctx)

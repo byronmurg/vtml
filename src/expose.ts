@@ -32,7 +32,7 @@ function prepareExpose(expose:TagBlock): ExposeDescriptor {
 			const preCtx = FilterContext.Init(rootDataset)
 
 			// Execute chain
-			const {ctx, found} = await isolate(preCtx)
+			const {ctx, found} = await isolate.run(preCtx)
 			const cookies = ctx.GetCookies()
 
 			// If any elements in the chain set the error

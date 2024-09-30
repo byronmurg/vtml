@@ -1,18 +1,17 @@
-import type {Branch, Block, TagBlock, ChainResult, BlockReport, IsolateReponse} from "../types"
+import type {Branch, Block, TagBlock, ChainResult, BlockReport, IsolateReponse, Chain} from "../types"
 import * as HTML from "../html"
 import * as Vars from "../variables"
+import * as GlobalVars from "../global_variables"
 import FilterContext from "../filter_context"
 
 export default
 class TextBlock implements Block {
 
-	private bodyVars: string[]
-	private bodyTemplates: string[]
+	private bodyVars: Vars.VarMatches
 	
 
 	constructor(private el:HTML.TextElement, private seq:number, private parent:Block) {
 		this.bodyVars = this.getVarsInBody()
-		this.bodyTemplates = this.getTemplatesInBody()
 	}
 
 	getName() {
@@ -21,15 +20,11 @@ class TextBlock implements Block {
 
 
 	isDynamic(): boolean {
-		return this.bodyTemplates.length > 0
+		return this.bodyVars.all.length > 0
 	}
 
-	getVarsInBody(): string[] {
-		return Vars.basicTemplate.findVars(this.el.text)
-	}
-
-	getTemplatesInBody(): string[] {
-		return Vars.basicTemplate.findTemplates(this.el.text)
+	getVarsInBody() {
+		return Vars.basicTemplate.findAllVars(this.el.text)
 	}
 
 	async Render(ctx:FilterContext): Promise<Branch> {
@@ -50,11 +45,20 @@ class TextBlock implements Block {
 		return resp
 	}
 
-	checkConsumers(inputs:string[]) {
-		const consumes = this.bodyVars
-		for (const consume of consumes) {
+	checkConsumers(inputs:string[], globals:string[]) {
+		for (const consume of this.bodyVars.locals) {
 			if (!inputs.includes(consume)) {
 				this.error(`${consume} not defined`)
+			}
+		}
+
+		for (const glob of this.bodyVars.globals) {
+			if (!GlobalVars.isValidGlobal(glob)) {
+				this.error(`invalid global ${glob}`)
+			}
+
+			if (GlobalVars.isProvidedGlobal(glob) && !globals.includes(glob)) {
+				this.error(`global ${glob} not found`)
 			}
 		}
 	}
@@ -64,7 +68,8 @@ class TextBlock implements Block {
 			id: `#text(${this.seq})`,
 			provides: [],
 			injects: [],
-			consumes: this.bodyVars,
+			consumes: this.bodyVars.locals,
+			globals: this.bodyVars.globals,
 			doesConsumeError: false,
 		}
 	}
@@ -94,7 +99,8 @@ class TextBlock implements Block {
 	error(message:string): never {
 		const linenumber = this.el.linenumber
 		const filename = this.el.filename
-		throw Error(`${message} in ${filename}:${linenumber}`)
+		const parentName = this.parent.getName()
+		throw Error(`${message} in ${parentName} at ${filename}:${linenumber}`)
 	}
 
 	CheckContains(): Promise<ChainResult> {
@@ -111,7 +117,7 @@ class TextBlock implements Block {
 	}
 
 	// @NOTE Can never contain children
-	createChildChain(): (ctx:FilterContext) => Promise<ChainResult> {
+	createChildChain(): Chain {
 		throw Error(`createChildChain called in TextBlock`)
 	}
 
@@ -120,8 +126,8 @@ class TextBlock implements Block {
 
 		const parentChain = this.parent.createChildChain(this.seq, report.consumes)
 
-		return async (ctx:FilterContext): Promise<IsolateReponse> => {
-			const parentResult = await parentChain(ctx)
+		const run = async (ctx:FilterContext): Promise<IsolateReponse> => {
+			const parentResult = await parentChain.run(ctx)
 			if (!parentResult.found) {
 				return { found:false, elements:[], ctx:parentResult.ctx }
 			}
@@ -129,6 +135,10 @@ class TextBlock implements Block {
 			const renderOutput = await this.Render(parentResult.ctx)
 			return { found: true, ctx:renderOutput.ctx, elements:renderOutput.elements }
 		}
+
+		const globals = report.globals.concat(parentChain.globals)
+
+		return { run, globals }
 	}
 
 	findAncestor(check:(el:TagBlock) => boolean): TagBlock|undefined {

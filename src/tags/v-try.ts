@@ -11,6 +11,7 @@ const VTry:VtmlTag = {
 
 	prepare(block) {
 		return {
+			injectGlobals: () => [],
 			preceeds: (ctx:FilterContext) => Promise.resolve(ctx),
 			contains: (ctx) => Promise.resolve({ctx, found:true}),
 

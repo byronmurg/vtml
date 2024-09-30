@@ -13,6 +13,7 @@ const VCatch: VtmlTag = {
 		return {
 			preceeds: (ctx:FilterContext) => Promise.resolve(ctx.UnsetError()),
 			contains: (ctx) => Promise.resolve({ctx, found:true}),
+			injectGlobals: () => [],
 
 			async render(ctx) {
 				if (ctx.InError()) {

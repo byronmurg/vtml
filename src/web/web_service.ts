@@ -180,6 +180,7 @@ class WebService extends WebRouter {
 		<html lang="en">
 		  <head>
 			<meta charset="utf-8">
+			<meta name="referrer" content="same-origin">
 			<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 			<title>${this.vtmlDocument.title} API</title>
 		  
@@ -189,9 +190,10 @@ class WebService extends WebRouter {
 		  <body>
 
 			<elements-api
-			  apiDescriptionUrl="_schema.json"
+			  apiDescriptionUrl="/_api/_schema.json"
 			  router="hash"
 			  layout="responsive"
+			  tryItCredentialsPolicy="same-origin"
 			/>
 
 		  </body>

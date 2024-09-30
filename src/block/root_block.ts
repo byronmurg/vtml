@@ -28,7 +28,7 @@ class RootBlock implements Block {
 	}
 
 	checkConsumers() {
-		this.children.checkAllConsumer([])
+		this.children.checkAllConsumer([], [])
 	}
 
 	Find(check:(el:TagBlock) => boolean): TagBlock|undefined {
@@ -69,17 +69,20 @@ class RootBlock implements Block {
 	}
 
 	Isolate() {
-		return async (ctx:FilterContext) => {
+		const run = async (ctx:FilterContext) => {
 			const renderOutput = await this.Render(ctx)
 			return { found:true, ...renderOutput }
 		}
+
+		return { run, globals:[] }
 	}
 
 	createChildChain(seq:number, consumes:string[]) {
 		// Just create and execute the preceed chain assuming it was found.
 		const preceedChain = this.children.createContainerChain(seq, consumes)
-		return (initCtx:FilterContext) => preceedChain.collection.runPreceed(initCtx)
+		const run = (initCtx:FilterContext) => preceedChain.collection.runPreceed(initCtx)
 			.then((ctx) => ({ ctx, found:true }))
+		return { run, globals:[] }
 
 	}
 

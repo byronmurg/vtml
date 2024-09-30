@@ -1,17 +1,42 @@
 import uniq from "lodash/uniq"
+import negate from "lodash/negate"
 
 function getVarFromTemplate(str: string): string {
-	const m = str.match(/\w+/)
-	return m ? m[0] : ""
+	if (str.startsWith("$.")) {
+		return str
+	} else {
+		const m = str.match(/\$\w+/)
+		return m ? m[0] : ""
+	}
 }
 
-function notRootVar(str: string): boolean {
-	return !str.startsWith("$.")
+function isRootVar(str: string): boolean {
+	return str.startsWith("$.")
+}
+
+const notRootVar = negate(isRootVar)
+
+const filterLocals = (arr:string[]) => arr.filter(notRootVar).map(getVarFromTemplate)
+const filterGlobals = (arr:string[]) => arr.filter(isRootVar).map(getVarFromTemplate)
+
+function splitTemplates(arr:string[]): VarMatches {
+	return {
+		all: arr,
+		locals: filterLocals(arr),
+		globals: filterGlobals(arr),
+	}
 }
 
 type TemplateSetOptions = {
 	validCharacters: RegExp
 	allowBrackets: boolean
+}
+
+export
+type VarMatches = {
+	all: string[],
+	locals: string[]
+	globals: string[]
 }
 
 class TemplateSet {
@@ -79,7 +104,7 @@ class TemplateSet {
 		return this.matchVars(str, cbk)
 	}
 
-	findTemplates(str: string): string[] {
+	private findTemplates(str: string): string[] {
 		const vars: string[] = []
 		this.matchVars(str, (v) => {
 			vars.push(v)
@@ -88,30 +113,17 @@ class TemplateSet {
 		return vars
 	}
 
-	findVars(str: string): string[] {
-		const vars = this.findTemplates(str)
-			.filter(notRootVar)
-			.map(getVarFromTemplate)
-		return uniq(vars)
+	findAllVars(str:string): VarMatches {
+		const templates = this.findTemplates(str)
+		return splitTemplates(templates)
 	}
 
-	findVarsInMap(map: Record<string, unknown>) {
-		let vars: string[] = []
-
-		for (const k in map) {
-			const v = map[k]
-
-			if (typeof v === "string") {
-				const attrVars = this.findVars(v)
-
-				vars = vars.concat(attrVars)
-			}
-		}
-
-		return uniq(vars)
+	findAllVarsInMap(map: Record<string, unknown>) {
+		const templates = this.findTemplatesInMap(map)
+		return splitTemplates(templates)
 	}
 
-	findTemplatesInMap(map: Record<string, unknown>) {
+	private findTemplatesInMap(map: Record<string, unknown>) {
 		let vars: string[] = []
 
 		for (const k in map) {

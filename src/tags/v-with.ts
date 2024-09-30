@@ -17,6 +17,7 @@ const VWith: VtmlTag = {
 		const isFound = (ctx:FilterContext) => ctx.getKey(source) !== undefined
 
 		return {
+			injectGlobals: () => [],
 			preceeds: (ctx) => Promise.resolve(ctx),
 
 			contains: (ctx) => {

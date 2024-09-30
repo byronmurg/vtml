@@ -16,7 +16,7 @@ test("error thrown when undefined", async () => {
 		$foo
 	`)
 
-	expect(fnc).toThrow(`foo not defined in <string>:1`)
+	expect(fnc).toThrow(`foo not defined in <root> at <string>:1`)
 })
 
 test("no error thrown when referencing root variable", async () => {

@@ -9,6 +9,7 @@ import type FilterContext from "../filter_context"
 type ChainReport = {
 	collection: BlockCollection
 	consumes: string[]
+	globals: string[]
 }
 
 type ChildMeta = {
@@ -86,6 +87,7 @@ class BlockCollection {
 		
 		const next = seq-1
 		const chain:Block[] = []
+		let globals: string[] = []
 
 		// Loop backwards through the chain
 	 	for (let i = next; i >= 0; i--) {
@@ -101,11 +103,14 @@ class BlockCollection {
 				// And add it's requirements to
 				// our own
 				consumes = uniq(consumes.concat(report.consumes))
+
+				// Also add it's globals
+				globals = uniq(globals.concat(report.globals))
 			}
 		}
 
 		const newCollection = new BlockCollection(chain.reverse(), this.parent)
-		return { consumes, collection:newCollection }
+		return { consumes, collection:newCollection, globals }
 	}
 
 
@@ -116,6 +121,7 @@ class BlockCollection {
 
 		const childrenProvide: string[] = []
 		const consumes: string[] = []
+		const globals: string[] = []
 		let doesConsumeError = false
 
 		for (const child of this.children) {
@@ -133,6 +139,8 @@ class BlockCollection {
 				...pullAll(report.consumes, childrenProvide)
 			)
 
+			globals.push(...report.globals)
+
 
 			// Add the provides for this element for the
 			// next cycle.
@@ -143,15 +151,16 @@ class BlockCollection {
 			id: "<block>",
 			doesConsumeError,
 			consumes,
+			globals,
 			provides: [],
 			injects: [],
 		}
 
 	}
 
-	checkAllConsumer(inputs:string[]) {
+	checkAllConsumer(inputs:string[], globals:string[]) {
 		for (const child of this.children) {
-			child.checkConsumers(inputs)
+			child.checkConsumers(inputs, globals)
 			const report = child.report()
 			inputs = inputs.concat(report.provides)
 		}

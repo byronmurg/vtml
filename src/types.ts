@@ -86,6 +86,7 @@ type VtmlTag = TagCommon & {
 	scriptTemplate?: boolean
 
 	prepare: (block:VtmlBlock) => {
+		injectGlobals: () => string[]
 		contains: (ctx:FilterContext) => Promise<ChainResult>
 		preceeds: (ctx:FilterContext) => Promise<FilterContext>
 		render: (ctx:FilterContext) => Promise<Branch>
@@ -98,6 +99,18 @@ type VtmlTag = TagCommon & {
 /////////////////////
 
 export type IsolateReponse = ChainResult & Branch
+
+export
+type Isolate = {
+	run: (ctx:FilterContext) => Promise<IsolateReponse>
+	globals: string[]
+}
+
+export
+type Chain = {
+	run: (ctx:FilterContext) => Promise<ChainResult>
+	globals: string[]
+}
 
 /////////////////////
 // Blocks
@@ -119,9 +132,9 @@ interface Block {
 
 	CheckPreceeds(ctx:FilterContext): Promise<FilterContext>
 
-	Isolate(): (ctx:FilterContext) => Promise<IsolateReponse>
+	Isolate(): Isolate
 
-	createChildChain(seq:number, consumes:string[]): (ctx:FilterContext) => Promise<ChainResult>
+	createChildChain(seq:number, consumes:string[]): Chain
 
 	getRenderDescription(): RenderDescription[]
 
@@ -132,7 +145,7 @@ interface Block {
 	report(): BlockReport
 
 	// Check all variables are provided
-	checkConsumers(input:string[]): void
+	checkConsumers(input:string[], globals:string[]): void
 
 	// Is this a dynamic tag
 	isDynamic(): boolean
@@ -163,6 +176,7 @@ type BlockReport = {
 	provides: string[]
 	consumes: string[]
 	injects: string[]
+	globals: string[]
 
 	doesConsumeError: boolean
 }

@@ -12,8 +12,9 @@ const inbuiltVars: Record<string, unknown> = {
 export default
 function prepare(body:string) {
 	// Find any ctx variables used by the js body
-	const injectVars = Vars.nodeTemplate.findVars(body)
-		.map((v) => "$"+v) // Add the dollar back on
+	const {locals} = Vars.nodeTemplate.findAllVars(body)
+	const injectVars = locals
+
 	const inbuiltKeys = Object.keys(inbuiltVars)
 
 	const buildFunction = () => {

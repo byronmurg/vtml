@@ -1,7 +1,9 @@
 import TagBlockBase from "./tag_block_base"
 import type {Branch, TagBlock, ChainResult, BlockReport, IsolateReponse, AttributeSpec, RenderDescription, Block} from "../types"
+
 import uniq from "lodash/uniq"
 import * as Vars from "../variables"
+import * as GlobalVars from "../global_variables"
 import * as HTML from "../html"
 import FilterContext from "../filter_context"
 
@@ -33,8 +35,8 @@ class InbuiltBlock extends TagBlockBase implements TagBlock {
 	constructor(el:HTML.TagElement, seq:number, parent:Block) {
 		super(el, seq, parent)
 
-		const myVars = this.getTemplatesInAttributes()
-		this.dynamic = (myVars.length > 0) || this.areAnyChildrenDynamic()
+		const myVars = this.getVarsInAttributes()
+		this.dynamic = (myVars.all.length > 0) || this.areAnyChildrenDynamic()
 
 		if (!this.dynamic) {
 			this.constant = this.RenderConstant()
@@ -46,16 +48,26 @@ class InbuiltBlock extends TagBlockBase implements TagBlock {
 		return this.dynamic
 	}
 
-	checkConsumers(inputs:string[]) {
+	checkConsumers(inputs:string[], globals:string[]) {
 		const consumes = this.getVarsInAttributes()
 
-		for (const consume of consumes) {
+		for (const consume of consumes.locals) {
 			if (!inputs.includes(consume)) {
 				this.error(`${consume} not defined`)
 			}
 		}
 
-		this.children.checkAllConsumer(inputs)
+		for (const glob of consumes.globals) {
+			if (!GlobalVars.isValidGlobal(glob)) {
+				this.error(`invalid global ${glob}`)
+			}
+
+			if (GlobalVars.isProvidedGlobal(glob) && !globals.includes(glob)) {
+				this.error(`global ${glob} not found`)
+			}
+		}
+
+		this.children.checkAllConsumer(inputs, globals)
 	}
 
 	report(): BlockReport {
@@ -64,18 +76,17 @@ class InbuiltBlock extends TagBlockBase implements TagBlock {
 		const id = `${this.el.name}(${this.seq})`
 
 		return {
-			...childReport,
 			id,
-			consumes: uniq(childReport.consumes.concat(consumeVars))
+			provides: [],
+			injects: [],
+			consumes: uniq(childReport.consumes.concat(consumeVars.locals)),
+			globals: uniq(childReport.globals.concat(consumeVars.globals)),
+			doesConsumeError: childReport.doesConsumeError,
 		}
 	}
 
 	getVarsInAttributes() {
-		return Vars.basicTemplate.findVarsInMap(this.el.attributes)
-	}
-
-	getTemplatesInAttributes() {
-		return Vars.basicTemplate.findTemplatesInMap(this.el.attributes)
+		return Vars.basicTemplate.findAllVarsInMap(this.el.attributes)
 	}
 
 	async Render(ctx:FilterContext): Promise<Branch> {
@@ -132,8 +143,8 @@ class InbuiltBlock extends TagBlockBase implements TagBlock {
 		const blockConsumes = consumes.concat(preceedChain.consumes)
 		const parentChain = this.parent.createChildChain(this.seq, blockConsumes)
 
-		return async (ctx:FilterContext): Promise<ChainResult> => {
-			const parentRes = await parentChain(ctx)
+		const run = async (ctx:FilterContext): Promise<ChainResult> => {
+			const parentRes = await parentChain.run(ctx)
 			if (!parentRes.found) {
 				return parentRes
 			}
@@ -142,6 +153,9 @@ class InbuiltBlock extends TagBlockBase implements TagBlock {
 
 			return { found:true, ctx:preceedRes }
 		}
+
+		const globals = parentChain.globals.concat(preceedChain.globals)
+		return { run, globals:globals }
 	}
 
 	Isolate() {
@@ -149,8 +163,8 @@ class InbuiltBlock extends TagBlockBase implements TagBlock {
 
 		const parentChain = this.parent.createChildChain(this.seq, report.consumes)
 
-		return async (ctx:FilterContext): Promise<IsolateReponse> => {
-			const parentResult = await parentChain(ctx)
+		const run = async (ctx:FilterContext): Promise<IsolateReponse> => {
+			const parentResult = await parentChain.run(ctx)
 			if (!parentResult.found) {
 				return { found:false, elements:[], ctx:parentResult.ctx }
 			}
@@ -158,6 +172,9 @@ class InbuiltBlock extends TagBlockBase implements TagBlock {
 			const renderOutput = await this.Render(parentResult.ctx)
 			return { found: true, ctx:renderOutput.ctx, elements:renderOutput.elements }
 		}
+
+		const globals = report.globals.concat(parentChain.globals)
+		return { run, globals }
 	}
 
 }

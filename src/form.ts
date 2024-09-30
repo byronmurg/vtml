@@ -1,5 +1,5 @@
-import {createPostFormApiSchema, createPathParameters, expressToOapiPath} from "./oapi"
-import type {SchemaObject, ParameterObject} from "./oapi"
+import CreateFormInputSchema from "./form_jsonschema"
+import type {SchemaObject} from "./oapi"
 import type {RootDataset, BodyType, TagBlock, FormResult} from "./types"
 import * as utils from "./utils"
 import Ajv, {ValidationError} from "ajv"
@@ -30,6 +30,7 @@ function matchInputs(block:TagBlock): boolean {
 	return inputTypes.includes(name) && !excludedTypes.includes(type)
 }
 
+export
 function findInputs(block:TagBlock){
 	return block.FindAll(matchInputs)
 }
@@ -60,18 +61,37 @@ export
 type FormDescriptor = {
 	name: string
 	path: string
-	oapiPath: string
 	encoding: string
 	method: Method
+
 	setCookie: boolean
+	usedCookies: string[]
+	usedHeaders: string[]
+	usedQueryVars: string[]
 
 	uploadFields: FileField[]
 	outputSchema?: SchemaObject
 
 	inputSchema: SchemaObject
-	parameters: ParameterObject[]
 	execute: (rootDataset:RootDataset, body:BodyType) => Promise<FormResult>
 	executeFormEncoded: (rootDataset:RootDataset, body:Record<string, string>, files:FileMap) => Promise<FormResult>
+}
+
+function findGlobals(globals:string[], prefix:string) {
+	const ret:string[] = []
+	const regex = new RegExp(`\\$\\.${prefix}\\.(\\w+)`)
+	for (const globalVar of globals) {
+		if (globalVar.startsWith(`$.${prefix}.`)) {
+			const match = globalVar.match(regex)
+			if (! match) {
+				throw Error(`Malformed ${prefix} name ${globalVar}`)
+			}
+			const cookieName = match[1]
+
+			ret.push(cookieName)
+		}
+	}
+	return ret
 }
 
 export default
@@ -97,25 +117,19 @@ function prepareForm(postForm:TagBlock): FormDescriptor {
 		postForm.error(`Form action ${path} must extend it's parent page ${pagePath}`)
 	}
 
-	// The oapi path is slightly different
-	const oapiPath = expressToOapiPath(path)
-
 	// Find the action element
 	const vAction = postForm.Find(utils.byName("v-action"))
 
 	// Throw if no action was found (it wouldn't do anything)
 	if (! vAction) {
-		throw Error(`No v-action defined in vtml form`)
+		postForm.error(`No v-action defined`)
 	}
 
 	// Create the action isolate
 	const isolate = vAction.Isolate()
 
 	// Create OAPI schema
-	const inputSchema = createPostFormApiSchema(postForm)
-
-	// Create OAPI parameters
-	const parameters = createPathParameters(pagePath)
+	const inputSchema = CreateFormInputSchema(postForm)
 
 	// Find all relevent inputs
 	const formInputs = findInputs(postForm)
@@ -137,6 +151,11 @@ function prepareForm(postForm:TagBlock): FormDescriptor {
 	const outputSchemaBody = outputTag?.requireOneTextChild()
 	const outputSchema = outputSchemaBody ? JSON.parse(outputSchemaBody) : undefined
 
+	// Find any globals required by the form
+	const usedCookies = findGlobals(isolate.globals, "cookies")
+	const usedQueryVars = findGlobals(isolate.globals, "query")
+	const usedHeaders = findGlobals(isolate.globals, "headers")
+
 	/*
 	 * Create an executor to call this form with a parsed (but not validated) body
 	 */
@@ -153,7 +172,7 @@ function prepareForm(postForm:TagBlock): FormDescriptor {
 
 			// Execute the chain, which is all elements above or
 			// preceeding this form.
-			const {elements, found, ctx} = await isolate(preCtx)
+			const {elements, found, ctx} = await isolate.run(preCtx)
 
 			const cookies = ctx.GetCookies()
 
@@ -211,11 +230,13 @@ function prepareForm(postForm:TagBlock): FormDescriptor {
 		name: xName,
 		path,
 		method,
-		oapiPath,
-		parameters,
 		encoding,
 		uploadFields: fileFields,
+
 		setCookie,
+		usedCookies,
+		usedHeaders,
+		usedQueryVars,
 
 		inputSchema,
 		outputSchema,

@@ -6,6 +6,7 @@ import pullAll from "lodash/pullAll"
 import * as Vars from "../variables"
 import FilterContext from "../filter_context"
 import * as utils from "../utils"
+import * as GlobalVars from "../global_variables"
 
 export default
 class VtmlBlock extends TagBlockBase implements TagBlock {
@@ -19,7 +20,7 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 	}
 
 	private prepare(tag:VtmlTag) {
-		try {	
+		try {
 			return tag.prepare(this)
 		} catch (e) {
 			this.error(e instanceof Error ? e.message : "unknown error")
@@ -44,7 +45,7 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 		return { ctx, elements:[resp] }
 	}
 
-	checkConsumers(inputs:string[]) {
+	checkConsumers(inputs:string[], globals:string[]) {
 		const localReport = this.getLocalReport()
 		for (const consume of localReport.consumes) {
 			if (!inputs.includes(consume)) {
@@ -58,8 +59,20 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 			}
 		}
 
+		for (const glob of localReport.globals) {
+			if (!GlobalVars.isValidGlobal(glob)) {
+				this.error(`invalid global ${glob}`)
+			}
+
+			if (GlobalVars.isProvidedGlobal(glob) && !globals.includes(glob)) {
+				this.error(`global ${glob} not found`)
+			}
+		}
+
 		const childInputs = inputs.concat(localReport.injects)
-		this.children.checkAllConsumer(childInputs)
+		const injectGlobals = this._prepared.injectGlobals()
+		const childGlobals = globals.concat(injectGlobals)
+		this.children.checkAllConsumer(childInputs, childGlobals)
 	}
 
 	report(): BlockReport {
@@ -70,12 +83,15 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 			pullAll(childReport.consumes, localReport.injects)
 		)
 
+		const globals = localReport.globals.concat(childReport.globals)
+
 		const doesConsumeError = childReport.doesConsumeError || localReport.doesConsumeError
 
 		return {
 			id: `${this.el.name}(${this.seq})`,
 			provides: localReport.provides,
 			consumes: uniq(consumes),
+			globals: uniq(globals),
 			injects: localReport.injects,
 			doesConsumeError,
 		}
@@ -85,25 +101,27 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 		const consumes: string[] = []
 		const provides: string[] = []
 		const injects: string[] = []
+		const allGlobals: string[] = []
 
 		for (const k in this.el.attributes) {
 			const value = this.el.attributes[k]
 
 			if (!value) continue
 
-			const vars = Vars.basicTemplate.findVars(value.toString())
+			const {locals, globals} = Vars.basicTemplate.findAllVars(value.toString())
 
-			if (!vars.length) continue
+			if (!locals.length) continue
 
 			const type = this.tag.attributes[k] || {}
 			if (type.special) continue
 
 			if (type.target) {
-				provides.push(...vars)
+				provides.push(...locals)
 			} else if (type.inject) {
-				injects.push(...vars)
+				injects.push(...locals)
 			} else {
-				consumes.push(...vars)
+				consumes.push(...locals)
+				allGlobals.push(...globals)
 			}
 		}
 
@@ -112,7 +130,7 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 
 		if (this.tag.consumesError) {
 			consumes.push(`!thrown_error`)
-			injects.push("error")
+			injects.push("$error")
 		}
 
 		if (this.tag.providesError) {
@@ -123,6 +141,7 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 			id: `${this.el.name}(${this.seq})`,
 			provides: uniq(provides),
 			consumes: uniq(consumes),
+			globals: uniq(allGlobals),
 			injects: uniq(injects),
 			doesConsumeError: this.tag.consumesError || false,
 		}
@@ -140,18 +159,18 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 					this.error(`Missing required attribute '${k}'`)
 				}
 			} else {
-				const vars = Vars.basicTemplate.findTemplates(value.toString())
+				const vars = Vars.basicTemplate.findAllVars(value.toString())
 
-				if (type.source && vars.length !== 1) {
+				if (type.source && vars.all.length !== 1) {
 					this.error(`Source attributes must select just one variable`)
 				}
 
-				if (type.special && vars.length > 0) {
+				if (type.special && vars.all.length > 0) {
 					this.error(`Attribute ${k} cannot be templated`)
 				}
 
 				if (type.target) {
-					const [v] = vars
+					const [v] = vars.locals
 					if (!v) {
 						this.error(`Target attribute must set one variable`)
 					}
@@ -163,7 +182,7 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 				}
 
 				if (type.inject) {
-					const [v] = vars
+					const [v] = vars.locals
 					if (!v) {
 						this.error(`As attribute must set one variable`)
 					}
@@ -236,8 +255,8 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 		const report = this.report()
 		const parentChain = this.parent.createChildChain(this.seq, report.consumes)
 
-		return async (ctx:FilterContext): Promise<IsolateReponse> => {
-			const parentResult = await parentChain(ctx)
+		const run = async (ctx:FilterContext): Promise<IsolateReponse> => {
+			const parentResult = await parentChain.run(ctx)
 			if (!parentResult.found) {
 				return { found:false, elements:[], ctx:parentResult.ctx }
 			}
@@ -245,6 +264,10 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 			const renderOutput = await this.Render(parentResult.ctx)
 			return { found: true, ctx:renderOutput.ctx, elements:renderOutput.elements }
 		}
+
+		const globals = report.globals.concat(parentChain.globals)
+
+		return { run, globals }
 	}
 
 	createChildChainInLoop(seq:number, consumes:string[]) {
@@ -262,9 +285,9 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 		
 		const parentChain = this.parent.createChildChain(this.seq, childrenConsume)
 
-		return async (ctx:FilterContext): Promise<ChainResult> => {
+		const run = async (ctx:FilterContext): Promise<ChainResult> => {
 			// Execute parent chain and return if this tag wouldn't be executed.
-			const parentRes = await parentChain(ctx)
+			const parentRes = await parentChain.run(ctx)
 			if (!parentRes.found) {
 				return parentRes
 			}
@@ -272,6 +295,10 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 			const preceedingCtx = await preceedChain.collection.runPreceed(parentRes.ctx)
 			return { found:true, ctx:preceedingCtx }
 		}
+
+		const globals = parentChain.globals.concat(preceedChain.globals)
+
+		return { run, globals }
 	}
 
 	createChildChain(seq:number, consumes:string[]) {
@@ -291,9 +318,9 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 		const blockConsumes = consumes.concat(localReport.consumes).concat(preceedChain.consumes)
 		const parentChain = this.parent.createChildChain(this.seq, blockConsumes)
 
-		return async (ctx:FilterContext): Promise<ChainResult> => {
+		const run = async (ctx:FilterContext): Promise<ChainResult> => {
 			// Execute parent chain and return if this tag wouldn't be executed.
-			const parentRes = await parentChain(ctx)
+			const parentRes = await parentChain.run(ctx)
 			if (!parentRes.found) {
 				return parentRes
 			}
@@ -308,6 +335,14 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 			const preceedRes = await preceedChain.collection.runPreceed(containsRes.ctx)
 			return { ctx:preceedRes, found:true }
 		}
+
+		const globals = uniq([
+			...localReport.globals,
+			...preceedChain.globals,
+			...parentChain.globals,
+		])
+
+		return { run, globals }
 	}
 }
 

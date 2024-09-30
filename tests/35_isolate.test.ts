@@ -34,7 +34,7 @@ describe("v-portal", () => {
 		if (isolate === undefined) {
 			throw Error(`Isolate undefined`)
 		}
-		const output = await isolate(InitCtx())
+		const output = await isolate.run(InitCtx())
 
 		expect(output.found).toBe(true)
 
@@ -92,7 +92,7 @@ describe("inbuilt isolate", () => {
 		if (isolate === undefined) {
 			throw Error(`Isolate undefined`)
 		}
-		const output = await isolate(InitCtx())
+		const output = await isolate.run(InitCtx())
 
 		expect(output.found).toBe(true)
 

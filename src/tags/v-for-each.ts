@@ -17,6 +17,7 @@ export const VForEach: VtmlTag = {
 		const keyAsAttr = branch.attr("keyas")
 
 		return {
+			injectGlobals: () => [],
 			preceeds: (ctx) => Promise.resolve(ctx),
 			// Always found!!!
 			contains: (ctx) => Promise.resolve({ ctx, found:true }),

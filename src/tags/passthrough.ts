@@ -9,6 +9,7 @@ function CreatePassthroughTag(tag:PassthroughTag): VtmlTag {
 		attributes: tag.attributes,
 
 		prepare: (block) => ({
+			injectGlobals: () => [],
 			preceeds: (ctx) => Promise.resolve(ctx),
 			contains: (ctx) => Promise.resolve({ found:true, ctx }),
 			render: (ctx) => block.renderChildren(ctx),

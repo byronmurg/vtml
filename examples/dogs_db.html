@@ -25,260 +25,59 @@
 		<main class="container" >
 
 			<v-try>
+				<v-sql target=$dogs >
+					select * from dogs;
+				</v-sql>
 
+				<details>
+					<summary role="button" >Create new dog</summary>
 
-				<v-page path="/tutorial" >
+					<form v-name="create_dog" >
+						<input name="name" type="text" placeholder="name" required />
 
-					<v-sql target=$dogs >
-						select * from dogs;
-					</v-sql>
+						<textarea name="description" placeholder="description" required />
 
-					<details>
-						<summary role="button" >Create new dog</summary>
+						<label >Smelly
+							<input name="smelly" type="range" min=0 max=10 value=5 step=1 required />
+						</label>
 
-						<form v-name="create_dog" >
-							<input name="name" type="text" placeholder="name" required />
+						<label >Cheeky
+							<input name="cheeky" type="range" min=0 max=10 value=5 step=1 required />
+						</label>
 
-							<textarea name="description" placeholder="description" required />
+						<button type="submit" >create</button>
 
-							<label >Smelly
-								<input name="smelly" type="range" min=0 max=10 value=5 step=1 required />
-							</label>
-
-							<label >Cheeky
-								<input name="cheeky" type="range" min=0 max=10 value=5 step=1 required />
-							</label>
-
-							<button type="submit" >create</button>
-
-							<v-action>
-								<v-sql>
-									insert into dogs (name, description, smelly, cheeky) values (
-										$.body.name,
-										$.body.description,
-										$.body.smelly,
-										$.body.cheeky
-									);
-								</v-sql>
-							</v-action>
-						</form>
-					</details>
-
-					<v-for-each $dogs as=$dog >
-						<article>
-							<header><h3>$dog.name</h3></header>
-							<div class="grid" >
-								<img src="http://localhost:3456/assets/vtml_logo.svg" class="dog_image" width=200 alt=$dog.name />
-								<p>$dog.description</p>
-								<div>
-									<label>smelly</label>
-									<progress value=$dog.smelly max=10 />
-
-									<label>cheeky</label>
-									<progress value=$dog.cheeky max=10 />
-								</div>
-							</div>
-						</article>
-					</v-for-each>
-
-
-				</v-page>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-				<v-page path="/tutorial_json" >
-					<v-json target=$default_dogs >
-					  [
-						{
-						  "name": "Freddy",
-						  "description": "My dog. Very cheeky. Rub belly with caution!",
-						  "attributes": {
-							  "smell": 5,
-							  "ear size": 7,
-							  "cheeky": 8
-						  }
-						},
-						{
-						  "name": "Marley",
-						  "description": "Mom's dog. Likes barking at the wind.",
-						  "attributes": {
-							  "smell": 2,
-							  "ear size": 4,
-							  "cheeky": 3
-						  }
-						}
-					  ]
-					</v-json>
-
-					<v-nodejs target=$dbpath >
-						const {tmpdir} = require("node:os")
-						const {join} = require("node:path")
-						const tmp = tmpdir()
-						return join(tmp, "dogdb.json")
-					</v-nodejs>
-
-					<v-nodejs target=$dogs >
-						const {access, constants, readFile} = require("node:fs/promises")
-			
-						try {
-							await access($dbpath, constants.R_OK | constants.W_OK)
-
-							console.log("db file exists")
-
-							const fileData = await readFile($dbpath, "utf8")
-							return JSON.parse(fileData)
-						} catch {
-							console.log("no db file!")
-							return $default_dogs
-						}
-					</v-nodejs>
-
-					<details>
-						<summary role="button" >Create new dog</summary>
-
-						<form v-name="create_dog" >
-							<input name="name" type="text" placeholder="name" required />
-
-							<textarea name="description" placeholder="description" required />
-
-							<label >Smell
-								<input name="smell" type="range" min=0 max=10 value=5 step=1 required />
-							</label>
-
-							<button type="submit" >create</button>
-
-							<v-action>
-								<v-nodejs>
-									const {writeFile} = require("node:fs/promises")
-									const newDog = {
-										name: $.body.name,
-										description: $.body.description,
-										attributes: {
-											smell: $.body.smell,
-										},
-									}
-
-									const newDogs = $dogs.concat(newDog)
-
-									const dogsJson = JSON.stringify(newDogs)
-									await writeFile($dbpath, dogsJson)
-								</v-nodejs>
-							</v-action>
-						</form>
-					</details>
-
-					<v-for-each $dogs as=$dog >
-						<article>
-							<header><h3>$dog.name</h3></header>
-							<div class="grid" >
-								<img src="http://localhost:3456/assets/vtml_logo.svg" class="dog_image" width=200 alt=$dog.name />
-								<v-if $dog.description >
-									<p>$dog.description</p>
-								</v-if>
-								<div>
-									<v-for-each $dog.attributes keyas=$label as=$value >
-										<label>$label</label>
-										<progress value=$value max=10 />
-									</v-for-each>
-								</div>
-							</div>
-						</article>
-					</v-for-each>
-
-
-				</v-page>
-
-				<v-page path="/" >
-
-					<form>
-						<input name="q" value="$.query.q" placeholder="search" />
+						<v-action>
+							<v-sql>
+								insert into dogs (name, description, smelly, cheeky) values (
+									$.body.name,
+									$.body.description,
+									$.body.smelly,
+									$.body.cheeky
+								);
+							</v-sql>
+						</v-action>
 					</form>
+				</details>
 
-					<v-sql target="$dogs" >
-						select * from dogs where $.query.q::text is null or name ~ $.query.q::text
-					</v-sql>
+				<v-for-each $dogs as=$dog >
+					<article>
+						<header><h3>$dog.name</h3></header>
+						<div class="grid" >
+							<img src="http://localhost:3456/assets/vtml_logo.svg" class="dog_image" width=200 alt=$dog.name />
+							<p>$dog.description</p>
+							<div>
+								<label>smelly</label>
+								<progress value=$dog.smelly max=10 />
 
-					<ul>
-						<v-for-each source="$dogs" as=$dog >
-							<li><a href="/dog/$dog.id/view" >$dog.name</a></li>
-						</v-for-each>
-					</ul>
-
-				</v-page>
-
-				<v-page path="/dog/:id" >
-
-					<v-sql target="$dog" single-row >
-						select * from dogs where id = $.params.id
-					</v-sql>
-
-					<!--
-					<v-nodejs target="$dog" >
-						return db.query("select * from dogs where id = ?", [$.params.id])
-					</v-nodejs>
-					-->
-
-					<v-check-found source="$dog" message="No such dog" >
-						<v-page path="/dog/:id/view" >
-							<article>
-								<h5>$dog.name</h5>
-								<a role="button" href="/dog/$dog.id/edit" >Edit</a>
-							</article>
-						</v-page>
+								<label>cheeky</label>
+								<progress value=$dog.cheeky max=10 />
+							</div>
+						</div>
+					</article>
+				</v-for-each>
 
 
-						<v-page path="/dog/:id/edit" >
-							<article>
-								<form v-name="edit_dog" >
-									<input name="name" value="$dog.name" maxlength=128 />
-									<input name="dob" value="$dog.dob" type="date" />
-									<input name="dinner_time" value="$dog.dinner_time" type="time" />
-									<label> cheeky:
-										<input name="cheeky" checked="$dog.cheeky" type="checkbox" />
-									</label>
-
-									<button type="submit" >Update</button>
-
-									<v-action>
-										<v-sql>
-											update dogs set dinner_time = $.body.dinner_time, name = $.body.name, cheeky = $.body.cheeky, dob = $.body.dob
-											where id = $.params.id
-										</v-sql>
-									</v-action>
-								</form>
-							</article>
-						</v-page>
-
-
-					</v-check-found>
-
-				</v-page>
 
 			</v-try>
 			<v-catch>

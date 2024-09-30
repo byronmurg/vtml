@@ -3,6 +3,12 @@ import FilterContext from "./filter_context"
 import {ServerError} from "./default_errors"
 
 export
+function getPathParameters(path:string): string[] {
+	const partsRaw = path.match(/:\w+/g) || []
+	return partsRaw.map((part) => part.replace(/^:/, ''))
+}
+
+export
 type PageDescriptor = {
 	path: string
 	load: (rootDataset:RootDataset) => Promise<PortalResult>
@@ -21,7 +27,7 @@ function preparePage(pageTag:TagBlock): PageDescriptor {
 			const preCtx = FilterContext.Init(rootDataset)
 
 			// Execute chain
-			const {elements, found, ctx} = await isolate(preCtx)
+			const {elements, found, ctx} = await isolate.run(preCtx)
 			const cookies = ctx.GetCookies()
 
 			// If any elements in the chain set the error

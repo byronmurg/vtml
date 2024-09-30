@@ -16,6 +16,7 @@ export default function CreateOverrideTag(tag: OverrideTag): VtmlTag {
 			const render = tag.prepareRender(block)
 
 			return {
+				injectGlobals: () => [],
 				preceeds: (ctx) => Promise.resolve(ctx),
 				// Always found!!!
 				contains: (ctx) => Promise.resolve({ ctx, found: true }),

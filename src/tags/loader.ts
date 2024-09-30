@@ -16,6 +16,7 @@ function CreateLoaderTag(tag:LoaderTag): VtmlTag {
 			const chain = tag.prepareChain(block)
 
 			return {
+				injectGlobals: () => [],
 				preceeds: chain,
 
 				// Loaders never contain anything

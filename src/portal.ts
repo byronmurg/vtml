@@ -30,7 +30,7 @@ function preparePortal(portalTag:TagBlock): PortalDescriptor {
 			const preCtx = FilterContext.Init(rootDataset)
 
 			// Execute chain
-			const {elements, found, ctx} = await isolate(preCtx)
+			const {elements, found, ctx} = await isolate.run(preCtx)
 			const cookies = ctx.GetCookies()
 
 

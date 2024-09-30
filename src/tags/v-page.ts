@@ -1,16 +1,17 @@
-import CreateDisplayTag from "./display"
+import type { VtmlTag } from "../types"
+import {getPathParameters} from "../page"
 import * as utils from "../utils"
 
 export
-const VPage = CreateDisplayTag({
+const VPage: VtmlTag = {
 	name: "v-page",
 	attributes: {
 		"path": { special:true, required:true },
 	},
 
-	prepareRender(block) {
+	providesError: false,
 
-
+	prepare: (block) => {
 		const path = block.attr("path")
 
 		const subPages = block.FindChildren(utils.byName("v-page"))
@@ -27,17 +28,26 @@ const VPage = CreateDisplayTag({
 			subPaths.push(subPath)
 		}
 
-		return async (ctx) => {
-			const matchPath = ctx.getKey("$.matchedPath")
-			if ((matchPath == path) || subPaths.includes(matchPath)) {
-				block.debug("Match on page", path)
-				ctx = ctx.SetVar("$__matchedPage", path)
-				return block.renderChildren(ctx)
-			} else {
-				return ctx.filterPass()
+		const params = getPathParameters(path)
+		const pathGlobals = params.map((param) => `$.params.${param}`)
+
+		return {
+			injectGlobals: () => pathGlobals,
+
+			preceeds: (ctx) => Promise.resolve(ctx),
+			// Always found!!!
+			contains: (ctx) => Promise.resolve({ ctx, found: true }),
+
+			async render(ctx) {
+				const matchPath = ctx.rootDataset.matchedPath
+				if ((matchPath == path) || subPaths.includes(matchPath)) {
+					block.debug("Match on page", path)
+					ctx = ctx.SetVar("$__matchedPage", path)
+					return block.renderChildren(ctx)
+				} else {
+					return ctx.filterPass()
+				}
 			}
 		}
-
-
 	}
-})
+}

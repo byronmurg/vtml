@@ -55,7 +55,7 @@ class WebClient {
 		for (const k in cookies) {
 			const v = cookies[k]
 			const maxAge = v.maxAge || undefined
-			this.res.cookie(k, v.value, {maxAge})
+			this.res.cookie(k, v.value, {maxAge, sameSite:true})
 		}
 	}
 

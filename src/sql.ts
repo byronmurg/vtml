@@ -67,7 +67,7 @@ function postgresqlInterface(url:URL): NodeSqlInterface {
 
 	function vtmlToPgQuery(sql:string, ctx:FilterContext): ProcessedSQL {
 		const vars: unknown[] = []
-		const matches = Vars.basicTemplate.findTemplates(sql)
+		const {all:matches} = Vars.basicTemplate.findAllVars(sql)
 		if (! matches) {
 			return {sql, vars}
 		}
@@ -119,7 +119,7 @@ function sqliteInterface(url:URL): NodeSqlInterface {
 
 	function vtmlToSqliteQuery(sql:string, ctx:FilterContext): ProcessedSQL {
 		const vars: unknown[] = []
-		const matches = Vars.basicTemplate.findTemplates(sql)
+		const {all:matches} = Vars.basicTemplate.findAllVars(sql)
 		if (! matches) {
 			return {sql, vars}
 		}
