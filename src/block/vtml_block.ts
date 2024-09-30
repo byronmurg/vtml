@@ -15,7 +15,6 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 	constructor(private readonly tag:VtmlTag, el:HTML.TagElement, seq:number, parent:Block) {
 		super(el, seq, parent)
 		this.checkAttributes()
-		//this._prepared = tag.prepare(this)
 		this._prepared = this.prepare(tag)
 	}
 
