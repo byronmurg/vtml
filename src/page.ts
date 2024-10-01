@@ -9,6 +9,12 @@ function getPathParameters(path:string): string[] {
 }
 
 export
+function getPathParameterGlobals(path:string): string[] {
+	const params = getPathParameters(path)
+	return params.map((param) => `$.params.${param}`)
+}
+
+export
 type PageDescriptor = {
 	path: string
 	load: (rootDataset:RootDataset) => Promise<PortalResult>

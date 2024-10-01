@@ -1,5 +1,5 @@
 import type { VtmlTag } from "../types"
-import {getPathParameters} from "../page"
+import {getPathParameterGlobals} from "../page"
 import * as utils from "../utils"
 
 export
@@ -28,8 +28,7 @@ const VPage: VtmlTag = {
 			subPaths.push(subPath)
 		}
 
-		const params = getPathParameters(path)
-		const pathGlobals = params.map((param) => `$.params.${param}`)
+		const pathGlobals = getPathParameterGlobals(path)
 
 		return {
 			injectGlobals: () => pathGlobals,

@@ -47,6 +47,12 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 
 	checkConsumers(inputs:string[], globals:string[]) {
 		const localReport = this.getLocalReport()
+
+		// We compare the blocks globals against any injected from
+		// above *and it's own* . This accounts for tags like v-expose.
+		const injectGlobals = this._prepared.injectGlobals()
+		const childGlobals = globals.concat(injectGlobals)
+
 		for (const consume of localReport.consumes) {
 			if (!inputs.includes(consume)) {
 				this.error(`${consume} not defined`)
@@ -64,14 +70,12 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 				this.error(`invalid global ${glob}`)
 			}
 
-			if (GlobalVars.isProvidedGlobal(glob) && !globals.includes(glob)) {
+			if (GlobalVars.isProvidedGlobal(glob) && !childGlobals.includes(glob)) {
 				this.error(`global ${glob} not found`)
 			}
 		}
 
 		const childInputs = inputs.concat(localReport.injects)
-		const injectGlobals = this._prepared.injectGlobals()
-		const childGlobals = globals.concat(injectGlobals)
 		this.children.checkAllConsumer(childInputs, childGlobals)
 	}
 
@@ -109,8 +113,6 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 			if (!value) continue
 
 			const {locals, globals} = Vars.basicTemplate.findAllVars(value.toString())
-
-			if (!locals.length) continue
 
 			const type = this.tag.attributes[k] || {}
 			if (type.special) continue

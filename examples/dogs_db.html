@@ -25,6 +25,7 @@
 		<main class="container" >
 
 			<v-try>
+
 				<v-sql target=$dogs >
 					select * from dogs;
 				</v-sql>
@@ -59,8 +60,6 @@
 						</v-action>
 					</form>
 				</details>
-
-				<v-dump $dogs />
 
 				<v-for-each $dogs as=$dog >
 					<article>
