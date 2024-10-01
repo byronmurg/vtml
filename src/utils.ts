@@ -70,3 +70,15 @@ export const matchPortal = byName("v-portal")
 export const matchExpose = byName("v-expose")
 
 export const readFile = (path: string) => readFileSync(path, "utf8")
+
+export
+function deepFreeze<T extends object>(obj: T) {
+	const propNames = Object.getOwnPropertyNames(obj)
+	for (const name of propNames) {
+		const value = (obj as Record<string|symbol, unknown>)[name]
+		if (value && typeof value === "object") {
+			deepFreeze(value)
+		}
+	}
+	return Object.freeze(obj)
+}

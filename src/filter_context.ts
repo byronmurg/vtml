@@ -1,6 +1,7 @@
 import get from "lodash/get"
 import type {RootDataset, ResponseError, Cookie, Branch} from "./types"
 import {escapeHtml} from "./html"
+import {deepFreeze} from "./utils"
 import * as Vars from "./variables"
 
 type Globals = {
@@ -19,7 +20,7 @@ const initGlobals = (): Globals => ({
 
 export default
 class FilterContext {
-	constructor(
+	private constructor(
 		public readonly dataset: object,
 		public readonly rootDataset: RootDataset,
 		private readonly parent: FilterContext|undefined = undefined,
@@ -28,11 +29,13 @@ class FilterContext {
 
 	// Initialize a new dataset with only the rootDataset
 	static Init(dataset:RootDataset) {
+		deepFreeze(dataset)
 		return new FilterContext({}, dataset)
 	}
 
 	// Initialize with error
 	static InitError(dataset:RootDataset, error:ResponseError) {
+		deepFreeze(dataset)
 		return new FilterContext({}, dataset, undefined, {
 			...initGlobals(),
 			error,
