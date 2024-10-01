@@ -115,6 +115,10 @@ abstract class TagBlockBase {
 		}
 	}
 
+	hasChildren(): boolean {
+		return !!this.el.elements.length
+	}
+
 	requireOneTextChild(): string {
 		const children = this.el.elements
 		const textEl = children[0]

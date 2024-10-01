@@ -23,6 +23,24 @@
 
 		<main class="container">
 
+			<v-page path="/require" >
+				<v-nodejs target=$lib import="./library.js" />
+
+				<v-nodejs>
+					console.log($lib.increment())
+				</v-nodejs>
+
+				<v-nodejs>
+					console.log($lib.increment())
+				</v-nodejs>
+
+				<v-nodejs target=$path import="node:path" />
+
+				<v-nodejs>
+					console.log($path.join("doo", "dar"))
+				</v-nodejs>
+			</v-page>
+
 			<v-page path="/stuff" >
 
 				<form v-name="stuff" >
@@ -103,7 +121,7 @@
 
 					<v-action>
 						<v-nodejs>
-							console.log($.body)
+							console.log($.body.foo)
 						</v-nodejs>
 					</v-action>
 				</form>
@@ -119,7 +137,7 @@
 
 					<v-action>
 						<v-nodejs>
-							console.log($.body)
+							console.log($.body.myfile)
 						</v-nodejs>
 					</v-action>
 				</form>

@@ -184,9 +184,13 @@
 - tag: v-nodejs
   arguments:
   - name: target
-  - name: loader-only
+  - name: import
     optional: true
-  description: Embed a nodejs function and set target to the return value
+  description: |
+    Embed a nodejs function and set target to the return value
+
+    If the `import` attribute is set then the javascript library at that path
+    will be imported and set to the `target` variable.
 
 - tag: v-dump
   arguments:
