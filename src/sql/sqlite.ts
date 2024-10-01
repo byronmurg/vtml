@@ -1,5 +1,6 @@
 import { Database as SQLiteDatabase } from "bun:sqlite"
 import type FilterContext from "../filter_context"
+import * as fs from "node:fs"
 import {URL} from "url"
 import {debug, slightlyNicerSql, vtmlToQuestionMarkAnchorQuery} from "./common"
 import type {ProcessedSQL} from "./common"
@@ -8,6 +9,14 @@ import type NodeSqlInterface from "./interface"
 export default
 function sqliteInterface(url:URL): NodeSqlInterface {
 	debug("SQLITE connect", url.host)
+
+	try {
+		fs.accessSync(url.host, fs.constants.R_OK)
+	} catch (e) {
+		const message = e instanceof Error ? e.message : "unknown error"
+		throw Error(`Error connecting to sqlite ${url.host}: ${message}`)
+	}
+
 	const sqliteDb = new SQLiteDatabase(url.host)
 
 	async function sqliteQuery(sql:string, vars:unknown[]): Promise<unknown[]> {
