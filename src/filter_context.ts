@@ -71,6 +71,7 @@ class FilterContext {
 
 	SetApiOutput(v:unknown) {
 		this.globals.apiOutput = v
+		return this
 	}
 
 	GetCookies() {
