@@ -37,7 +37,7 @@ export const Form = CreateOverrideTag({
 				return block.defaultBehaviour(ctx)
 			}
 
-			const method = block.attr("method")
+			const method = block.attr("method") || "post"
 
 			const fullPath = getFullPath(xName, ctx)
 
