@@ -1,12 +1,13 @@
 import type { TagCommon, VtmlTag } from "../types"
 
-type PassthroughTag = TagCommon
+type PassthroughTag = TagCommon & { hasBody?:true }
 
 export default
 function CreatePassthroughTag(tag:PassthroughTag): VtmlTag {
 	return {
 		name: tag.name,
 		attributes: tag.attributes,
+		neverHasBody: !tag.hasBody,
 
 		prepare: (block) => ({
 			injectGlobals: () => [],

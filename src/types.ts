@@ -84,6 +84,7 @@ type VtmlTag = TagCommon & {
 	allowExtraAttributes?: boolean
 	isLoop?: boolean
 	scriptTemplate?: boolean
+	neverHasBody?: boolean
 
 	prepare: (block:VtmlBlock) => {
 		injectGlobals: () => string[]

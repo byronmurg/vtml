@@ -278,3 +278,12 @@ test("v-fs-readdir", async () => {
 	expect(output).toMatch(`markdown.md`)
 })
 
+test(`v-expose`, async () => {
+	const html = `
+		<v-expose path="/foo" src="./bar" >
+			Hello
+		</v-expose>
+	`
+
+	expect(() => RenderTest(html)).toThrow(`can never have a body in v-expose at <string>:2`)
+})

@@ -16,7 +16,14 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 	constructor(private readonly tag:VtmlTag, el:HTML.TagElement, seq:number, parent:Block) {
 		super(el, seq, parent)
 		this.checkAttributes()
+		this.checkAllowedBody()
 		this._prepared = this.prepare(tag)
+	}
+
+	checkAllowedBody() {
+		if (this.tag.neverHasBody && this.hasChildren()) {
+			this.error(`can never have a body`)
+		}
 	}
 
 	private prepare(tag:VtmlTag) {
