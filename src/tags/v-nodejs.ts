@@ -1,13 +1,13 @@
 import CreateLoaderTag from "./loader"
 import NodeFunction from "../node"
-import {dirname} from "node:path"
+import {join, dirname} from "node:path"
 
 function determineImportPath(importAttr:string, filename:string) {
 	if (importAttr.startsWith("./")) {
 		// If the import starts with './' then the import
 		// is relative so we must figure out the actualt path.
 		const dir = dirname(filename)
-		return `${process.cwd()}/${dir}/${importAttr}`
+		return join(process.cwd(), dir, importAttr)
 	} else {
 		// Otherwise we are importing a library directly
 		return importAttr
