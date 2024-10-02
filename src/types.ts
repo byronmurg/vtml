@@ -156,6 +156,7 @@ export
 interface TagBlock extends Block {
 	hasAttr(name:string): boolean
 	attr(name:string): string
+	requireAttr(name:string): string
 	boolAttr(name:string): boolean
 	optNumAttr(name:string): number|undefined
 	requireOneTextChild(): string

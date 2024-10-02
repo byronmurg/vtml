@@ -7,7 +7,7 @@ const isOption = (el:TagElement) => el.name === "option"
 export const Select = CreateOverrideTag({
 	name: "select",
 	attributes: {
-		name: { required:true, special:true },
+		name: { special:true },
 		format: { special:true },
 		maxlength: { special:true },
 		pattern: { special:true },

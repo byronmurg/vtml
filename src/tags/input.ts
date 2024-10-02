@@ -4,7 +4,7 @@ import type {TagElement} from "../html"
 export const InputTag = CreateOverrideTag({
 	name: "input",
 	attributes: {
-		name: { required:true, special:true },
+		name: { special:true },
 
 		type:      { special:true },
 		maxlength: { special:true },

@@ -191,7 +191,7 @@ function CreateFormInputSchema(postForm:TagBlock): OAPI.SchemaObject {
 
 	const formInputs = postForm.FindAll(matchInputs)
 	for (const input of formInputs) {
-		const name = input.attr("name")
+		const name = input.requireAttr("name")
 
 		const schemaParts = createElementSchema(input)
 
@@ -213,7 +213,7 @@ function CreateFormInputSchema(postForm:TagBlock): OAPI.SchemaObject {
 		if (input.getName() !== "input") continue
 		if (input.attr("type") !== "radio") continue
 
-		const name = input.attr("name")
+		const name = input.requireAttr('name')
 		const options = radios[name] || (radios[name] = new Set())
 		const value = input.attr('value')
 		options.add(value)

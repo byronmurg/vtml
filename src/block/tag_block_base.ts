@@ -98,6 +98,13 @@ abstract class TagBlockBase {
 		return typeof(v) === "boolean" ? v : ((v === name) || (v === "true"))
 	}
 
+	requireAttr(key:string) {
+		const v = this.attr(key)
+		if (! v) {
+			this.error(`attribute '${key}' required`)
+		}
+		return v
+	}
 
 	optNumAttr(name:string): number|undefined {
 		const v = this.attr(name)
@@ -128,6 +135,7 @@ abstract class TagBlockBase {
 
 		return (textEl.text || "").toString().trim()
 	}
+
 
 	templateAttributesSpec(ctx:FilterContext, attrs:HTML.TagElement["attributes"], spec:AttributeSpec) {
 		const cpy:HTML.TagElement["attributes"] = {}

@@ -148,8 +148,6 @@ test("form does not redirect outside action", async () => {
 })
 
 
-
-
 test("form sets cookie correctly", async () => {
 	const rootDataset = InitRoot({ action:true })
 	const exampleHTML = `
@@ -167,4 +165,75 @@ test("form sets cookie correctly", async () => {
 	const response = await doc.executeFormByName("foo", rootDataset, { bar:"bar" })
 
 	expect(response.cookies["foo"]).toEqual({ value:"baz", maxAge:0 })
+})
+
+test("form inputs must have names", async () => {
+	const exampleHTML = `
+		<form v-name="foo" >
+			<input />
+			<v-action />
+		</form>
+
+	`
+
+	const cbk = () => VtmlDocument.LoadFromString(exampleHTML)
+
+	expect(cbk).toThrow("attribute 'name' required in input at <string>:3")
+})
+
+test("form selects must have names", async () => {
+	const exampleHTML = `
+		<form v-name="foo" >
+			<select>
+				<option>bar</option>
+			</select>
+			<v-action />
+		</form>
+
+	`
+
+	const cbk = () => VtmlDocument.LoadFromString(exampleHTML)
+
+	expect(cbk).toThrow("attribute 'name' required in select at <string>:3")
+})
+
+test("form textareas must have names", async () => {
+	const exampleHTML = `
+		<form v-name="foo" >
+			<textarea>Hi</textarea>
+			<v-action />
+		</form>
+
+	`
+
+	const cbk = () => VtmlDocument.LoadFromString(exampleHTML)
+
+	expect(cbk).toThrow("attribute 'name' required in textarea at <string>:3")
+})
+
+test("inputs outside a form do not need names", async () => {
+	const exampleHTML = `
+		<input />
+	`
+
+	const cbk = () => VtmlDocument.LoadFromString(exampleHTML)
+	expect(cbk).not.toThrow("attribute 'name' required in input at <string>:3")
+})
+
+test("textareas outside a form do not need names", async () => {
+	const exampleHTML = `
+		<textarea />
+	`
+
+	const cbk = () => VtmlDocument.LoadFromString(exampleHTML)
+	expect(cbk).not.toThrow("attribute 'name' required in textarea at <string>:3")
+})
+
+test("selects outside a form do not need names", async () => {
+	const exampleHTML = `
+		<select />
+	`
+
+	const cbk = () => VtmlDocument.LoadFromString(exampleHTML)
+	expect(cbk).not.toThrow("attribute 'name' required in select at <string>:3")
 })

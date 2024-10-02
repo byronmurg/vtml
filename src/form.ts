@@ -37,9 +37,9 @@ function findInputs(block:TagBlock){
 
 
 function getFileFields(postForm:TagBlock): FileField[] {
-	return postForm.FindAll(utils.byName("input"))         // Find inputs
-		.filter((block) => block.attr("type") === "file")  // with type="file"
-		.map((block) => ({ name:block.attr("name") }))     // get the name
+	return postForm.FindAll(utils.byName("input"))            // Find inputs
+		.filter((block) => block.attr("type") === "file")     // with type="file"
+		.map((block) => ({ name:block.requireAttr("name") })) // get the name
 }
 
 const validMethods:Method[] = [

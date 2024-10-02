@@ -37,6 +37,7 @@ export * from "./form"
 export * from "./select"
 export * from "./script"
 export * from "./input"
+export * from "./textarea"
 
 // Error
 export * from "./v-try"
