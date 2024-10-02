@@ -20,6 +20,10 @@ const VMarkdown = CreateDisplayTag({
 		const source = block.sourceAttr()
 
 		if (source) {
+			if (block.hasChildren()) {
+				block.error(`cannot have a body when source is set`)
+			}
+
 			return async (ctx) => {
 				const md = ctx.getKey(source)
 				if (md) {
@@ -32,6 +36,11 @@ const VMarkdown = CreateDisplayTag({
 		} else {
 			const md = block.bodyOrSrc()
 			const html = mdToHtml(md, filename)
+
+			if (block.attr("src") && block.hasChildren()) {
+				block.error(`cannot have a body when source is set`)
+			}
+
 
 			return (ctx) => Promise.resolve({ ctx, elements:html })
 		}

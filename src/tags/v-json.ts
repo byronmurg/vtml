@@ -11,6 +11,11 @@ const VJson = CreateLoaderTag({
 
 	prepareChain(block) {
 		const json = block.bodyOrSrc()
+
+		if (block.attr("src") && block.hasChildren()) {
+			block.error(`cannot have a body when src is set`)
+		}
+
 		const targetAttr = block.targetAttr()
 		const jsonData = JSON.parse(json)
 

@@ -13,6 +13,10 @@ const VDump = CreateDisplayTag({
 		const el = block.element()
 
 		return async (ctx) => {
+			if (block.hasChildren()) {
+				block.error(`cannot have a body`)
+			}
+
 			const data = ctx.getKey(source)
 			const attrs = block.templateAttributes(ctx)
 

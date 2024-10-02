@@ -12,6 +12,10 @@ const VYaml = CreateLoaderTag({
 	},
 
 	prepareChain(block) {
+		if (block.hasChildren()) {
+			block.error(`cannot have a body`)
+		}
+
 		const yamlSrc = block.attr("src")
 		const yaml = utils.readFile(yamlSrc)
 		const targetAttr = block.targetAttr()
