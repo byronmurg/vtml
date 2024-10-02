@@ -11,6 +11,8 @@ export const InputTag = CreateOverrideTag({
 		minlength: { special:true },
 		pattern: { special:true },
 		required: { special:true },
+
+		"v-maxsize": { special:true },
 	},
 	prepareRender: (block) => {
 		const type = block.attr("type")
