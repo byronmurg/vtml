@@ -237,3 +237,18 @@ test("selects outside a form do not need names", async () => {
 	const cbk = () => VtmlDocument.LoadFromString(exampleHTML)
 	expect(cbk).not.toThrow("attribute 'name' required in select at <string>:3")
 })
+
+
+test("cannot have vtml tags between form and inputs", () => {
+	const exampleHTML = `
+		<form v-name="foo" >
+			<v-if $.path eq="/bar" >
+				<input name="baz" />
+			</v-if>
+			<v-action />
+		</form>
+	`
+
+	const cbk = () => VtmlDocument.LoadFromString(exampleHTML)
+	expect(cbk).toThrow("cannot contain inputs when inside a form in v-if at <string>:3")
+})

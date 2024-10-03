@@ -94,6 +94,23 @@ function findGlobals(globals:string[], prefix:string) {
 	return ret
 }
 
+function ensureThatNoInputsAreConditionallyRendered(portForm:TagBlock) {
+	const vtmlBlocks = portForm.FindAll((el) => el.getName().startsWith("v-"))
+
+	for (const vtmlBlock of vtmlBlocks) {
+		// v-actions are allowed to contain inputs
+		if (vtmlBlock.getName() === "v-action") {
+			continue
+		}
+
+		const inputs = vtmlBlock.FindAll(matchInputs)
+		if (inputs.length) {
+			vtmlBlock.error(`cannot contain inputs when inside a form`)
+		}
+	}
+
+}
+
 export default
 function prepareForm(postForm:TagBlock): FormDescriptor {
 	
@@ -124,6 +141,9 @@ function prepareForm(postForm:TagBlock): FormDescriptor {
 	if (! vAction) {
 		postForm.error(`No v-action defined`)
 	}
+
+	// Check that no inputs are rendered conditionaly
+	ensureThatNoInputsAreConditionallyRendered(postForm)
 
 	// Create the action isolate
 	const isolate = vAction.Isolate()
