@@ -151,6 +151,6 @@ export const nodeTemplate = new TemplateSet({
 })
 
 export const scriptTemplate = new TemplateSet({
-	validCharacters: /[\w.]/,
+	validCharacters: /[\w.[\]-]/,
 	allowBrackets: false,
 })
