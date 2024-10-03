@@ -11,75 +11,72 @@
 	</a>
 </div>
 
-<div class="space" />
+<v-yaml src="./reference.yaml" target="$reference_tags" />
 
-<article>
-	<v-nodejs target="$open" >return $.path.startsWith("/tutorial")</v-nodejs>
-	<details open="$open" >
-		<summary class="none" >Tutorial</summary>
-		<hr>
+<v-nodejs target=$doc_structure >
+	const tagNames = $reference_tags.map((ref) => ref.tag)
 
-		<v-json target="$docsection" >
-			[
-				{ "path":"start", "name":"Getting started" },
-				{ "path":"hello_world", "name":"Hello world" },
-				{ "path":"first_site", "name":"My first site" }
+	const sections = [
+		{
+			name: "Tutorial",
+			prefix: "/tutorial",
+			subsections: [
+				{ "path":"/start", name:"Getting Started" },
+				{ "path":"/hello_world", name:"Hello world" },
+				{ "path":"/first_site", name:"My First Site" },
+			],
+		},
+		{
+			name: "Documentation",
+			prefix: "/documentation",
+			subsections: [
+				{ path:"/variables", name:"Variables" },
+				{ path:"/logic", name: "Logic" },
+				{ path:"/pages", name: "Pages" },
+				{ path:"/forms", name: "Forms" },
 			]
-		</v-json>
+		},
+		{
+			name: "Reference",
+			prefix: "/reference",
+			subsections: tagNames.map((tag) => ({
+				path: "#"+ tag,
+				name: tag,
+			})),
+		}
+	]
 
-		<v-for-each source="$docsection" as="$doc" >
-			<v-if source="$.path" eq="/tutorial/$doc.path" >
-				<a class="row link-selected" href="/tutorial/$doc.path">$doc.name</a>
-			</v-if>
-			<v-unless source="$.path" eq="/tutorial/$doc.path" >
-				<a class="row" href="/tutorial/$doc.path">$doc.name</a>
-			</v-unless>
-		</v-for-each>
+	for (const section of sections) {
+		if ($.path.startsWith(section.prefix)) {
+			section.open = true
+		}
 
-	</details>
-</article>
+		for (const subsection of section.subsections) {
+			const fullPath = section.prefix + subsection.path
+			subsection.fullPath = fullPath
 
-<div class="space" />
+			if ($.path === fullPath) {
+				subsection.selectedClass = "link-selected"
+			}
+		}
+	}
 
-<article>
-	<v-nodejs target="$open" >return $.path.startsWith("/documentation")</v-nodejs>
-	<details open="$open" >
-		<summary class="none" >Documentation</summary>
-		<hr>
+	return sections
+</v-nodejs>
 
-		<v-json target="$docsection" >
-			[
-				{ "path":"variables", "name":"Variables" },
-				{ "path":"logic", "name":"Logic" },
-				{ "path":"pages", "name":"Pages" },
-				{ "path":"forms", "name":"Forms" }
-			]
-		</v-json>
+<v-for-each $doc_structure as=$doc_section >
+	<div class="space" />
 
-		<v-for-each source="$docsection" as="$doc" >
-			<v-if source="$.path" eq="/documentation/$doc.path" >
-				<a class="row link-selected" href="/documentation/$doc.path">$doc.name</a>
-			</v-if>
-			<v-unless source="$.path" eq="/documentation/$doc.path" >
-				<a class="row" href="/documentation/$doc.path">$doc.name</a>
-			</v-unless>
-		</v-for-each>
 
-	</details>
-</article>
+	<article>
+		<details open=$doc_section.open >
+			<summary class="none" >$doc_section.name</summary>
+			<hr>
+			<v-for-each $doc_section.subsections keyas=$pathsuffix as=$subsection >
 
-<div class="space" />
-
-<article>
-	<v-yaml src="./reference.yaml" target="$tags" />
-
-	<v-nodejs target="$open" >return $.path.startsWith("/reference")</v-nodejs>
-	<details open="$open" >
-		<summary class="none" >Reference</summary>
-		<hr>
-		<v-for-each source="$tags" as="$entry" >
-			<a class="row" href="/reference#$entry.tag">$entry.tag</a>
-		</v-for-each>
-	</details>
-</article>
+				<a class="row $(subsection.selectedClass)" href=$subsection.fullPath >$subsection.name</a>
+			</v-for-each>
+		</details>
+	</article>
+</v-for-each>
 
