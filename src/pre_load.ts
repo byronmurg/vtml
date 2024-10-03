@@ -1,6 +1,6 @@
 import type { Element } from "./html"
 import * as HTML from "./html"
-import {readFileSync} from "node:fs"
+import {readFile} from "./utils"
 import path from "node:path"
 import {findTag} from "./find_tag"
 
@@ -66,7 +66,7 @@ function preFilterElements(elements:Element[], dir:string): Element[] {
 }
 
 function loadXml(filePath:string): Element[] {
-	const filedata = readFileSync(filePath, "utf8")
+	const filedata = readFile(filePath)
 	return HTML.parse(filedata, filePath)
 }
 
