@@ -89,11 +89,11 @@ You can also see the schema itself at `/_api/_schema.json`.
 ## Ajax and other request types
 
 
-| Prefix  | Description                         | Input type        | Output                |
-|---------|-------------------------------------|-------------------|-----------------------|
-| /       | The default form behaviour          | v-formencoded     | Re-renders whole page |
-| /\_ajax | For perfoming isolated actions      | v-formencoded     | Render only form      |
-| /\_api  | Only machine input                  | application/json  | None                  |
+| Prefix  | Description                         | Input type        | Output                  |
+|---------|-------------------------------------|-------------------|-------------------------|
+| /       | The default form behaviour          | v-formencoded     | Redirect back           |
+| /\_ajax | For perfoming isolated actions      | v-formencoded     | Render only form action |
+| /\_api  | Only machine input                  | application/json  | See API output          |
 
 
 Here's an example using HTMX to handle the ajax.
@@ -172,6 +172,42 @@ When setting the action path yourself you must include any containing paths.
    ...
   </form>
 </v-page>
+```
+
+### API output
+
+By default, when calling a form api endpoint only the status code id returned.
+```json
+{
+    "code": 200
+}
+```
+
+If you want your api to return more meaningful data you can add a <a class="link" href="/reference#v-output" >&lt;v-output&gt;</a> containing the jsonschema of the output and the variableto send.
+
+For example
+```html
+<form v-name="create_person" >
+  <input name="new_name" required />
+
+  <v-action>
+    <v-sql target=$new_person single-row >
+      -- Insert a new person and return the new row
+      insert into people (name) values ($.body.new_name) returning id, name;
+    </v-sql>
+
+    <v-output $new_person >
+      {
+        "title": "Person",
+        "type": "object",
+        "properties": {
+          "id": { "type":"number" },
+          "name": { "type":"string" }
+        }
+      }
+    </v-output>
+  </v-action>
+</form>
 ```
 
 

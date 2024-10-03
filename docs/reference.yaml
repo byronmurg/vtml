@@ -277,6 +277,35 @@
     Although form is an inbuilt tag we do alter it's behaviour. Defining a form with
     method="POST" and an v-name attribute will create an action endpoint.
 
+- tag: v-output
+  arguments:
+  - name: source
+    source: true
+  description: |
+    Specify the output jsonschema of a form API endpoint and the variable to output.
+  example: |
+    <form v-name="create_person" >
+      <input name="new_name" required />
+
+      <v-action>
+        <v-sql target=$new_person single-row >
+          -- Insert a new person and return the new row
+          insert into people (name) values ($.body.new_name) returning id, name;
+        </v-sql>
+
+        <v-output $new_person >
+          {
+            "title": "Person",
+            "type": "object",
+            "properties": {
+              "id": { "type":"number" },
+              "name": { "type":"string" }
+            }
+          }
+        </v-output>
+      </v-action>
+    </form>
+
 - tag: v-check-*
   arguments:
     *logicAttrs
