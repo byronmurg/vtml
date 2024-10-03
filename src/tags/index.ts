@@ -29,7 +29,6 @@ export * from "./v-nodejs"
 // Checks
 export * from "./v-check-found"
 export * from "./v-check-authorized"
-export * from "./v-check-allowed"
 export * from "./v-check-authenticated"
 
 // Overrides
