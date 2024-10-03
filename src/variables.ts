@@ -54,11 +54,8 @@ class TemplateSet {
 				} else {
 					inEscape = true
 				}
-			} else if (inEscape && c === '$') {
-				ret += c
-				inEscape = false
 			} else if (inEscape) {
-				ret += '\\' + c
+				ret += c
 				inEscape = false
 			} else if (currVar) {
 				if (c === "$") {
