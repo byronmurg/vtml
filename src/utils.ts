@@ -69,7 +69,14 @@ export const matchPortal = byName("v-portal")
 
 export const matchExpose = byName("v-expose")
 
-export const readFile = (path: string) => readFileSync(path, "utf8")
+export const readFile = (path: string) => {
+	try {
+		return readFileSync(path, "utf8")
+	} catch (e) {
+		const message = e instanceof Error ? e.message : ""
+		throw Error(message+` ${path}`)
+	}
+}
 
 export
 function deepFreeze<T extends object>(obj: T) {
