@@ -8,10 +8,12 @@ export default
 class TextBlock implements Block {
 
 	private bodyVars: Vars.VarMatches
+	private safeText: string
 	
 
 	constructor(private el:HTML.TextElement, private seq:number, private parent:Block) {
 		this.bodyVars = this.getVarsInBody()
+		this.safeText = HTML.escapeHtml(el.text)
 	}
 
 	getName() {
@@ -28,7 +30,7 @@ class TextBlock implements Block {
 	}
 
 	async Render(ctx:FilterContext): Promise<Branch> {
-		const text = ctx.templateStringSafe(this.el.text)
+		const text = ctx.templateStringSafe(this.safeText)
 		const resp:HTML.Element = {
 			...this.el,
 			text,
@@ -37,7 +39,7 @@ class TextBlock implements Block {
 	}
 
 	RenderConstant(): HTML.TextElement {
-		const safeText = Vars.basicTemplate.sanitize(this.el.text)
+		const safeText = Vars.basicTemplate.sanitize(this.safeText)
 		const resp:HTML.Element = {
 			...this.el,
 			text: safeText,
