@@ -97,7 +97,7 @@ class WebClient {
 
 	sendDocument(elements:HTML.Element[]) {
 		this.res.contentType("text/html")
-		HTML.serialize(elements, this.res)
+		HTML.serializeHTML(elements, this.res)
 	}
 
 	sendJson(value:unknown) {
