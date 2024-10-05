@@ -1,8 +1,7 @@
 <v-yaml src="./reference.yaml" target="$tags" />
 
 <v-for-each source="$tags" as="$entry" >
-	<article class="border" style="margin-bottom: 2rem">
-		<a id="$entry.tag" href="#$entry.tag"><h3>$entry.tag</h3></a>
+		<a id="$entry.tag" href="#$entry.tag"><h3>&lt;$entry.tag&gt;</h3></a>
 
 		<v-if $entry.pre-process >
 			<span class="chip">pre-process</span>
@@ -47,5 +46,7 @@
 		<v-if $entry.example >
 			<pre class="language-html"><code>$entry.example</code></pre>
 		</v-if>
-	</article>
+
+	<hr class="large" >
+	<div class="space" />
 </v-for-each>

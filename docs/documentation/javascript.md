@@ -23,7 +23,7 @@ You still need to supply a `$target` attribute which is where the exports will b
 Inlined <a class="link" href="/reference#v-nodejs" >&lt;v-nodejs&gt;</a> tags are always executed for every request, but any file `import`ed is only run once!
 
 ```html
-<v-nodejs $target import="node:path" />
+<v-nodejs target=$path import="node:path" />
 
 <v-nodejs target=$my_path >
     return $path.join("foo", "bar", "baz")
