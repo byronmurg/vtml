@@ -1,5 +1,6 @@
 import type {TagElement} from "./html"
 import Debug from "debug"
+import {toNumber} from "./utils"
 
 const debug = Debug("vtml:logic")
 
@@ -15,23 +16,17 @@ const LogicOperators: LogicOperator[] = [
 	{ key: "gte", operation: (source, check) => source >= check },
 ]
 
-function toNum(v:unknown): number {
-	if (typeof(v) === "number") {
-		return v
-	} else if (typeof(v) === "string") {
-		return parseFloat(v)
-	} else {
-		return NaN
-	}
-}
-
-
 const hasMathOperator = (attributes:TagElement["attributes"]) =>
 	!!LogicOperators.find((op) => attributes[op.key] != undefined)
 
 function checkAllMathOperators(value:unknown, attributes:TagElement["attributes"]) {
 	// All math operations work on numbers
-	const asNum = toNum(value)
+	const asNum = toNumber(value)
+
+	// Just return false if NaN
+	if (isNaN(asNum)) {
+		return false
+	}
 
 	// Loop through the operators
 	for (const op of LogicOperators) {
@@ -41,7 +36,7 @@ function checkAllMathOperators(value:unknown, attributes:TagElement["attributes"
 		if (checkStr !== undefined) {
 
 			// We need the check itself as a number also
-			const check = parseFloat(checkStr.toString())
+			const check = toNumber(checkStr)
 
 			// If the operations fails, break with false
 			if (! op.operation(asNum, check)) {

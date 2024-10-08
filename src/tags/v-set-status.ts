@@ -1,5 +1,5 @@
 import CreateLoaderTag from "./loader"
-import {toNum} from "../utils"
+import {toNumberDefault} from "../utils"
 
 export 
 const VSetStatus = CreateLoaderTag({
@@ -12,7 +12,7 @@ const VSetStatus = CreateLoaderTag({
 	prepareChain(block) {
 		return async (ctx) => {
 			const attrs = block.templateAttributes(ctx)
-			const code = toNum(attrs["code"], 200)
+			const code = toNumberDefault(attrs["code"], 200)
 			return ctx.SetReturnCode(code)
 		}
 	}

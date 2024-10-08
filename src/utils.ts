@@ -23,9 +23,27 @@ function findElementsInList(els:Element[], check:(e:TagElement) => boolean): Tag
 			.flatMap((e) => findElements(e, check))
 }
 
-export function toNum(v: string | boolean | undefined, def: number): number {
-	return v === undefined ? def : parseInt(v.toString())
+export
+function toNumberDefault(v:unknown, def: number): number {
+	const num = toNumber(v)
+	if (isNaN(num)) {
+		return def
+	} else {
+		return num
+	}
 }
+
+export
+function toNumber(v:unknown): number {
+	if (typeof(v) === "number") {
+		return v
+	} else if (typeof(v) === "string") {
+		return parseFloat(v)
+	} else {
+		return NaN
+	}
+}
+
 
 export function getText(el: TagElement): string {
 	return (
