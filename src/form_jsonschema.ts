@@ -4,6 +4,12 @@ import {matchInputs} from "./form"
 import * as Vars from "./variables"
 export * from "openapi3-ts/oas31"
 
+export
+function toPattern(pattern:string) {
+	// HTML input patterns do not need to specify start and end.
+	return "^"+pattern+"$"
+}
+
 function createExoticFormat(input:TagBlock, format:string): [OAPI.SchemaObject, boolean] {
 	const required = input.boolAttr("required")
 	
@@ -36,7 +42,7 @@ function createStringInputSchema(input:TagBlock): [OAPI.SchemaObject, boolean] {
 
 	const pattern = input.attr("pattern")
 	if (pattern) {
-		property.pattern = pattern
+		property.pattern = toPattern(pattern)
 	}
 
 	const maxLength = input.optNumAttr("maxlength") || input.optNumAttr("v-maxsize")
@@ -157,7 +163,7 @@ function createSelectSchema(input:TagBlock): [OAPI.SchemaObject, boolean] {
 
 	const pattern = input.attr("pattern")
 	if (pattern) {
-		enumProperty.pattern = pattern
+		enumProperty.pattern = toPattern(pattern)
 	}
 
 	const maxLength = input.optNumAttr("maxlength") || input.optNumAttr("v-maxsize")
