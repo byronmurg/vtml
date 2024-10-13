@@ -232,6 +232,11 @@ type ExposeResult = ResponseBasic & {
 }
 
 export
+type SubscribeResult = ResponseBasic & {
+	channel:string
+}
+
+export
 type ResponseError = {
 	code: number
 	message: string

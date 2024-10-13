@@ -16,7 +16,7 @@ function preparePortal(portalTag:TagBlock): PortalDescriptor {
 	const path = portalTag.attr("path")
 
 	// Get the path of the nearest page
-	const pagePath = portalTag.findAncestor(utils.byName("v-page"))?.attr("path") || "/"
+	const pagePath = utils.findNearestPagePath(portalTag)
 
 	if (!path.startsWith(pagePath)) {
 		portalTag.error(`v-portal path ${path} must extend it's parent page ${pagePath}`)

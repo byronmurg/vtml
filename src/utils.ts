@@ -87,6 +87,8 @@ export const matchPortal = byName("v-portal")
 
 export const matchExpose = byName("v-expose")
 
+export const matchSubscribe = byName("v-subscribe")
+
 export const readFile = (path: string) => {
 	try {
 		return readFileSync(path, "utf8")
@@ -106,4 +108,10 @@ function deepFreeze<T extends object>(obj: T) {
 		}
 	}
 	return Object.freeze(obj)
+}
+
+
+export
+function findNearestPagePath(block:TagBlock): string {
+	return block.findAncestor(byName("v-page"))?.attr("path") || "/"
 }

@@ -41,3 +41,7 @@ export * from "./textarea"
 // Error
 export * from "./v-try"
 export * from "./v-catch"
+
+// Events
+export * from "./v-subscribe"
+export * from "./v-notify"

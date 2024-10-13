@@ -1,8 +1,10 @@
 import Express from "express"
-import type {RootDataset, ResponseError, CookieMap, RenderResponse, ExposeResult, ResponseBasic} from "../types"
+import type {RootDataset, ResponseError, CookieMap, RenderResponse, ExposeResult, SubscribeResult, ResponseBasic} from "../types"
 import type {FileMap} from "../form"
+import {URL} from "node:url"
 import * as HTML from "../html"
 import {CreateResponseError} from "./web_utils"
+import EventStream from "../event_stream"
 
 export type WebHandler = (client:WebClient) => Promise<void>|void
 
@@ -18,6 +20,10 @@ class WebClient {
 			const client = new WebClient(req, res)
 			return handler(client)
 		}
+	}
+
+	get headersSent() {
+		return this.res.headersSent
 	}
 
  	get search(): string {
@@ -77,8 +83,13 @@ class WebClient {
 		this.res.redirect(307, href)
 	}
 
+	get safeReferer() {
+		const referer = new URL(this.req.get("Referrer") || "/")
+		return referer.pathname
+	}
+
 	redirectOrReturn(href:string|undefined) {
-		this.redirect(href || "back")
+		this.redirect(href || this.safeReferer)
 	}
 
 	setStatus(code:number) {
@@ -153,6 +164,41 @@ class WebClient {
 		} else {
 			this.sendBasicErrorResponse(response)
 		}
+	}
+
+	sendSubscribeResponse(response:SubscribeResult) {
+		if (response.status < 400) {
+			this.subscribe(response)
+		} else {
+			this.sendBasicErrorResponse(response)
+		}
+	}
+
+	async subscribe(response:SubscribeResult) {
+		const res = this.res
+
+		res.on("close", () => {
+			connection.disconnect()
+			res.end()
+		})
+
+		res.set({
+		  'Cache-Control': 'no-cache',
+		  'Content-Type': 'text/event-stream',
+		  'Connection': 'keep-alive',
+		})
+
+		res.flushHeaders()
+		
+		res.write('retry: 10000\n\n')
+		res.write("data: subscribe success\n\n")
+
+		const connection = EventStream.connectClient(response.channel)
+
+		connection.onMessage((message:string) => {
+			res.write(`data: ${message}\n\n`)
+		})
+
 	}
 }
 

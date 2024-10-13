@@ -118,7 +118,7 @@ function prepareForm(postForm:TagBlock): FormDescriptor {
 	const method = postForm.attr("method").toLowerCase() || "post"
 
 	// Get the path of the nearest page
-	const pagePath = postForm.findAncestor(utils.byName("v-page"))?.attr("path") || "/"
+	const pagePath = utils.findNearestPagePath(postForm)
 
 	const encoding = postForm.attr("enctype")
 

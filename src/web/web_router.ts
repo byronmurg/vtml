@@ -5,7 +5,7 @@ import Debug from "debug"
 
 const debug = Debug("vtml:web")
 
-
+type PathType = string | RegExp
 type ExpressMethod = "get"|"post"|"put"|"patch"|"delete"|"head"|"all"
 
 export default
@@ -21,13 +21,13 @@ class WebRouter {
 		this.router = Express.Router()
 	}
 
-	handle(method:ExpressMethod, path:string, handler:WebHandler) {
+	handle(method:ExpressMethod, path:PathType, handler:WebHandler) {
 		debug(method, path)
 		return this.router[method](path, WebClient.Wrap(handler))
 	}
 	
 	private handler(method:ExpressMethod) {
-		return (path:string, handler:WebHandler) => this.handle(method, path, handler)
+		return (path:PathType, handler:WebHandler) => this.handle(method, path, handler)
 	}
 
 	all = this.handler("all")
@@ -44,6 +44,3 @@ class WebRouter {
 		return this.router
 	}
 }
-
-
-

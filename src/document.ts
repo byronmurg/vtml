@@ -14,6 +14,8 @@ import PrepareExpose from "./expose"
 import type {ExposeDescriptor} from "./expose"
 import PreparePage from "./page"
 import type {PageDescriptor} from "./page"
+import PrepareSubscribes from "./subscribe"
+import type {SubscribeDescriptor} from "./subscribe"
 import * as utils from "./utils"
 
 async function streamToString(stream:Readable): Promise<string> {
@@ -35,6 +37,8 @@ class VtmlDocument {
 	public readonly portals: PortalDescriptor[]
 	public readonly exposes: ExposeDescriptor[]
 	public readonly pages: PageDescriptor[]
+	public readonly subscribes: SubscribeDescriptor[]
+
 	public readonly oapiSchema: OAPI.OpenAPIObject
 	private rootBlock: Block
 	private pathMap: Record<string, boolean> = {}
@@ -46,6 +50,7 @@ class VtmlDocument {
 		this.pages = this.preparePages()
 		this.portals = this.preparePortals()
 		this.exposes = this.prepareExposes()
+		this.subscribes = this.prepareSubscribes()
 		this.oapiSchema = OAPI.createOpenApiSchema(this)
 		this.hasCatch = !!this.rootBlock.Find(utils.byName("v-catch"))
 	}
@@ -124,6 +129,23 @@ class VtmlDocument {
 		}
 
 		return exposes
+	}
+
+	prepareSubscribes(): SubscribeDescriptor[] {
+		const subscribeBlocks = this.rootBlock.FindAll(utils.matchSubscribe)
+
+		const subscribes = subscribeBlocks.map(PrepareSubscribes)
+
+		for (const subscribe of subscribes) {
+
+			if (this.pathMap[subscribe.path]) {
+				throw Error(`Duplicate path in subscribe ${subscribe.path}`)
+			}
+
+			this.pathMap[subscribe.path] = true
+		}
+
+		return subscribes
 	}
 
 	findHint(tag:string, attr:string): string|undefined {

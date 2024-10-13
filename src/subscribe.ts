@@ -1,32 +1,29 @@
-import type {RootDataset, TagBlock, ExposeResult} from "./types"
+import type {RootDataset, TagBlock, SubscribeResult} from "./types"
 import * as utils from "./utils"
 import FilterContext from "./filter_context"
 import {ServerError} from "./default_errors"
 
 export
-type ExposeDescriptor = {
+type SubscribeDescriptor = {
 	path: string
-	load: (rootDataset:RootDataset) => Promise<ExposeResult>
+	canSubscribe: (rootDataset:RootDataset) => Promise<SubscribeResult>
 }
 
 export default
-function prepareExpose(expose:TagBlock): ExposeDescriptor {
+function prepareSubscribe(subscribe:TagBlock): SubscribeDescriptor {
 
-	const path = expose.attr("path")
-	const src = expose.attr("src")
-	const contentType = expose.attr("content-type")
+	const channelPath = subscribe.attr("channel")
 
 	// Get the path of the nearest page
-	const pagePath = utils.findNearestPagePath(expose)
+	const pagePath = subscribe.findAncestor(utils.byName("v-page"))?.attr("path") || "/"
 
-	// Figure out the form path suffix
-	if (!path.startsWith(pagePath)) {
-		expose.error(`v-expose path ${path} must extend it's parent page ${pagePath}`)
+	if (!channelPath.startsWith(pagePath)) {
+		subscribe.error(`v-subscribe channel ${channelPath} must extend it's parent page ${pagePath}`)
 	}
 
-	const isolate = expose.Isolate()
+	const isolate = subscribe.Isolate()
 
-	async function load(rootDataset:RootDataset): Promise<ExposeResult> {
+	async function canSubscribe(rootDataset:RootDataset): Promise<SubscribeResult> {
 
 		try {
 			const preCtx = FilterContext.Init(rootDataset)
@@ -34,6 +31,7 @@ function prepareExpose(expose:TagBlock): ExposeDescriptor {
 			// Execute chain
 			const {ctx, found} = await isolate.run(preCtx)
 			const cookies = ctx.GetCookies()
+			const channel = ctx.rootDataset.path
 
 			// If any elements in the chain set the error
 			// then we should assume that the expose
@@ -42,36 +40,34 @@ function prepareExpose(expose:TagBlock): ExposeDescriptor {
 				return {
 					status: ctx.GetReturnCode(),
 					cookies,
-					sendFile: "",
+					channel,
 				}
 			}
 
-			// If the expose would otherwise not be rendered by the
+			// If the subscribe would otherwise not be rendered by the
 			// loader then it is in a 'not found' state and therefore
 			// should return 404.
 			if (! found) {
 				const cookies = ctx.GetCookies()
-				return { status:404, cookies, sendFile:"" }
+				return { status:404, cookies, channel }
 			}
 			
 			// Extract globals from the Context and create a RenderResponse
 			const status = ctx.GetReturnCode()
 			const redirect = ctx.GetRedirect()
 
-			const sendFile = ctx.templateStringSafe(src)
-
-			return { status, cookies, sendFile, redirect, contentType }
+			return { status, cookies, redirect, channel }
 		
 		} catch(e:unknown) {
 			console.error(e)
 
 			// We assume a 500 error and just return it.
-			return { status:500, cookies:{}, sendFile:"", error:ServerError }
+			return { status:500, cookies:{}, error:ServerError, channel:"" }
 		}
 	}
 
 	return {
-		path,
-		load,
+		path:channelPath,
+		canSubscribe,
 	}
 }

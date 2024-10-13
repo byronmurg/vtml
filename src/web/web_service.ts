@@ -14,6 +14,8 @@ import type {FormDescriptor} from "../form"
 import type {PortalDescriptor} from "../portal"
 import type {ExposeDescriptor} from "../expose"
 import type {PageDescriptor} from "../page"
+import type {SubscribeDescriptor} from "../subscribe"
+
 
 import Debug from "debug"
 
@@ -106,6 +108,14 @@ class WebService extends WebRouter {
 		})
 	}
 
+	useSubscribeRoute = (subscribe:SubscribeDescriptor) => {
+		this.get(subscribe.path, async (client) => {
+			const dataset = client.createLoaderDataset()
+			const result = await subscribe.canSubscribe(dataset)
+			client.sendSubscribeResponse(result)
+		})
+	}
+
 	useSinglePageRoute() {
 		// Just render normally on the root
 		this.all("/", this.renderLoader)
@@ -131,11 +141,15 @@ class WebService extends WebRouter {
 	}
 
 	use404Page() {
-		this.all("/*", (client) => this.renderPageError(client, 404))
+		this.all("/*", (client) => {
+			if (!client.headersSent) {
+				this.renderPageError(client, 404)
+			}
+		})
 	}
 
 	useApi404Page() {
-		this.all("/_api/*", (client) => client.sendJsonError(this.notFoundError))
+		this.all('/_api/*', (client) => client.sendJsonError(this.notFoundError))
 	}
 
 	useExpressErrorPage() {
@@ -151,17 +165,19 @@ class WebService extends WebRouter {
 	}
 
 	private prepare() {
-		this.use(Compression())
 		this.use(BodyParser.urlencoded({ extended:true }))
 		this.use(CookieParser())
 		this.use(Express.json())
+
+		// Subscribes must come before compression
+		this.vtmlDocument.subscribes.forEach(this.useSubscribeRoute)
+		this.use(Compression())
 
 		this.useOapiSchemaHandler()
 		this.useApiPage()
 		this.vtmlDocument.forms.forEach(this.useFormRoute)
 		this.vtmlDocument.portals.forEach(this.usePortalRoute)
 		this.vtmlDocument.exposes.forEach(this.useExposeRoute)
-
 		this.vtmlDocument.pages.forEach(this.usePageRoute)
 
 		// Assume a single page if no pages were found
@@ -170,9 +186,11 @@ class WebService extends WebRouter {
 		}
 
 		this.useFaviconFallback()
-		this.use404Page()
 		this.useApi404Page()
+		this.use404Page()
+
 		this.useExpressErrorPage()
+
 	}
 
 	createApiPage = () => `
@@ -202,6 +220,7 @@ class WebService extends WebRouter {
 
 	Listen() {
 		const app = Express()
+		app.disable("x-powered-by")
 		const port = this.port
 		const listenAddress = this.listenAddress
 

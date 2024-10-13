@@ -23,6 +23,26 @@
 
 		<main class="container">
 
+			<v-page path="/events" >
+
+				<v-subscribe channel="/events/hello" />
+
+				<form v-name="event_notify" >
+					<button type="submit" >send</button>
+					<v-action>
+						<v-notify channel="/events/hello" message="Hi there" />
+					</v-action>
+				</form>
+
+				<script>
+					const sse = new EventSource("/events/hello")
+					sse.onmessage = (res) => {
+						console.log(res.data)
+					}
+				</script>
+
+			</v-page>
+
 			<v-page path="/require" >
 				<v-nodejs target=$lib import="./library.js" />
 
