@@ -10,6 +10,8 @@
 		  href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"
 		/>
 		<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+		<script src="https://unpkg.com/htmx.org@2.0.3"></script>
+		<script src="https://unpkg.com/htmx-ext-sse@2.2.2/sse.js"></script>
 
 	</head>
 	<body>
@@ -57,27 +59,48 @@
 									$.body.cheeky
 								);
 							</v-sql>
+							<v-notify channel="/dogs/updates" />
 						</v-action>
 					</form>
 				</details>
 
-				<v-for-each $dogs as=$dog >
-					<article>
-						<header><h3>$dog.name</h3></header>
-						<div class="grid" >
-							<img src="http://localhost:3456/assets/vtml_logo.svg" class="dog_image" width=200 alt=$dog.name />
-							<p>$dog.description</p>
-							<div>
-								<label>smelly</label>
-								<progress value=$dog.smelly max=10 />
+				<v-subscribe path="/dogs/updates" />
 
-								<label>cheeky</label>
-								<progress value=$dog.cheeky max=10 />
-							</div>
-						</div>
-					</article>
-				</v-for-each>
+				<div hx-ext="sse" sse-connect="/dogs/updates" >
+					<div hx-get="/dogs/list" hx-trigger="sse:notify" >
 
+						<v-portal path="/dogs/list" >
+							<v-for-each $dogs as=$dog >
+								<article>
+									<header><h3>$dog.name</h3></header>
+									<div class="grid" >
+										<img src="http://vtml.org/assets/vtml_logo.svg" class="dog_image" width=200 alt=$dog.name />
+										<p>$dog.description</p>
+										<div>
+											<label>smelly</label>
+											<progress value=$dog.smelly max=10 />
+
+											<label>cheeky</label>
+											<progress value=$dog.cheeky max=10 />
+										</div>
+									</div>
+									<form v-name="delete_dog" >
+										<input name="id" type="hidden" value=$dog.id />
+										<button type="submit" >delete</button>
+										<v-action>
+											<v-sql>
+												delete from dogs where id = $.body.id
+											</v-sql>
+											<v-notify channel="/dogs/updates" />
+										</v-action>
+									</form>
+								</article>
+							</v-for-each>
+						</v-portal>
+
+					</div>
+
+				</div>
 
 
 			</v-try>

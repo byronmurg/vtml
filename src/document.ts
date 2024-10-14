@@ -19,14 +19,13 @@ import type {SubscribeDescriptor} from "./subscribe"
 import * as utils from "./utils"
 
 async function streamToString(stream:Readable): Promise<string> {
-    // lets have a ReadableStream as a stream variable
-    const chunks = [];
+    const chunks:string[] = [];
 
     for await (const chunk of stream) {
-        chunks.push(Buffer.from(chunk));
+        chunks.push(Buffer.from(chunk).toString())
     }
 
-    return Buffer.concat(chunks).toString("utf-8");
+    return chunks.join("")
 }
 
 

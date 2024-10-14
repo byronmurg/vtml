@@ -2,16 +2,14 @@
   "name": "vtml",
   "version": "0.3.4",
   "description": "",
-  "main": "index.js",
+  "main": "src/cli.ts",
   "private": true,
   "scripts": {
     "test": "bun test tests/*.ts --coverage",
     "lint": "node_modules/.bin/eslint src/**",
-    "build": "bun build --compile --minify --sourcemap src/cli.ts --outfile=vtml"
+    "build": "./build.sh"
   },
-  "bin": {
-    "vtml": "./build/src/cli.js"
-  },
+  "bin": "./build/src/cli.js",
   "author": "",
   "license": "UNLICENSED",
   "dependencies": {
@@ -29,11 +27,11 @@
     "multer": "^1.4.5-lts.1",
     "mysql2": "^3.11.3",
     "pg": "^8.11.5",
+    "sqlite3": "^5.1.7",
     "yaml": "^2.5.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.8.0",
-    "@types/bun": "^1.1.8",
     "@types/compression": "^1.7.5",
     "@types/cookie-parser": "^1.4.7",
     "@types/debug": "^4.1.12",
@@ -41,6 +39,7 @@
     "@types/jest": "^29.5.12",
     "@types/lodash": "^4.17.0",
     "@types/multer": "^1.4.12",
+    "@types/node": "^22.7.5",
     "@types/pg": "^8.11.5",
     "eslint": "^9.9.1",
     "globals": "^15.9.0",

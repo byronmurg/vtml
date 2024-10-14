@@ -4,6 +4,6 @@ export
 const VSubscribe = CreatePassthroughTag({
 	name: "v-subscribe",
 	attributes: {
-		channel: { required:true, special:true }
+		path: { required:true, special:true }
 	},
 })

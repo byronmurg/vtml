@@ -5,13 +5,8 @@ import {spawn} from "node:child_process"
 function mkProcess() {
 	const argv = process.argv.filter((f) => f !== "--dev")
 
-	if (argv[1]?.startsWith("/$bunfs")) {
-		const args = argv.slice(2)
-		return spawn(process.argv0, args)
-	} else {
-		const [cmd, ...args] = argv
-		return spawn(cmd, args)
-	}
+	const [cmd, ...args] = argv
+	return spawn(cmd, args)
 }
 
 function start() {
@@ -26,7 +21,7 @@ async function DevMode(file:string) {
 	console.log("Run in dev mode")
 	const dir = path.dirname(file)
 
-	let timer:Timer|undefined;
+	let timer:ReturnType<typeof setTimeout>
 	let ps = start()
 
 	function restartProcess() {

@@ -190,13 +190,13 @@ class WebClient {
 
 		res.flushHeaders()
 		
-		res.write('retry: 10000\n\n')
-		res.write("data: subscribe success\n\n")
+		res.write('retry: 2000\n\n')
 
 		const connection = EventStream.connectClient(response.channel)
 
 		connection.onMessage((message:string) => {
-			res.write(`data: ${message}\n\n`)
+			message = message || "change"
+			res.write(`event: notify\ndata: ${message}\n\n`)
 		})
 
 	}

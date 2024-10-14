@@ -350,7 +350,7 @@
 
     Can be used in conjunction with `v-catch` to catch errors that may occur within it's
     contents.
-  example:
+  example: |
     <v-try>
       <v-sql>Im invalid SQL</v-sql>
     </v-try>
@@ -382,7 +382,7 @@
   - name: path
     description: "Path to redirect to"
     templated: true
-  description:
+  description: |
     Redirect the client to the specied path.
 
     The path is templated and can be used to redirect after an action
@@ -399,3 +399,20 @@
         <v-redirect path="/dogs/view/$newdog.id" />
       </v-action>
     </form>
+
+- tag: v-subscribe
+  arguments:
+  - name: "path"
+    required: true
+  description: |
+    Create an SSE endpoint at specified path.
+
+- tag: v-notify
+  arguments:
+  - name: "channel"
+    templated: true
+    required: true
+  - name: "message"
+    templated: true
+  description: |
+    Send a message to the target channel. Message can be empty.

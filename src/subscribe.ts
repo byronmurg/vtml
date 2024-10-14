@@ -12,13 +12,13 @@ type SubscribeDescriptor = {
 export default
 function prepareSubscribe(subscribe:TagBlock): SubscribeDescriptor {
 
-	const channelPath = subscribe.attr("channel")
+	const channelPath = subscribe.attr("path")
 
 	// Get the path of the nearest page
-	const pagePath = subscribe.findAncestor(utils.byName("v-page"))?.attr("path") || "/"
+	const pagePath = utils.findNearestPagePath(subscribe)
 
 	if (!channelPath.startsWith(pagePath)) {
-		subscribe.error(`v-subscribe channel ${channelPath} must extend it's parent page ${pagePath}`)
+		subscribe.error(`v-subscribe path ${channelPath} must extend it's parent page ${pagePath}`)
 	}
 
 	const isolate = subscribe.Isolate()
