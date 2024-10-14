@@ -1,4 +1,4 @@
-import { Database as SQLiteDatabase } from "bun:sqlite"
+import { Database as SQLiteDatabase } from "sqlite3"
 import type FilterContext from "../filter_context"
 import * as fs from "node:fs"
 import {URL} from "url"
@@ -8,24 +8,26 @@ import type NodeSqlInterface from "./interface"
 
 export default
 function sqliteInterface(url:URL): NodeSqlInterface {
-	debug("SQLITE connect", url.host)
+	const path = url.hostname + url.pathname
+	debug("SQLITE connect", path)
 
 	try {
-		fs.accessSync(url.host, fs.constants.R_OK)
+		fs.accessSync(path, fs.constants.R_OK)
 	} catch (e) {
 		const message = e instanceof Error ? e.message : "unknown error"
 		throw Error(`Error connecting to sqlite ${url.host}: ${message}`)
 	}
 
-	const sqliteDb = new SQLiteDatabase(url.host)
+	const sqliteDb = new SQLiteDatabase(path)
 
-	async function sqliteQuery(sql:string, vars:unknown[]): Promise<unknown[]> {
+	function sqliteQuery(sql:string, vars:unknown[]): Promise<unknown[]> {
 		sql = slightlyNicerSql(sql)
 		debug(sql)
-		const query = sqliteDb.query(sql)
-		// @NOTE TS doesn't like this line as it's bun specific
-		// it is okay though.
-		return await query.all(vars as unknown as string)
+		const query = sqliteDb.prepare(sql)
+		return new Promise((resolve, reject) => query.all(vars, (err, rows) => {
+			if (err) reject(err)
+			else resolve(rows)
+		}))
 	}
 
 	function vtmlToSqliteQuery(sql:string, ctx:FilterContext): ProcessedSQL {
