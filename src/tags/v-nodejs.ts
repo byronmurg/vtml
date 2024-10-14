@@ -36,7 +36,7 @@ const VNodeJs = CreateLoaderTag({
 			const jsPath = determineImportPath(importAttr, block.el.filename)
 			// Import now then just resolve each request
 			const js = import(jsPath)
-			return (ctx) => js.then((lib) => ctx.SetVar(targetAttr, lib))
+			return (ctx) => js.then((lib) => ctx.SetVar(targetAttr, lib.default))
 		} else {
 			// If no import is specified then this is an inline
 			// nodejs function.

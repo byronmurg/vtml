@@ -64,7 +64,7 @@ class TemplateSet {
 
 				if (c.match(this.options.validCharacters)) {
 					currVar += c
-				} else if (this.options.allowBrackets && c === "(") {
+				} else if (this.options.allowBrackets && c === "(" && currVar === "$") {
 					continue
 				} else if (this.options.allowBrackets && c === ")") {
 					ret += cbk(currVar)
