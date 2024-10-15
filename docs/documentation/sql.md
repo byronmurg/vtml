@@ -7,6 +7,7 @@ In order to use the built-in sql integration VTML must be started with the `DB_U
 Currently supported databases are:
 
 | Type | Prefix | Example |
+|------|--------|---------|
 | PostgreSQL | pg/postgres/postresql | postgresql://user:pass@localhost:5432/mydb |
 | SQLite3    | sqlite/sqlite3 | sqlite://database\_file.sqlite |
 | MySQL/MariaDB | mysql | mysql://user:pass@localhost:3306/mydb |

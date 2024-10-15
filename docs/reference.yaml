@@ -406,6 +406,15 @@
     required: true
   description: |
     Create an SSE endpoint at specified path.
+  example:
+    <v-subscribe path="/hello" />
+
+    <form v-name="say_hi" >
+      <button type="submit" >Greet</button>
+      <v-action>
+        <v-notify channel="/hello" message="Hello" />
+      </v-action>
+    </form>
 
 - tag: v-notify
   arguments:
@@ -416,3 +425,6 @@
     templated: true
   description: |
     Send a message to the target channel. Message can be empty.
+  example: |
+    <v-notify channel="/hello" message="Hello" />
+
