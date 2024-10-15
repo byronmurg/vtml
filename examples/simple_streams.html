@@ -1,0 +1,9 @@
+<v-subscribe path="/hello" />
+
+<form v-name="say_hello" >
+    <button type="submit" >Say hello</button>
+    <v-action>
+        <v-notify channel="/hello" message="Hello" />
+    </v-action>
+</form>
+

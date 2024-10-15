@@ -11,10 +11,10 @@ const starterTemplate = (name:string) => `
 			Some useful links
 		-->
 
-			<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
-			<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
+		<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
 
- 			<script src="https://unpkg.com/htmx.org@2.0.2"></script>
+ 		<script src="https://unpkg.com/htmx.org@2.0.2"></script>
 	</head>
 
 	<body hx-boost="true" >
