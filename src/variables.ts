@@ -3,7 +3,9 @@ import negate from "lodash/negate"
 
 function getVarFromTemplate(str: string): string {
 	if (str.startsWith("$.")) {
-		return str
+		//return str
+		const m = str.match(/\$\.\w+(\.\w+)?/)
+		return m ? m[0] : ""
 	} else {
 		const m = str.match(/\$\w+/)
 		return m ? m[0] : ""
