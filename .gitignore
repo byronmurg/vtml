@@ -1,4 +1,5 @@
 build/
+release/
 node_modules/
 coverage/
 deploy.sh

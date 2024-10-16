@@ -5,9 +5,9 @@
   "main": "src/cli.ts",
   "private": true,
   "scripts": {
-    "test": "bun test tests/*.ts --coverage",
+    "test": "node_modules/.bin/jest",
     "lint": "node_modules/.bin/eslint src/**",
-    "build": "./build.sh"
+    "build": "make"
   },
   "bin": "./build/src/cli.js",
   "author": "",
@@ -32,6 +32,8 @@
     "yaml": "^2.5.0"
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.25.8",
+    "@babel/preset-typescript": "^7.25.7",
     "@eslint/js": "^9.8.0",
     "@types/compression": "^1.7.5",
     "@types/cookie-parser": "^1.4.7",
@@ -44,6 +46,7 @@
     "@types/pg": "^8.11.5",
     "eslint": "^9.9.1",
     "globals": "^15.9.0",
+    "jest": "^29.7.0",
     "openapi3-ts": "^4.3.1",
     "typescript-eslint": "^8.6.0"
   }
