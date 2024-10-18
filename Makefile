@@ -5,8 +5,8 @@ JS_FILES=$(addprefix build/,$(JS_FILES_BASE))
 
 PREFIX=/usr/local
 
-PKG=npx @yao-pkg/pkg
-PKG_OPTS=--compress GZip
+RELEASE_NAMES=linux-arm64.tar.gz darwin-arm64.tar.gz darwin-x86_64.tar.gz win-x86_64.zip linux-x86_64.tar.gz
+RELEASES=$(addprefix release/vtml-,$(RELEASE_NAMES))
 
 vtml: release/vtml-linux-x86_64/vtml
 	cp $< $@
@@ -14,17 +14,33 @@ vtml: release/vtml-linux-x86_64/vtml
 install: vtml
 	install $< -o root -g root -m 755 $(PREFIX)/bin/vtml
 
-release: release/vtml-linux-x86_64.tar.gz # release/vtml-macos-x86_64.tar.gz
+release: $(RELEASES) #release/vtml-linux-x86_64.tar.gz release/vtml-darwin-x86_64.tar.gz release/vtml-win-x86_64.zip
 	@echo Done!
 
 test:
 	node_modules/.bin/jest --coverage
 
-release/vtml-%/vtml: $(JS_FILES) package.json
-	$(PKG) -t node22-$* -o $@ package.json $(PKG_OPTS)
+release/vtml-linux-x86_64/vtml: $(JS_FILES) package.json
+	./release.sh linux x86
+
+release/vtml-linux-arm64/vtml: $(JS_FILES) package.json
+	./release.sh linux arm64
+
+release/vtml-darwin-x86_64/vtml: $(JS_FILES) package.json
+	./release.sh darwin x86
+
+release/vtml-darwin-arm64/vtml: $(JS_FILES) package.json
+	./release.sh darwin arm64
+
+release/vtml-win-x86_64/vtml.exe: $(JS_FILES) package.json
+	./release.sh win x86
 
 release/vtml-%.tar.gz: release/vtml-%/vtml release/vtml-%/README.md release/vtml-%/LICENSE
 	tar c release/vtml-$* | gzip > $@
+
+# Window has it's own secial rule
+release/vtml-win-x86_64.zip: release/vtml-win-x86_64/vtml.exe release/vtml-win-x86_64/README.md release/vtml-win-x86_64/LICENSE
+	zip $@ release/vtml-win-x86_64/*
 
 release/vtml-%/LICENSE: LICENSE
 	cp $< $@
@@ -37,6 +53,6 @@ $(JS_FILES): $(TS_FILES)
 	tsc
 
 clean:
-	rm -rf build release coverage
+	rm -rf build release coverage vtml
 	
 .PHONY: clean test release vtml install
