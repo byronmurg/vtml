@@ -1,11 +1,11 @@
-import VtmlDocument from "../src/document"
+import {InitDocument, RenderErrors} from "./test_lib"
 
 test("title is found", () => {
 	const exampleHTML = `
 		<title>Hello</title>
 	`
 
-	const doc = VtmlDocument.LoadFromString(exampleHTML)
+	const doc = InitDocument(exampleHTML)
 
 	expect(doc.title).toBe("Hello")
 })
@@ -17,7 +17,7 @@ test("pages are found", () => {
 		<v-page path="/bar" ><p>Hey</p></v-page>
 	`
 
-	const doc = VtmlDocument.LoadFromString(exampleHTML)
+	const doc = InitDocument(exampleHTML)
 
 	expect(doc.getPages().length).toBe(2)
 })
@@ -28,7 +28,20 @@ test("components cannot share paths", () => {
 		<v-expose path="/bar" src="somefile.txt" />
 	`
 
-	const fnc = () => VtmlDocument.LoadFromString(exampleHTML)
+	const errors = RenderErrors(exampleHTML)
 
-	expect(fnc).toThrow("Duplicate path in expose /bar")
+	expect(errors).toEqual([
+		{
+			message: "Duplicate path /bar",
+			tag: "v-page",
+			filename: "<string>",
+			linenumber: 2,
+		},
+		{
+			message: "Duplicate path /bar",
+			tag: "v-expose",
+			filename: "<string>",
+			linenumber: 3,
+		},
+	])
 })

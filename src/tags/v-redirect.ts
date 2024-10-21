@@ -8,6 +8,8 @@ const VRedirect = CreateLoaderTag({
 		"path": { required:true },
 	},
 
+	bodyPolicy: "deny",
+
 	prepareChain(block) {
 		return async (ctx) => {
 			const {path} = block.templateAttributes(ctx)

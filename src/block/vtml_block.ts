@@ -1,36 +1,86 @@
 import TagBlockBase from "./tag_block_base"
-import type {Branch, Block, TagBlock, VtmlTag, ChainResult, BlockReport, IsolateReponse} from "../types"
+import type {Branch, VtmlTagPrepared, Block, TagBlock, VtmlTag, InitializationResponse, ChainResult, BlockReport, IsolateReponse} from "../types"
 import * as HTML from "../html"
+import BlockCollection from "./block_collection"
 import uniq from "lodash/uniq"
 import pullAll from "lodash/pullAll"
 import * as Vars from "../variables"
 import FilterContext from "../filter_context"
 import * as utils from "../utils"
 import * as GlobalVars from "../global_variables"
+import ValidationSet from "../validation_set"
 
 export default
 class VtmlBlock extends TagBlockBase implements TagBlock {
 
-	_prepared: ReturnType<VtmlTag["prepare"]>
+	_prepared: VtmlTagPrepared|undefined
 
-	constructor(private readonly tag:VtmlTag, el:HTML.TagElement, seq:number, parent:Block) {
+	private constructor(private readonly tag:VtmlTag, el:HTML.TagElement, seq:number, parent:Block) {
 		super(el, seq, parent)
-		this.checkAttributes()
-		this.checkAllowedBody()
-		this._prepared = this.prepare(tag)
 	}
 
-	checkAllowedBody() {
-		if (this.tag.neverHasBody && this.hasChildren()) {
-			this.error(`can never have a body`)
+	static Init(tag:VtmlTag, el:HTML.TagElement, seq:number, parent:Block): InitializationResponse<VtmlBlock> {
+		const vtmlBlock = new VtmlBlock(tag, el, seq, parent)
+		const childrenResult = BlockCollection.Create(el.elements, vtmlBlock)
+		if (! childrenResult.ok) {
+			return childrenResult
+		}
+
+		vtmlBlock.setChildren(childrenResult.result)
+		const checkResponse = utils.ValidateAgg<unknown>(
+			vtmlBlock.prepare(tag),
+			vtmlBlock.checkAttributes(),
+			vtmlBlock.checkBody(),
+		)
+		if (! checkResponse.ok) {
+			return checkResponse
+		}
+		return utils.Ok(vtmlBlock)
+		
+	}
+
+	checkBody(): InitializationResponse<void> {
+		const hasBody = this.hasChildren()
+		const hasOneTextBody = this.hasOneTextBody()
+
+		switch (this.tag.bodyPolicy) {
+			case "allow":
+				return utils.Ok(undefined)
+			case "deny":
+				if (hasBody)
+					return this.Fail(`Must not have body`)
+				break
+			case "require":
+				if (!hasBody)
+					return this.Fail(`Must have body`)
+				break
+			case "requireTextOnly":
+				if (!hasOneTextBody)
+					return this.Fail(`Must have one text body`)
+				break
+			case "allowTextOnly":
+				if (hasBody && !hasOneTextBody)
+					return this.Fail(`May have only one text body`)
+				break
+		}
+
+		return utils.Ok(undefined)
+	}
+
+	prepare(tag:VtmlTag): InitializationResponse<void> {
+		try {
+			this._prepared = tag.prepare(this)
+			return utils.Ok(undefined)
+		} catch (e) {
+			return this.Fail(e instanceof Error ? e.message : "unknown error")
 		}
 	}
 
-	private prepare(tag:VtmlTag) {
-		try {
-			return tag.prepare(this)
-		} catch (e) {
-			this.error(e instanceof Error ? e.message : "unknown error")
+	get prepared() {
+		if (! this._prepared) {
+			throw Error(`Tag has not yet been prepared`)
+		} else {
+			return this._prepared
 		}
 	}
 
@@ -52,38 +102,44 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 		return { ctx, elements:[resp] }
 	}
 
-	checkConsumers(inputs:string[], globals:string[]) {
+	checkConsumers(inputs:string[], globals:string[]): InitializationResponse<void> {
+		const validationSet = new ValidationSet(this)
+
 		const localReport = this.getLocalReport()
 
 		// We compare the blocks globals against any injected from
 		// above *and it's own* . This accounts for tags like v-expose.
-		const injectGlobals = this._prepared.injectGlobals()
+		const injectGlobals = this.prepared.injectGlobals()
 		const childGlobals = globals.concat(injectGlobals)
 
 		for (const consume of localReport.consumes) {
 			if (!inputs.includes(consume)) {
-				this.error(`${consume} not defined`)
+				validationSet.error(`${consume} not defined`)
 			}
 		}
 
 		for (const provide of localReport.provides) {
 			if (inputs.includes(provide)) {
-				this.error(`${provide} redefined`)
+				validationSet.error(`${provide} redefined`)
 			}
 		}
 
 		for (const glob of localReport.globals) {
 			if (!GlobalVars.isValidGlobal(glob)) {
-				this.error(`invalid global ${glob}`)
+				validationSet.error(`invalid global ${glob}`)
 			}
 
 			if (GlobalVars.isProvidedGlobal(glob) && !childGlobals.includes(glob)) {
-				this.error(`global ${glob} not found`)
+				validationSet.error(`global ${glob} not found`)
 			}
 		}
 
+		if (!validationSet.isOk) {
+			return validationSet.Fail()
+		}
+
 		const childInputs = inputs.concat(localReport.injects)
-		this.children.checkAllConsumer(childInputs, childGlobals)
+		return this.children.checkAllConsumer(childInputs, childGlobals)
 	}
 
 	report(): BlockReport {
@@ -157,7 +213,8 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 
 	}
 
-	checkAttributes() {
+	checkAttributes(): InitializationResponse<void> {
+		const validationSet = new ValidationSet(this)
 
 		for (const k in this.tag.attributes) {
 			const type = this.tag.attributes[k]
@@ -165,40 +222,40 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 
 			if (!value) {
 				if (type.required) {
-					this.error(`Missing required attribute '${k}'`)
+					validationSet.error(`Missing required attribute '${k}'`)
 				}
 			} else {
 				const vars = Vars.basicTemplate.findAllVars(value.toString())
 
 				if (type.source && vars.all.length !== 1) {
-					this.error(`Source attributes must select just one variable`)
+					validationSet.error(`Source attributes must select just one variable`)
 				}
 
 				if (type.special && vars.all.length > 0) {
-					this.error(`Attribute ${k} cannot be templated`)
+					validationSet.error(`Attribute ${k} cannot be templated`)
 				}
 
 				if (type.target) {
 					const [v] = vars.locals
 					if (!v) {
-						this.error(`Target attribute must set one variable`)
+						validationSet.error(`Target attribute must set one variable`)
 					}
 
 					// If extra characters were found
 					if (v !== value) {
-						this.error(`Malformed target attribute`)
+						validationSet.error(`Malformed target attribute`)
 					}
 				}
 
 				if (type.inject) {
 					const [v] = vars.locals
 					if (!v) {
-						this.error(`As attribute must set one variable`)
+						validationSet.error(`As attribute must set one variable`)
 					}
 
 					// If extra characters were found
 					if (v !== value) {
-						this.error(`Malformed as attribute`)
+						validationSet.error(`Malformed as attribute`)
 					}
 				}
 			}
@@ -211,10 +268,12 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 				const type = this.tag.attributes[k]
 
 				if (! type) {
-					this.error(`Unknown attribute ${k}`)
+					validationSet.error(`Unknown attribute ${k}`)
 				}
 			}
 		}
+
+		return validationSet.Result()
 	}
 
 
@@ -244,7 +303,7 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 	}
 
 	async Render(ctx:FilterContext): Promise<Branch> {
-		return this._prepared.render(ctx)
+		return this.prepared.render(ctx)
 	}
 
 	RenderConstant(): HTML.Element {
@@ -252,11 +311,11 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 	}
 
 	checkContains(ctx:FilterContext): Promise<ChainResult> {
-		return this._prepared.contains(ctx)
+		return this.prepared.contains(ctx)
 	}
 
 	CheckPreceeds(ctx:FilterContext): Promise<FilterContext> {
-		return this._prepared.preceeds(ctx)
+		return this.prepared.preceeds(ctx)
 	}
 
 	Isolate() {

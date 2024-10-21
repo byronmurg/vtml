@@ -32,7 +32,7 @@ export const Form = CreateOverrideTag({
 		const xAjax = block.boolAttr("v-ajax")
 		const el = block.element()
 
-		return async (ctx) => {
+		return async (ctx:FilterContext) => {
 			if (!xName) {
 				return block.defaultBehaviour(ctx)
 			}

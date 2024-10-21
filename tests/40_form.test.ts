@@ -1,5 +1,4 @@
-import VtmlDocument from "../src/document"
-import {InitRoot} from "./test_lib"
+import {InitRoot, InitDocument, RenderErrors} from "./test_lib"
 
 
 test("form", async () => {
@@ -8,11 +7,13 @@ test("form", async () => {
 	const exampleHTML = `
 		<form v-name="test1" >
 			<input name="name" type="text" />
-			<v-action/>
+			<v-action>
+				<v-nodejs>console.log("Hi")</v-nodejs>
+			</v-action>
 		</form>
 	`
 
-	const doc = VtmlDocument.LoadFromString(exampleHTML)
+	const doc = InitDocument(exampleHTML)
 
 	const forms = doc.forms
 
@@ -25,6 +26,21 @@ test("form", async () => {
 	expect(outOk.status).toBe(200)
 })
 
+test("forms without v-name do nothing", async () => {
+	const exampleHTML = `
+		<form>
+			<input name="name" type="text" />
+		</form>
+	`
+
+	const doc = InitDocument(exampleHTML)
+
+	const forms = doc.forms
+
+	expect(forms.length).toBe(0)
+})
+
+
 test("form not found", async () => {
 	const rootDataset = InitRoot()
 
@@ -35,13 +51,15 @@ test("form not found", async () => {
 		<v-if source="$foo" >
 			<form v-name="test1" >
 				<input name="name" type="text" />
-				<v-action/>
+				<v-action>
+					<v-nodejs>console.log("Hi")</v-nodejs>
+				</v-action>
 			</form>
 		</v-if>
 
 	`
 
-	const doc = VtmlDocument.LoadFromString(exampleHTML)
+	const doc = InitDocument(exampleHTML)
 
 	const forms = doc.forms
 
@@ -54,18 +72,37 @@ test("form not found", async () => {
 	expect(outOk.status).toBe(404)
 })
 
-test("duplicate forms throw errors", async () => {
+test("duplicate form paths raise error", async () => {
 
 	const exampleHTML = `
-		<form v-name="foo" ><v-action/></form>
-		<form v-name="foo" ><v-action/></form>
+		<form v-name="foo" >
+			<v-action>
+				<v-nodejs>console.log("Hi")</v-nodejs>
+			</v-action>
+		</form>
+		<form v-name="foo" >
+			<v-action>
+				<v-nodejs>console.log("Hi again")</v-nodejs>
+			</v-action>
+		</form>
 	`
 
-	function innerTest() {
-		return VtmlDocument.LoadFromString(exampleHTML)
-	}
+	const errors = RenderErrors(exampleHTML)
 
-	expect(innerTest).toThrow("Duplicate path in form /foo")
+	expect(errors).toEqual([
+		{
+			message:"Duplicate path /foo",
+			tag: "form",
+			filename: "<string>",
+			linenumber: 2,
+		},
+		{
+			message:"Duplicate path /foo",
+			tag: "form",
+			filename: "<string>",
+			linenumber: 7,
+		}
+	])
 })
 
 
@@ -82,7 +119,7 @@ test("form sets return code successfully", async () => {
 
 	`
 
-	const doc = VtmlDocument.LoadFromString(exampleHTML)
+	const doc = InitDocument(exampleHTML)
 
 	const response = await doc.executeFormByName("foo", rootDataset, { bar:"bar" })
 
@@ -96,13 +133,15 @@ test("form not executed on non-success chain", async () => {
 		<v-check-authenticated source="$foo" eq="bar" >
 			<form v-name="foo" >
 				<input name="bar" />
-				<v-action/>
+				<v-action>
+					<v-nodejs>console.log("Hi")</v-nodejs>
+				</v-action>
 			</form>
 		</v-check-authenticated>
 
 	`
 
-	const doc = VtmlDocument.LoadFromString(exampleHTML)
+	const doc = InitDocument(exampleHTML)
 
 	const response = await doc.executeFormByName("foo", rootDataset, { bar:"bar" })
 
@@ -121,7 +160,7 @@ test("form redirects correctly in action", async () => {
 
 	`
 
-	const doc = VtmlDocument.LoadFromString(exampleHTML)
+	const doc = InitDocument(exampleHTML)
 
 	const response = await doc.executeFormByName("foo", rootDataset, { bar:"bar" })
 
@@ -140,7 +179,7 @@ test("form does not redirect outside action", async () => {
 
 	`
 
-	const doc = VtmlDocument.LoadFromString(exampleHTML)
+	const doc = InitDocument(exampleHTML)
 
 	const response = await doc.executeFormByName("foo", rootDataset, { bar:"bar" })
 
@@ -160,7 +199,7 @@ test("form sets cookie correctly", async () => {
 
 	`
 
-	const doc = VtmlDocument.LoadFromString(exampleHTML)
+	const doc = InitDocument(exampleHTML)
 
 	const response = await doc.executeFormByName("foo", rootDataset, { bar:"bar" })
 
@@ -171,14 +210,23 @@ test("form inputs must have names", async () => {
 	const exampleHTML = `
 		<form v-name="foo" >
 			<input />
-			<v-action />
+			<v-action>
+				<v-nodejs>console.log("Hi")</v-nodejs>
+			</v-action>
 		</form>
 
 	`
 
-	const cbk = () => VtmlDocument.LoadFromString(exampleHTML)
+	const errors = RenderErrors(exampleHTML)
 
-	expect(cbk).toThrow("attribute 'name' required in input at <string>:3")
+	expect(errors).toEqual([
+		{
+			message: "attribute 'name' required",
+			tag: "input",
+			filename: "<string>",
+			linenumber: 3,
+		}
+	])
 })
 
 test("form selects must have names", async () => {
@@ -187,28 +235,46 @@ test("form selects must have names", async () => {
 			<select>
 				<option>bar</option>
 			</select>
-			<v-action />
+			<v-action>
+				<v-nodejs>console.log("Hi")</v-nodejs>
+			</v-action>
 		</form>
 
 	`
 
-	const cbk = () => VtmlDocument.LoadFromString(exampleHTML)
+	const errors = RenderErrors(exampleHTML)
 
-	expect(cbk).toThrow("attribute 'name' required in select at <string>:3")
+	expect(errors).toEqual([
+		{
+			message: "attribute 'name' required",
+			tag: "select",
+			filename: "<string>",
+			linenumber: 3,
+		}
+	])
 })
 
 test("form textareas must have names", async () => {
 	const exampleHTML = `
 		<form v-name="foo" >
 			<textarea>Hi</textarea>
-			<v-action />
+			<v-action>
+				<v-nodejs>console.log("Hi")</v-nodejs>
+			</v-action>
 		</form>
 
 	`
 
-	const cbk = () => VtmlDocument.LoadFromString(exampleHTML)
+	const errors = RenderErrors(exampleHTML)
 
-	expect(cbk).toThrow("attribute 'name' required in textarea at <string>:3")
+	expect(errors).toEqual([
+		{
+			message: "attribute 'name' required",
+			tag: "textarea",
+			filename: "<string>",
+			linenumber: 3,
+		}
+	])
 })
 
 test("inputs outside a form do not need names", async () => {
@@ -216,8 +282,8 @@ test("inputs outside a form do not need names", async () => {
 		<input />
 	`
 
-	const cbk = () => VtmlDocument.LoadFromString(exampleHTML)
-	expect(cbk).not.toThrow("attribute 'name' required in input at <string>:3")
+	const errors = RenderErrors(exampleHTML)
+	expect(errors).toEqual([])
 })
 
 test("textareas outside a form do not need names", async () => {
@@ -225,8 +291,8 @@ test("textareas outside a form do not need names", async () => {
 		<textarea />
 	`
 
-	const cbk = () => VtmlDocument.LoadFromString(exampleHTML)
-	expect(cbk).not.toThrow("attribute 'name' required in textarea at <string>:3")
+	const errors = RenderErrors(exampleHTML)
+	expect(errors).toEqual([])
 })
 
 test("selects outside a form do not need names", async () => {
@@ -234,8 +300,8 @@ test("selects outside a form do not need names", async () => {
 		<select />
 	`
 
-	const cbk = () => VtmlDocument.LoadFromString(exampleHTML)
-	expect(cbk).not.toThrow("attribute 'name' required in select at <string>:3")
+	const errors = RenderErrors(exampleHTML)
+	expect(errors).toEqual([])
 })
 
 
@@ -245,10 +311,19 @@ test("cannot have vtml tags between form and inputs", () => {
 			<v-if $.path eq="/bar" >
 				<input name="baz" />
 			</v-if>
-			<v-action />
+			<v-action>
+				<v-nodejs>console.log("Hi")</v-nodejs>
+			</v-action>
 		</form>
 	`
 
-	const cbk = () => VtmlDocument.LoadFromString(exampleHTML)
-	expect(cbk).toThrow("cannot contain inputs when inside a form in v-if at <string>:3")
+	const errors = RenderErrors(exampleHTML)
+	expect(errors).toEqual([
+		{
+			message: "cannot contain inputs when inside a form",
+			tag: "v-if",
+			filename: "<string>",
+			linenumber: 3,
+		}
+	])
 })

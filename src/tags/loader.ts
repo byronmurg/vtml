@@ -1,8 +1,9 @@
-import type {TagCommon, VtmlTag } from "../types"
+import type {TagCommon, VtmlTag} from "../types"
 import type FilterContext from "../filter_context"
 import type {VtmlBlock} from "../block"
 
 type LoaderTag = TagCommon & {
+	bodyPolicy: VtmlTag["bodyPolicy"]
 	prepareChain: (block:VtmlBlock) => (ctx:FilterContext) => Promise<FilterContext>
 }
 
@@ -11,6 +12,7 @@ function CreateLoaderTag(tag:LoaderTag): VtmlTag {
 	return {
 		name: tag.name,
 		attributes: tag.attributes,
+		bodyPolicy: tag.bodyPolicy,
 
 		prepare(block) {
 			const chain = tag.prepareChain(block)

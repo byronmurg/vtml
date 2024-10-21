@@ -6,6 +6,7 @@ export
 const VTry:VtmlTag = {
 	name: "v-try",
 	attributes: {},
+	bodyPolicy: "require",
 
 	providesError: true,
 

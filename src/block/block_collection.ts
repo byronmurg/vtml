@@ -2,9 +2,10 @@ import {MakeBlock} from "./index"
 import uniq from "lodash/uniq"
 import pullAll from "lodash/pullAll"
 import intersection from "lodash/intersection"
-import type {RenderDescription, Branch, Block, TagBlock, BlockReport} from "../types"
+import type {InitializationResponse, RenderDescription, Branch, Block, TagBlock, BlockReport, ValidationError} from "../types"
 import * as HTML from "../html"
 import type FilterContext from "../filter_context"
+import {Ok, ValidateAgg} from "../utils"
 
 type ChainReport = {
 	collection: BlockCollection
@@ -54,12 +55,20 @@ class BlockCollection {
 		}))
 	}
 
-	static Create(children:HTML.Element[], parent:Block) {
-		const blocks = children.map((child, i) => MakeBlock(child, i, parent))
-		return new BlockCollection(
-			blocks,
+	static Create(children:HTML.Element[], parent:Block): InitializationResponse<BlockCollection> {
+		const blockResults = children.map((child, i) => MakeBlock(child, i, parent))
+
+		const blockResult = ValidateAgg(...blockResults)
+
+		if (! blockResult.ok) {
+			return blockResult
+		}
+
+		const blockCollection = new BlockCollection(
+			blockResult.result,
 			parent
 		)
+		return Ok(blockCollection)
 	}
 
 	async renderInOrder(ctx:FilterContext): Promise<Branch> {
@@ -158,11 +167,21 @@ class BlockCollection {
 
 	}
 
-	checkAllConsumer(inputs:string[], globals:string[]) {
+	checkAllConsumer(inputs:string[], globals:string[]): InitializationResponse<void> {
+		const errors: ValidationError[] = []
 		for (const child of this.children) {
-			child.checkConsumers(inputs, globals)
+			const consumerRes = child.checkConsumers(inputs, globals)
+			if (! consumerRes.ok) {
+				errors.push(...consumerRes.errors)
+			}
 			const report = child.report()
 			inputs = inputs.concat(report.provides)
+		}
+
+		if (errors.length) {
+			return {ok:false, errors}
+		} else {
+			return Ok(undefined)
 		}
 	}
 

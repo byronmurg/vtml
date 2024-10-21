@@ -9,14 +9,15 @@ const VSQL = CreateLoaderTag({
 		"target": { target:true },
 		"single-row": {},
 	},
+	bodyPolicy: "requireTextOnly",
 
 	prepareChain(block) {
 
 		if (!SQL.isConnected()) {
-			block.error(`v-sql used but no DB_URL environment variable was found`)
+			throw Error(`v-sql used but no DB_URL environment variable was found`)
 		}
 
-		const sql = block.requireOneTextChild()
+		const sql = block.getOneTextChild()
 		const target = block.targetAttr()
 		const single = block.boolAttr("single-row")
 		const query = SQL.prepare(sql)

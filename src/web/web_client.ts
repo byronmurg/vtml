@@ -1,6 +1,6 @@
 import Express from "express"
 import type {RootDataset, ResponseError, CookieMap, RenderResponse, ExposeResult, SubscribeResult, ResponseBasic} from "../types"
-import type {FileMap} from "../form"
+import type {FileMap} from "../isolates/form"
 import {URL} from "node:url"
 import * as HTML from "../html"
 import {CreateResponseError} from "./web_utils"

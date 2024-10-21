@@ -6,4 +6,5 @@ const VSubscribe = CreatePassthroughTag({
 	attributes: {
 		path: { required:true, special:true }
 	},
+	bodyPolicy: "deny",
 })

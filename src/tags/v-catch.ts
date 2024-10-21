@@ -6,6 +6,7 @@ const VCatch: VtmlTag = {
 	name: "v-catch",
 
 	attributes: {},
+	bodyPolicy: "require",
 
 	consumesError: true,
 

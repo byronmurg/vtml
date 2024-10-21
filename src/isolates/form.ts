@@ -1,13 +1,14 @@
-import CreateFormInputSchema from "./form_jsonschema"
-import type {SchemaObject} from "./oapi"
-import type {RootDataset, BodyType, TagBlock, FormResult} from "./types"
-import * as utils from "./utils"
+import CreateFormInputSchema from "../form_jsonschema"
+import type {SchemaObject} from "../oapi"
+import type {RootDataset, BodyType, TagBlock, FormResult, InitializationResponse} from "../types"
+import * as utils from "../utils"
 import Ajv, {ValidationError} from "ajv"
 import AjvFormats from "ajv-formats"
-import DefaultError, {ServerError} from "./default_errors"
-import httpEncParser from "./http_encoding"
+import DefaultError, {ServerError} from "../default_errors"
+import httpEncParser from "../http_encoding"
+import ValidationSet from "../validation_set"
 
-import FilterContext from "./filter_context"
+import FilterContext from "../filter_context"
 
 export type FileMap = { [fieldname:string]: string }
 export type Method = "post"|"put"|"delete"|"patch"
@@ -34,6 +35,38 @@ export
 function findInputs(block:TagBlock){
 	return block.FindAll(matchInputs)
 }
+
+function findOptions(block:TagBlock) {
+	return block.FindAll(utils.byName("option"))
+}
+
+function ensureThatOptionHasOneTextChild(option:TagBlock): InitializationResponse<void> {
+	if (option.hasNonTextChildren()) {
+		return option.Fail("has invalid body")
+	} else {
+		return utils.Ok(undefined)
+	}
+}
+
+function ensureInputIsNamed(input:TagBlock): InitializationResponse<void> {
+	if (! input.attr("name")) {
+		return input.Fail("attribute 'name' required")
+	} else {
+		return utils.Ok(undefined)
+	}
+}
+
+function ValidateFormInputs(form:TagBlock): InitializationResponse<unknown> {
+	// As a VTML form there are additional requirements on the form inputs
+	// such as most inputs needing a name etc. We perform that here before any
+	// additional processing
+
+	return utils.ValidateAgg(
+		...findInputs(form).map(ensureInputIsNamed),
+		...findOptions(form).map(ensureThatOptionHasOneTextChild),
+	)
+}
+
 
 
 function getFileFields(postForm:TagBlock): FileField[] {
@@ -63,6 +96,7 @@ type FormDescriptor = {
 	path: string
 	encoding: string
 	method: Method
+	block: TagBlock
 
 	setCookie: boolean
 	usedCookies: string[]
@@ -78,6 +112,9 @@ type FormDescriptor = {
 }
 
 function findGlobals(globals:string[], prefix:string) {
+	// Given an array of globals passed into an element, find any with the
+	// supplied prefix e.g $.cookies.foo cookies => foo
+
 	const ret:string[] = []
 	const regex = new RegExp(`\\$\\.${prefix}\\.(\\w+)`)
 	for (const globalVar of globals) {
@@ -94,7 +131,7 @@ function findGlobals(globals:string[], prefix:string) {
 	return ret
 }
 
-function ensureThatNoInputsAreConditionallyRendered(portForm:TagBlock) {
+function ensureThatNoInputsAreConditionallyRendered(portForm:TagBlock): InitializationResponse<void> {
 	const vtmlBlocks = portForm.FindAll((el) => el.getName().startsWith("v-"))
 
 	for (const vtmlBlock of vtmlBlocks) {
@@ -105,45 +142,60 @@ function ensureThatNoInputsAreConditionallyRendered(portForm:TagBlock) {
 
 		const inputs = vtmlBlock.FindAll(matchInputs)
 		if (inputs.length) {
-			vtmlBlock.error(`cannot contain inputs when inside a form`)
+			const err = vtmlBlock.mkError(`cannot contain inputs when inside a form`)
+			return utils.Err(err)
 		}
 	}
 
+	return utils.Ok(undefined)
 }
 
 export default
-function prepareForm(postForm:TagBlock): FormDescriptor {
+function prepareForm(postForm:TagBlock): InitializationResponse<FormDescriptor> {
 	
 	const xName = postForm.attr("v-name")
 	const method = postForm.attr("method").toLowerCase() || "post"
+
+	const validationSet = new ValidationSet(postForm)
 
 	// Get the path of the nearest page
 	const pagePath = utils.findNearestPagePath(postForm)
 
 	const encoding = postForm.attr("enctype")
 
-	// Error if method is not valid
-	if (!isValidMethod(method)) {
-		postForm.error(`Form method '${method}' is not valid. Must be one of ${validMethods.join(", ")}`)
-	}
-
 	// Figure out the form path suffix
 	const path = postForm.attr("action") || utils.joinPaths(pagePath, xName)
 
 	if (!path.startsWith(pagePath)) {
-		postForm.error(`Form action ${path} must extend it's parent page ${pagePath}`)
+		validationSet.error(`Form action ${path} must extend it's parent page ${pagePath}`)
 	}
+
+	// Error if method is not valid
+	if (!isValidMethod(method)) {
+		return validationSet.Fatal(`Form method '${method}' is not valid. Must be one of ${validMethods.join(", ")}`)
+	}
+
+	// Perform additional input checks
+	const inputResult = ValidateFormInputs(postForm)
+	validationSet.AddResult(inputResult)
 
 	// Find the action element
 	const vAction = postForm.Find(utils.byName("v-action"))
 
 	// Throw if no action was found (it wouldn't do anything)
 	if (! vAction) {
-		postForm.error(`No v-action defined`)
+		return validationSet.Fatal(`No v-action defined`)
+	}
+
+	if (! validationSet.isOk) {
+		return validationSet.Fail()
 	}
 
 	// Check that no inputs are rendered conditionaly
-	ensureThatNoInputsAreConditionallyRendered(postForm)
+	const icrResult = ensureThatNoInputsAreConditionallyRendered(postForm)
+	if (! icrResult.ok) {
+		return icrResult
+	}
 
 	// Create the action isolate
 	const isolate = vAction.Isolate()
@@ -168,7 +220,7 @@ function prepareForm(postForm:TagBlock): FormDescriptor {
 
 	// Find if it has an output tag
 	const outputTag = vAction.Find(utils.byName("v-output"))
-	const outputSchemaBody = outputTag?.requireOneTextChild()
+	const outputSchemaBody = outputTag?.getOneTextChild()
 	const outputSchema = outputSchemaBody ? JSON.parse(outputSchemaBody) : undefined
 
 	// Find any globals required by the form
@@ -246,8 +298,9 @@ function prepareForm(postForm:TagBlock): FormDescriptor {
 		return execute(rootDataset, { ...body, ...files })
 	}
 
-	return {
+	return utils.Ok({
 		name: xName,
+		block: postForm,
 		path,
 		method,
 		encoding,
@@ -262,5 +315,5 @@ function prepareForm(postForm:TagBlock): FormDescriptor {
 		outputSchema,
 		execute,
 		executeFormEncoded,
-	}
+	})
 }

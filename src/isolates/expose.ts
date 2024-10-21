@@ -1,16 +1,19 @@
-import type {RootDataset, TagBlock, ExposeResult} from "./types"
-import * as utils from "./utils"
-import FilterContext from "./filter_context"
-import {ServerError} from "./default_errors"
+import type {RootDataset, TagBlock, InitializationResponse, ExposeResult} from "../types"
+import * as utils from "../utils"
+import FilterContext from "../filter_context"
+import {ServerError} from "../default_errors"
+import ValidationSet from "../validation_set"
 
 export
 type ExposeDescriptor = {
 	path: string
 	load: (rootDataset:RootDataset) => Promise<ExposeResult>
+	block: TagBlock
 }
 
 export default
-function prepareExpose(expose:TagBlock): ExposeDescriptor {
+function prepareExpose(expose:TagBlock): InitializationResponse<ExposeDescriptor> {
+	const validationSet = new ValidationSet(expose)
 
 	const path = expose.attr("path")
 	const src = expose.attr("src")
@@ -21,7 +24,11 @@ function prepareExpose(expose:TagBlock): ExposeDescriptor {
 
 	// Figure out the form path suffix
 	if (!path.startsWith(pagePath)) {
-		expose.error(`v-expose path ${path} must extend it's parent page ${pagePath}`)
+		validationSet.error(`v-expose path ${path} must extend it's parent page ${pagePath}`)
+	}
+
+	if (! validationSet.isOk) {
+		return validationSet.Fail()
 	}
 
 	const isolate = expose.Isolate()
@@ -70,8 +77,9 @@ function prepareExpose(expose:TagBlock): ExposeDescriptor {
 		}
 	}
 
-	return {
+	return utils.Ok({
 		path,
+		block: expose,
 		load,
-	}
+	})
 }

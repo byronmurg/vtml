@@ -1,5 +1,7 @@
 import * as tagsIndex from "./tags"
 import * as HTML from "./html"
+import type {VtmlTag, InitializationResponse} from "./types"
+import {Ok, Err} from "./utils"
 
 const tags = Object.values(tagsIndex)
 
@@ -9,10 +11,15 @@ function findTag(el:HTML.TagElement) {
 }
 
 export
-function findTagIfV(el:HTML.TagElement) {
+function findTagIfV(el:HTML.TagElement): InitializationResponse<VtmlTag|undefined> {
 	const tag = findTag(el)
 	if (el.name.startsWith("v-") && !tag) {
-		throw Error(`Unknown VTML tag ${el.name} at ${el.filename}:${el.linenumber}`)
+		return Err({
+			message: `Unknown VTML tag`,
+			tag: el.name,
+			filename: el.filename,
+			linenumber: el.linenumber,
+		})
 	}
-	return tag
+	return Ok(tag)
 }

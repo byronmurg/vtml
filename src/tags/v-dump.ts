@@ -7,16 +7,13 @@ const VDump = CreateDisplayTag({
 	attributes: {
 		"source": { source:true, required:true },
 	},
+	bodyPolicy: "deny",
 
 	prepareRender(block) {
 		const source = block.sourceAttr()
 		const el = block.element()
 
 		return async (ctx) => {
-			if (block.hasChildren()) {
-				block.error(`cannot have a body`)
-			}
-
 			const data = ctx.getKey(source)
 			const attrs = block.templateAttributes(ctx)
 

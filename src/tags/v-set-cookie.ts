@@ -14,6 +14,7 @@ const VSetCookie = CreateLoaderTag({
 		"max-hours": {},
 		"max-days": {},
 	},
+	bodyPolicy: "deny",
 
 	prepareChain(block) {
 		return async (ctx) => {

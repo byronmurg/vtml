@@ -5,7 +5,7 @@
   "main": "src/cli.ts",
   "private": true,
   "scripts": {
-    "test": "node_modules/.bin/jest",
+    "test": "node_modules/.bin/jest --coverage tests",
     "lint": "node_modules/.bin/eslint src/**",
     "build": "make"
   },

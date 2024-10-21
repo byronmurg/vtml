@@ -28,7 +28,15 @@ program.name("vtml")
 		}
 
 
-		const vtmlDocument = VtmlDocument.LoadFromFile(file)
+		const initResult = VtmlDocument.LoadFromFile(file)
+
+		if (! initResult.ok) {
+			// @TODO Better than this
+			console.error(initResult.errors)
+			return process.exit(1)
+		}
+
+		const vtmlDocument = initResult.result
 
 		if (options.describe) {
 			const description = vtmlDocument.getRenderDescription()

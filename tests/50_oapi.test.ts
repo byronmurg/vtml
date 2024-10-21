@@ -1,16 +1,17 @@
-import VtmlDocument from "../src/document"
-
+import { InitDocument } from "./test_lib"
 
 test("form basic", async () => {
 
 	const exampleHTML = `
 		<form method="POST" v-name="foo" >
 			<input name="bar" type="text" required />
-			<v-action/>
+			<v-action>
+				<v-nodejs>console.log("Hi")</v-nodejs>
+			</v-action>
 		</form>
 	`
 
-	const doc = VtmlDocument.LoadFromString(exampleHTML)
+	const doc = InitDocument(exampleHTML)
 
 	const schema = doc.oapiSchema
 
@@ -33,11 +34,13 @@ test("form advanced", async () => {
 
 			<input name="radio-enum" type="radio" value="foo" />
 			<input name="radio-enum" type="radio" value="bar" />
-			<v-action/>
+			<v-action>
+				<v-nodejs>console.log("Hi")</v-nodejs>
+			</v-action>
 		</form>
 	`
 
-	const doc = VtmlDocument.LoadFromString(exampleHTML)
+	const doc = InitDocument(exampleHTML)
 
 	const schema = doc.oapiSchema
 
@@ -100,11 +103,13 @@ test("selects", async () => {
 				<option value=$v >two</option>
 			</select>
 
-			<v-action/>
+			<v-action>
+				<v-nodejs>console.log("Hi")</v-nodejs>
+			</v-action>
 		</form>
 	`
 
-	const doc = VtmlDocument.LoadFromString(exampleHTML)
+	const doc = InitDocument(exampleHTML)
 
 	const form = doc.forms.find((form) => form.name === "foo")
 

@@ -22,6 +22,7 @@ const VNodeJs = CreateLoaderTag({
 		"target": { target:true },
 		"import": { special:true },
 	},
+	bodyPolicy:  "allowTextOnly",
 
 	prepareChain(block) {
 		const importAttr = block.attr("import")
@@ -30,7 +31,7 @@ const VNodeJs = CreateLoaderTag({
 		if (importAttr) {
 			// Make sure that we have no inline body
 			if (block.hasChildren()) {
-				block.error(`cannot have a body when import is set`)
+				throw Error(`cannot have a body when import is set`)
 			}
 
 			const jsPath = determineImportPath(importAttr, block.el.filename)

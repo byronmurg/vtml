@@ -1,5 +1,5 @@
 import type {VtmlTag} from "../types"
-import {findInputs} from "../form"
+import {findInputs} from "../isolates/form"
 import * as utils from "../utils"
 import Debug from "debug"
 
@@ -9,11 +9,16 @@ export
 const VAction: VtmlTag = {
 	name: "v-action",
 	attributes: {},
+	bodyPolicy: "require",
 	prepare: (block) => {
 		const form = block.findAncestor(utils.byName("form"))
 
 		if (!form) {
-			return block.error(`v-action found outside a <form>`)
+			throw Error(`v-action found outside a <form>`)
+		}
+
+		if (!form.attr("v-name")) {
+			throw Error(`v-action found inside a non-VTML form`)
 		}
 
 		return {
@@ -39,6 +44,6 @@ const VAction: VtmlTag = {
 					return ctx.filterPass()
 				}
 			}
-		}	
+		}
 	},
 }

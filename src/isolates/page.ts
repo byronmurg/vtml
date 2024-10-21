@@ -1,6 +1,8 @@
-import type {RootDataset, TagBlock, PortalResult} from "./types"
-import FilterContext from "./filter_context"
-import {ServerError} from "./default_errors"
+import type {RootDataset, TagBlock, PortalResult, InitializationResponse} from "../types"
+import FilterContext from "../filter_context"
+import {ServerError} from "../default_errors"
+import * as utils from "../utils"
+import ValidationSet from "../validation_set"
 
 export
 function getPathParameters(path:string): string[] {
@@ -17,13 +19,26 @@ function getPathParameterGlobals(path:string): string[] {
 export
 type PageDescriptor = {
 	path: string
+	block: TagBlock
 	load: (rootDataset:RootDataset) => Promise<PortalResult>
 }
 
 export default
-function preparePage(pageTag:TagBlock): PageDescriptor {
+function preparePage(pageTag:TagBlock): InitializationResponse<PageDescriptor> {
+	const validationSet = new ValidationSet(pageTag)
 
 	const path = pageTag.attr("path")
+
+	// Get the path of the nearest page
+	const parentPath = utils.findNearestPagePath(pageTag)
+
+	if (! path.startsWith(parentPath)) {
+		validationSet.error(`Page path '${path}' must start with it's parent path ${parentPath}`)
+	}
+
+	if (! validationSet.isOk) {
+		return validationSet.Fail()
+	}
 
 	const isolate = pageTag.Isolate()
 
@@ -69,8 +84,9 @@ function preparePage(pageTag:TagBlock): PageDescriptor {
 		}
 	}
 
-	return {
+	return utils.Ok({
 		path,
+		block:pageTag,
 		load,
-	}
+	})
 }

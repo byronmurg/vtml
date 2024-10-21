@@ -1,5 +1,5 @@
 import type {ParsedQs} from "qs"
-import type { TagElement, Element } from "./html"
+import type { Element } from "./html"
 import type FilterContext from "./filter_context"
 import type {VtmlBlock} from "./block"
 import type * as HTML from "./html"
@@ -77,6 +77,17 @@ type TagCommon = {
 }
 
 export
+type VtmlTagPrepared = {
+	injectGlobals: () => string[]
+	contains: (ctx:FilterContext) => Promise<ChainResult>
+	preceeds: (ctx:FilterContext) => Promise<FilterContext>
+	render: (ctx:FilterContext) => Promise<Branch>
+}
+
+export
+type BodyPolicy = "allow"|"require"|"deny"|"requireTextOnly"|"allowTextOnly"
+
+export
 type VtmlTag = TagCommon & {
 
 	consumesError?: boolean
@@ -84,14 +95,9 @@ type VtmlTag = TagCommon & {
 	allowExtraAttributes?: boolean
 	isLoop?: boolean
 	scriptTemplate?: boolean
-	neverHasBody?: boolean
+	bodyPolicy: BodyPolicy
 
-	prepare: (block:VtmlBlock) => {
-		injectGlobals: () => string[]
-		contains: (ctx:FilterContext) => Promise<ChainResult>
-		preceeds: (ctx:FilterContext) => Promise<FilterContext>
-		render: (ctx:FilterContext) => Promise<Branch>
-	}
+	prepare: (block:VtmlBlock) => VtmlTagPrepared
 }
 
 
@@ -114,6 +120,33 @@ type Chain = {
 }
 
 /////////////////////
+// VTML Validation
+/////////////////////
+
+export
+type ValidationError = {
+	message: string
+	tag: string
+	filename: string
+	linenumber: number
+}
+
+export
+type InitializationSuccess<T> = {
+	ok: true
+	result: T
+}
+
+export
+type InitializationFailure = {
+	ok: false
+	errors: ValidationError[]
+}
+
+export
+type InitializationResponse<T> = InitializationFailure | InitializationSuccess<T>
+
+/////////////////////
 // Blocks
 /////////////////////
 
@@ -126,7 +159,7 @@ interface Block {
 
 	findAncestor(check:(el:TagBlock) => boolean): TagBlock|undefined
 
-	error(msg:string): never
+	mkError(msg:string): ValidationError
 
 	Render(ctx:FilterContext): Promise<Branch>
 	RenderConstant(): HTML.Element
@@ -146,7 +179,7 @@ interface Block {
 	report(): BlockReport
 
 	// Check all variables are provided
-	checkConsumers(input:string[], globals:string[]): void
+	checkConsumers(input:string[], globals:string[]): InitializationResponse<void>
 
 	// Is this a dynamic tag
 	isDynamic(): boolean
@@ -155,15 +188,14 @@ interface Block {
 
 export
 interface TagBlock extends Block {
-	hasAttr(name:string): boolean
 	attr(name:string): string
 	requireAttr(name:string): string
 	boolAttr(name:string): boolean
 	optNumAttr(name:string): number|undefined
-	requireOneTextChild(): string
-	debug(msg:string): void
+	getOneTextChild(): string
+	hasNonTextChildren(): boolean
 
-	element(): TagElement
+	Fail(message:string): InitializationFailure
 }
 
 

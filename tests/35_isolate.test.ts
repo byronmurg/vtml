@@ -1,7 +1,4 @@
-import VtmlDocument from "../src/document"
-import {InitCtx} from "./test_lib"
-import RootBlock from "../src/block/root_block"
-import * as HTML from "../src/html"
+import {InitCtx, InitRootBlock, InitDocument} from "./test_lib"
 
 describe("v-portal", () => {
 	const exampleVtml = `
@@ -13,7 +10,7 @@ describe("v-portal", () => {
 			<p>$foo</p>
 		</v-portal>
 	`
-	const doc = VtmlDocument.LoadFromString(exampleVtml)
+	const doc = InitDocument(exampleVtml)
 
 	test("portals pass through", async () => {
 		const ctx = InitCtx()
@@ -23,8 +20,7 @@ describe("v-portal", () => {
 	})
 
 	test("portals can be isolated", async () => {
-		const vtml = HTML.parse(exampleVtml, "<test_string>")
-		const rootDoc = new RootBlock(vtml)
+		const rootDoc = InitRootBlock(exampleVtml)
 		const portal = rootDoc.Find((bl) => bl.getName() === "v-portal")
 		expect(portal).toBeDefined()
 
@@ -71,7 +67,7 @@ describe("inbuilt isolate", () => {
 			<p>$foo</p>
 		</div>
 	`
-	const doc = VtmlDocument.LoadFromString(exampleVtml)
+	const doc = InitDocument(exampleVtml)
 
 	test("inbuilts render normally", async () => {
 		const ctx = InitCtx()
@@ -81,8 +77,7 @@ describe("inbuilt isolate", () => {
 	})
 
 	test("inbuilts can be isolated", async () => {
-		const vtml = HTML.parse(exampleVtml, "<test_string>")
-		const rootDoc = new RootBlock(vtml)
+		const rootDoc = InitRootBlock(exampleVtml)
 		const portal = rootDoc.Find((bl) => bl.getName() === "div")
 		expect(portal).toBeDefined()
 

@@ -1,7 +1,42 @@
-import type { TagBlock, Block } from "./types"
+import type { ValidationError, InitializationResponse, InitializationFailure, InitializationSuccess, TagBlock, Block } from "./types"
 import type { Element, TagElement, TextElement } from "./html"
 import { readFileSync } from "fs"
 import pathLib from "path"
+
+export
+function Ok<T>(result:T):InitializationSuccess<T> {
+	return { ok:true, result }
+}
+
+export
+function Err(error:ValidationError): InitializationFailure {
+	return {
+		ok: false,
+		errors: [error],
+	}
+}
+
+export
+function ValidateAgg<T>(...results:InitializationResponse<T>[]): InitializationResponse<T[]> {
+	// ValidateAgg checks through a list of InitializationResponses for errors
+	// and returns all responses as an array
+	const errors: ValidationError[] = []
+	const result: T[] = []
+
+	for (const res of results) {
+		if (res.ok) {
+			result.push(res.result)
+		} else {
+			errors.push(...res.errors)
+		}
+	}
+
+	if (errors.length) {
+		return { ok:false, errors }
+	} else {
+		return Ok(result)
+	}
+}
 
 export const joinPaths = pathLib.posix.join
 
@@ -56,7 +91,11 @@ export function getText(el: TagElement): string {
 }
 
 export function findTitle(block: Block): string {
-	return block.Find(byName("title"))?.requireOneTextChild() || "VTML app"
+	// Find the first title element and return it's contents
+	//
+	// If there is no title element, it has an invalid body, or no body at all;
+	// just return a nice default.
+	return block.Find(byName("title"))?.getOneTextChild() || "VTML app"
 }
 
 export function findHint(
@@ -67,14 +106,6 @@ export function findHint(
 	return block.Find(byName(tag))?.attr(attr)
 }
 
-export function matchActionForm(block: TagBlock): boolean {
-	return block.getName() === "form" && block.hasAttr("v-name")
-}
-
-export function matchPage(block: TagBlock): boolean {
-	return block.getName() === "v-page"
-}
-
 export function byName(name: string) {
 	return (block: TagBlock) => block.getName() === name
 }
@@ -82,12 +113,6 @@ export function byName(name: string) {
 function isTagElement(el: Element): el is TagElement {
 	return el.type === "element"
 }
-
-export const matchPortal = byName("v-portal")
-
-export const matchExpose = byName("v-expose")
-
-export const matchSubscribe = byName("v-subscribe")
 
 export const readFile = (path: string) => {
 	try {

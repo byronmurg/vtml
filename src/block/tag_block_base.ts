@@ -1,18 +1,46 @@
 import * as HTML from "../html"
 import * as Vars from "../variables"
-import type {Block, TagBlock, RenderDescription, AttributeSpec} from "../types"
+import type {Block, TagBlock, InitializationFailure, RenderDescription, AttributeSpec, ValidationError} from "../types"
 import FilterContext from "../filter_context"
 import Debug from "debug"
 import BlockCollection from "./block_collection"
+import {Err} from "../utils"
 
 export default
 abstract class TagBlockBase {
-	public children: BlockCollection
 	debug: Debug.Debugger
+
+	_children: BlockCollection|undefined
+	get children() {
+		if (! this._children) {
+			throw Error(`children accessed before initialization`)
+		} else {
+			return this._children
+		}
+	}
+
+	setChildren(children:BlockCollection) {
+		this._children = children
+	}
+
 
 	constructor(public el:HTML.TagElement, public readonly seq:number, public parent:Block) {
 		this.debug = Debug("vtml:block:"+el.name)
-		this.children = BlockCollection.Create(el.elements, this as unknown as Block)
+	}
+
+	Fail(message:string): InitializationFailure {
+		// A utility function to return a failure
+		const err = this.mkError(message)
+		return Err(err)
+	}
+
+	mkError(message:string): ValidationError {
+		return {
+			message,
+			tag: this.el.name,
+			filename: this.el.filename,
+			linenumber: this.el.linenumber,
+		}
 	}
 
 	element(): HTML.TagElement {
@@ -79,12 +107,6 @@ abstract class TagBlockBase {
 		return this.getPath().join("->")
 	}
 
-	error(message:string): never {
-		const linenumber = this.el.linenumber
-		const filename = this.el.filename
-		throw Error(`${message} in ${this.el.name} at ${filename}:${linenumber}`)
-	}
-
 	hasAttr(name:string): boolean {
 		return name in this.el.attributes
 	}
@@ -101,7 +123,9 @@ abstract class TagBlockBase {
 	requireAttr(key:string) {
 		const v = this.attr(key)
 		if (! v) {
-			this.error(`attribute '${key}' required`)
+			// Note that we should never reach this. The checkAttributes
+			// should ensure that any required attributes are set.
+			throw Error(`attribute '${key}' required`)
 		}
 		return v
 	}
@@ -126,14 +150,45 @@ abstract class TagBlockBase {
 		return !!this.el.elements.length
 	}
 
-	requireOneTextChild(): string {
-		const children = this.el.elements
-		const textEl = children[0]
-		if ((children.length !== 1) || (textEl?.type !== "text")) {
-			this.error(`must have exactly one text element`)
-		}
+	hasOneTextBody() {
+		return !!this.getOneTextChild()
+	}
 
-		return (textEl.text || "").toString().trim()
+	hasNonTextChildren(): boolean {
+		const children = this.el.elements
+		if (children.length === 1) {
+			const textEl = children[0]
+			if (textEl.type === "text") {
+				return false
+			} else {
+				return true
+			}
+		} else {
+			return true
+		}
+	}
+
+	getOneTextChild() {
+		const children = this.el.elements
+		if (children.length === 1) {
+			const textEl = children[0]
+			if (textEl.type === "text") {
+				return textEl.text
+			} else {
+				return ""
+			}
+		} else {
+			return ""
+		}
+	}
+
+	requireOneTextChild(): string {
+		const text = this.getOneTextChild()
+		if (text === "") {
+			// This should have already been checked by the bodyPolicy
+			throw Error (`must have exactly one text element`)
+		}
+		return text
 	}
 
 

@@ -1,8 +1,18 @@
 import type { TagBlock } from "./types"
 import * as OAPI from "openapi3-ts/oas31"
-import {matchInputs} from "./form"
+import {matchInputs} from "./isolates/form"
 import * as Vars from "./variables"
-export type * from "openapi3-ts/oas31"
+export * from "openapi3-ts/oas31"
+
+type InputSchema = {
+	handled: true
+	schema: OAPI.SchemaObject
+	required: boolean
+}
+
+type NotHandled = { handled:false }
+
+type SchemaResult = InputSchema|NotHandled
 
 export
 function toPattern(pattern:string) {
@@ -10,23 +20,26 @@ function toPattern(pattern:string) {
 	return "^"+pattern+"$"
 }
 
-function createExoticFormat(input:TagBlock, format:string): [OAPI.SchemaObject, boolean] {
+function createExoticFormat(input:TagBlock, format:string): SchemaResult {
 	const required = input.boolAttr("required")
 	
-	const property: OAPI.SchemaObject = {
+	const schema: OAPI.SchemaObject = {
 		type: "string",
 		format,
 	}
 
 	const maxLength = input.optNumAttr("maxlength") || input.optNumAttr("v-maxsize")
 	if (maxLength) {
-		property.maxLength = maxLength
+		schema.maxLength = maxLength
 	}
 
-	return [property, required]
+	return {
+		handled: true,
+		schema, required
+	}
 }
 
-function createStringInputSchema(input:TagBlock): [OAPI.SchemaObject, boolean] {
+function createStringInputSchema(input:TagBlock): SchemaResult {
 	const required = input.boolAttr("required")
 
 	let minLength = input.optNumAttr("minlength")
@@ -35,56 +48,59 @@ function createStringInputSchema(input:TagBlock): [OAPI.SchemaObject, boolean] {
 		minLength = 1
 	}
 
-	const property: OAPI.SchemaObject = {
+	const schema: OAPI.SchemaObject = {
 		type: "string",
 		minLength,
 	}
 
 	const pattern = input.attr("pattern")
 	if (pattern) {
-		property.pattern = toPattern(pattern)
+		schema.pattern = toPattern(pattern)
 	}
 
 	const maxLength = input.optNumAttr("maxlength") || input.optNumAttr("v-maxsize")
 	if (maxLength) {
-		property.maxLength = maxLength
+		schema.maxLength = maxLength
 	}
 	
 
-	return [property, required]
+	return {
+		handled: true,
+		schema, required,
+	}
 }
 
-function createBoolInputSchema(): [OAPI.SchemaObject, boolean] {
-	const property: OAPI.SchemaObject = {
+function createBoolInputSchema(): SchemaResult {
+	const schema: OAPI.SchemaObject = {
 		type: "boolean",
 	}
-	return [property, true]
+	return { schema, required:true, handled:true }
 }
 
-function createNumberInputSchema(input:TagBlock): [OAPI.SchemaObject, boolean] {
-	const property: OAPI.SchemaObject = {
+function createNumberInputSchema(input:TagBlock): SchemaResult {
+	const schema: OAPI.SchemaObject = {
 		type: "number"
 	}
 
 	const min = input.optNumAttr("min")
 	if (min !== undefined) {
-		property.minimum = min
+		schema.minimum = min
 	}
 
 	const max = input.optNumAttr("max")
 	if (max !== undefined) {
-		property.maximum = max
+		schema.maximum = max
 	}
 
 	const step = input.optNumAttr("step")
 	if (step !== undefined) {
-		property.multipleOf = step
+		schema.multipleOf = step
 	}
 
-	return [property, true]
+	return { handled:true, schema, required:true }
 }
 
-function createInputSchema(input:TagBlock): [OAPI.SchemaObject, boolean]|undefined {
+function createInputSchema(input:TagBlock): SchemaResult {
 	
 	switch (input.attr("type")) {
 		case "radio": // @NOTE Radios are handled elsewhere
@@ -92,7 +108,7 @@ function createInputSchema(input:TagBlock): [OAPI.SchemaObject, boolean]|undefin
 		case "reset": // ...or resets
 		case "button": // ...or buttons
 		case "image": // ...or image
-			return undefined
+			return { handled:false }
 		case "range":
 		case "number":
 			return createNumberInputSchema(input)
@@ -120,18 +136,13 @@ function wrapSelectMulti(items:OAPI.SchemaObject): OAPI.SchemaObject {
 	return { type:"array", items }
 }
 
-function createSelectSchema(input:TagBlock): [OAPI.SchemaObject, boolean] {
+function createSelectSchema(input:TagBlock): SchemaResult {
+
 	const options = input.FindAll((child) => child.getName() === "option")
 	const enumOptions: string[] = []
 
 	for (const option of options) {
-		const el = option.element()
-		const nElements = el.elements.length
-		if (nElements > 1) {
-			option.error("Too many children")
-		}
-
-		const textEl = option.requireOneTextChild()
+		const textEl = option.getOneTextChild()
 		const value = option.attr("value")
 		if (value){
 			enumOptions.push(value)
@@ -176,10 +187,14 @@ function createSelectSchema(input:TagBlock): [OAPI.SchemaObject, boolean] {
 
 	const property = isMulti ? wrapSelectMulti(enumProperty) : enumProperty
 
-	return [property, true]
+	return {
+		schema: property,
+		required: true,
+		handled: true
+	}
 }
 
-function createElementSchema(input:TagBlock): [OAPI.SchemaObject, boolean]|undefined {
+function createElementSchema(input:TagBlock): SchemaResult {
 	if (input.getName() === "select") {
 		return createSelectSchema(input)
 	} else {
@@ -187,7 +202,9 @@ function createElementSchema(input:TagBlock): [OAPI.SchemaObject, boolean]|undef
 	}
 }
 
-
+function matchRadio(block:TagBlock) {
+	return (block.getName() === "input") && (block.attr("type") === "radio")
+}
 
 export default
 function CreateFormInputSchema(postForm:TagBlock): OAPI.SchemaObject {
@@ -196,34 +213,38 @@ function CreateFormInputSchema(postForm:TagBlock): OAPI.SchemaObject {
 	const requiredSet = new Set<string>()
 
 	const formInputs = postForm.FindAll(matchInputs)
-	for (const input of formInputs) {
-		const name = input.requireAttr("name")
 
-		const schemaParts = createElementSchema(input)
+	for (const formInput of formInputs) {
+		const name = formInput.attr("name")
 
-		if (!schemaParts) {
+		const inputSchema = createElementSchema(formInput)
+		if (!inputSchema.handled) {
 			continue
 		}
 
-		const [property, propRequired] = schemaParts
-		
-		properties[name] = property
-		if (propRequired) {
+		const {schema, required} = inputSchema
+
+		properties[name] = schema
+		if (required) {
 			requiredSet.add(name)
 		}
 	}
 
 	// Now do the radio buttons
 	const radios:Record<string, Set<string>> = {}
-	for (const input of formInputs) {
-		if (input.getName() !== "input") continue
-		if (input.attr("type") !== "radio") continue
+	const radioInputs = postForm.FindAll(matchRadio)
+	for (const input of radioInputs) {
+		// We have already validated names.
+		const name = input.attr('name')
 
-		const name = input.requireAttr('name')
+		// If an option set for this radio group does not exist then
+		// create one
 		const options = radios[name] || (radios[name] = new Set())
+		// Add the value to the option set
 		const value = input.attr('value')
 		options.add(value)
 
+		// If any of the radios are required then they all are
 		if (input.boolAttr("required")) {
 			requiredSet.add(name)
 		}
@@ -242,7 +263,7 @@ function CreateFormInputSchema(postForm:TagBlock): OAPI.SchemaObject {
 		type: "object",
 		properties,
 		additionalProperties: false,
-		required: [...requiredSet],
+		required: [...requiredSet], //@NOTE convert Set to array
 	}
 
 	return inputSchema

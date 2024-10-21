@@ -1,11 +1,14 @@
 import TagBlockBase from "./tag_block_base"
-import type {Branch, TagBlock, ChainResult, BlockReport, IsolateReponse, AttributeSpec, RenderDescription, Block} from "../types"
+import type {Branch, TagBlock, ChainResult, BlockReport, IsolateReponse, AttributeSpec, RenderDescription, Block, InitializationResponse} from "../types"
 
 import uniq from "lodash/uniq"
+import BlockCollection from "./block_collection"
 import * as Vars from "../variables"
 import * as GlobalVars from "../global_variables"
 import * as HTML from "../html"
+import * as utils from "../utils"
 import FilterContext from "../filter_context"
+import ValidationSet from "../validation_set"
 
 const attrOps = {
 	pass: { special:true },
@@ -32,8 +35,14 @@ class InbuiltBlock extends TagBlockBase implements TagBlock {
 	private dynamic: boolean
 	private constant: HTML.Element|undefined
 
-	constructor(el:HTML.TagElement, seq:number, parent:Block) {
+	private constructor(el:HTML.TagElement, seq:number, parent:Block) {
 		super(el, seq, parent)
+		// Asume dynamic until children are set
+		this.dynamic = true
+	}
+
+	override setChildren(children:BlockCollection) {
+		super.setChildren(children)
 
 		const myVars = this.getVarsInAttributes()
 		this.dynamic = (myVars.all.length > 0) || this.areAnyChildrenDynamic()
@@ -43,31 +52,49 @@ class InbuiltBlock extends TagBlockBase implements TagBlock {
 		}
 	}
 	
+	static Init(el:HTML.TagElement, seq:number, parent:Block) {
+		const block = new InbuiltBlock(el, seq, parent)
+		const childrenResult = BlockCollection.Create(el.elements, block)
+		if (! childrenResult.ok) {
+			return childrenResult
+		}
+
+		block.setChildren(childrenResult.result)
+
+		return utils.Ok(block)
+	}
+
 
 	isDynamic(): boolean {
 		return this.dynamic
 	}
 
-	checkConsumers(inputs:string[], globals:string[]) {
+	checkConsumers(inputs:string[], globals:string[]): InitializationResponse<void> {
+		const validationSet = new ValidationSet(this)
+
 		const consumes = this.getVarsInAttributes()
 
 		for (const consume of consumes.locals) {
 			if (!inputs.includes(consume)) {
-				this.error(`${consume} not defined`)
+				validationSet.error(`${consume} not defined`)
 			}
 		}
 
 		for (const glob of consumes.globals) {
 			if (!GlobalVars.isValidGlobal(glob)) {
-				this.error(`invalid global ${glob}`)
+				validationSet.error(`invalid global ${glob}`)
 			}
 
 			if (GlobalVars.isProvidedGlobal(glob) && !globals.includes(glob)) {
-				this.error(`global ${glob} not found`)
+				validationSet.error(`global ${glob} not found`)
 			}
 		}
 
-		this.children.checkAllConsumer(inputs, globals)
+		if (!validationSet.isOk) {
+			return validationSet.Fail()
+		}
+
+		return this.children.checkAllConsumer(inputs, globals)
 	}
 
 	report(): BlockReport {

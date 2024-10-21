@@ -14,6 +14,7 @@ const VMarkdown = CreateDisplayTag({
 		"src": { special:true, relative:true },
 		"source": { source:true },
 	},
+	bodyPolicy: "allow",
 
 	prepareRender(block) {
 		const filename = block.element().filename
@@ -21,7 +22,7 @@ const VMarkdown = CreateDisplayTag({
 
 		if (source) {
 			if (block.hasChildren()) {
-				block.error(`cannot have a body when source is set`)
+				throw Error(`cannot have a body when source is set`)
 			}
 
 			return async (ctx) => {
@@ -38,7 +39,7 @@ const VMarkdown = CreateDisplayTag({
 			const html = mdToHtml(md, filename)
 
 			if (block.attr("src") && block.hasChildren()) {
-				block.error(`cannot have a body when source is set`)
+				throw Error(`cannot have a body when src is set`)
 			}
 
 

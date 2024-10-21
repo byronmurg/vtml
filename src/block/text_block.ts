@@ -1,7 +1,8 @@
-import type {Branch, Block, TagBlock, ChainResult, BlockReport, IsolateReponse, Chain} from "../types"
+import type {Branch, Block, TagBlock, ChainResult, BlockReport, IsolateReponse, Chain, ValidationError, InitializationResponse} from "../types"
 import * as HTML from "../html"
 import * as Vars from "../variables"
 import * as GlobalVars from "../global_variables"
+import {Ok} from "../utils"
 import FilterContext from "../filter_context"
 
 export default
@@ -11,9 +12,14 @@ class TextBlock implements Block {
 	private safeText: string
 	
 
-	constructor(private el:HTML.TextElement, private seq:number, private parent:Block) {
+	private constructor(private el:HTML.TextElement, private seq:number, private parent:Block) {
 		this.bodyVars = this.getVarsInBody()
 		this.safeText = HTML.escapeHtml(el.text)
+	}
+
+	static Init(el:HTML.TextElement, seq:number, parent:Block) {
+		const block = new TextBlock(el, seq, parent)
+		return Ok(block)
 	}
 
 	getName() {
@@ -47,21 +53,41 @@ class TextBlock implements Block {
 		return resp
 	}
 
-	checkConsumers(inputs:string[], globals:string[]) {
+	mkError(message:string): ValidationError {
+		return {
+			message,
+			tag: '#text',
+			filename: this.el.filename,
+			linenumber: this.el.linenumber,
+		}
+	}
+
+	checkConsumers(inputs:string[], globals:string[]): InitializationResponse<void> {
+		const errors: ValidationError[] = []
+		const error = (message:string) => {
+			errors.push(this.mkError(message))
+		}
+
 		for (const consume of this.bodyVars.locals) {
 			if (!inputs.includes(consume)) {
-				this.error(`${consume} not defined`)
+				error(`${consume} not defined`)
 			}
 		}
 
 		for (const glob of this.bodyVars.globals) {
 			if (!GlobalVars.isValidGlobal(glob)) {
-				this.error(`invalid global ${glob}`)
+				error(`invalid global ${glob}`)
 			}
 
 			if (GlobalVars.isProvidedGlobal(glob) && !globals.includes(glob)) {
-				this.error(`global ${glob} not found`)
+				error(`global ${glob} not found`)
 			}
+		}
+
+		if (errors.length) {
+			return { ok:false, errors }
+		} else {
+			return { ok:true, result:undefined }
 		}
 	}
 
@@ -98,15 +124,8 @@ class TextBlock implements Block {
 		return this.getPath().join("->")
 	}
 
-	error(message:string): never {
-		const linenumber = this.el.linenumber
-		const filename = this.el.filename
-		const parentName = this.parent.getName()
-		throw Error(`${message} in ${parentName} at ${filename}:${linenumber}`)
-	}
-
 	CheckContains(): Promise<ChainResult> {
-		this.error(`CheckContains called on TextBlock`)
+		throw Error(`CheckContains called on TextBlock`)
 	}
 
 	CheckPreceeds(ctx:FilterContext): Promise<FilterContext> {

@@ -10,11 +10,9 @@ const VYaml = CreateLoaderTag({
 		"src": { special:true, relative:true, required:true },
 		"target": { target:true, required:true },
 	},
+	bodyPolicy: "deny",
 
 	prepareChain(block) {
-		if (block.hasChildren()) {
-			block.error(`cannot have a body`)
-		}
 
 		const yamlSrc = block.attr("src")
 		const yaml = utils.readFile(yamlSrc)

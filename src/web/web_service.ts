@@ -10,11 +10,7 @@ import FilterContext from "../filter_context"
 import type {ResponseError} from "../types"
 import {CreateResponseError} from "./web_utils"
 
-import type {FormDescriptor} from "../form"
-import type {PortalDescriptor} from "../portal"
-import type {ExposeDescriptor} from "../expose"
-import type {PageDescriptor} from "../page"
-import type {SubscribeDescriptor} from "../subscribe"
+import type {FormDescriptor, PortalDescriptor, ExposeDescriptor, PageDescriptor, SubscribeDescriptor} from "../isolates"
 
 
 import Debug from "debug"

@@ -1,6 +1,6 @@
 import CreatePassthroughTag from "./passthrough"
 import type {VtmlTag} from "../types"
-import {getPathParameterGlobals} from "../page"
+import {getPathParameterGlobals} from "../isolates/page"
 
 const VExposePassthrough = CreatePassthroughTag({
 	name: "v-expose",
@@ -8,6 +8,7 @@ const VExposePassthrough = CreatePassthroughTag({
 		src: { required:true, relative:true },
 		path: { required:true, special:true },
 	},
+	bodyPolicy: "deny",
 })
 
 // Follow the behaviour of a passthrough but

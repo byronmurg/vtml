@@ -8,12 +8,13 @@ const VJson = CreateLoaderTag({
 		"src": { special:true, relative:true },
 		"target": { target:true, required:true },
 	},
+	bodyPolicy: "allowTextOnly",
 
 	prepareChain(block) {
 		const json = block.bodyOrSrc()
 
 		if (block.attr("src") && block.hasChildren()) {
-			block.error(`cannot have a body when src is set`)
+			throw Error(`cannot have a body when src is set`)
 		}
 
 		const targetAttr = block.targetAttr()

@@ -1,12 +1,4 @@
-import VtmlDocument from "../src/document"
-import {InitCtx} from "./test_lib"
-
-// Just an example context
-const ctx = InitCtx()
-
-function trimAll(str:string): string {
-	return str.split("\n").map((s) => s.trim()).join("")
-}
+import {RenderTest} from "./test_lib"
 
 test("script empty as normal", async () => {
 	const exampleHTML = `
@@ -14,10 +6,9 @@ test("script empty as normal", async () => {
 		<script src="thing.js" />
 	`
 
-	const doc = VtmlDocument.LoadFromString(exampleHTML)
+	const fooOut = await RenderTest(exampleHTML)
 
-	const fooOut = await doc.renderLoaderMl(ctx)
-	expect(trimAll(fooOut)).toBe(`<script src="thing.js"></script>`)
+	expect(fooOut).toBe(`<script src="thing.js"></script>`)
 })
 
 test("script basic binding", async () => {
@@ -26,10 +17,8 @@ test("script basic binding", async () => {
 		<script>let f = $foo</script>
 	`
 
-	const doc = VtmlDocument.LoadFromString(exampleHTML)
-
-	const fooOut = await doc.renderLoaderMl(ctx)
-	expect(trimAll(fooOut)).toBe(`<script>let f = 22</script>`)
+	const fooOut = await RenderTest(exampleHTML)
+	expect(fooOut).toBe(`<script>let f = 22</script>`)
 })
 
 test("script complex binding", async () => {
@@ -38,8 +27,6 @@ test("script complex binding", async () => {
 		<script>let f = $foo</script>
 	`
 
-	const doc = VtmlDocument.LoadFromString(exampleHTML)
-
-	const fooOut = await doc.renderLoaderMl(ctx)
-	expect(trimAll(fooOut)).toBe(`<script>let f = [1,2,3]</script>`)
+	const fooOut = await RenderTest(exampleHTML)
+	expect(fooOut).toBe(`<script>let f = [1,2,3]</script>`)
 })

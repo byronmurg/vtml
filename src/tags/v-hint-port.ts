@@ -6,4 +6,5 @@ const VHintPort = CreatePassthroughTag({
 	attributes: {
 		port: { required:true, special:true },
 	},
+	bodyPolicy: "deny",
 })

@@ -3,20 +3,12 @@ import * as OAPI from "./oapi"
 import preLoad from "./pre_load"
 
 import FilterContext from "./filter_context"
-import type {RootDataset, Block, RenderResponse, BodyType} from "./types"
+import type {RootDataset, Block, RenderResponse, BodyType, InitializationResponse} from "./types"
 import {MakeRootBlock} from "./block"
-import PrepareForm from "./form"
-import type {FormDescriptor} from "./form"
 import  {Readable, PassThrough} from "stream"
-import PreparePortal from "./portal"
-import type {PortalDescriptor} from "./portal"
-import PrepareExpose from "./expose"
-import type {ExposeDescriptor} from "./expose"
-import PreparePage from "./page"
-import type {PageDescriptor} from "./page"
-import PrepareSubscribes from "./subscribe"
-import type {SubscribeDescriptor} from "./subscribe"
+import type {FormDescriptor, SubscribeDescriptor, PortalDescriptor, ExposeDescriptor, PageDescriptor} from "./isolates"
 import * as utils from "./utils"
+import prepareIsolates from "./isolates"
 
 async function streamToString(stream:Readable): Promise<string> {
     const chunks:string[] = [];
@@ -28,10 +20,21 @@ async function streamToString(stream:Readable): Promise<string> {
     return chunks.join("")
 }
 
+type VtmlDocumentComponents = {
+	rootBlock: Block
+	forms: FormDescriptor[]
+	portals: PortalDescriptor[]
+	exposes: ExposeDescriptor[]
+	pages: PageDescriptor[]
+	subscribes: SubscribeDescriptor[]
+
+	//oapiSchema: OAPI.OpenAPIObject
+}
 
 
 export default
 class VtmlDocument {
+	private readonly rootBlock: Block
 	public readonly forms: FormDescriptor[]
 	public readonly portals: PortalDescriptor[]
 	public readonly exposes: ExposeDescriptor[]
@@ -39,112 +42,49 @@ class VtmlDocument {
 	public readonly subscribes: SubscribeDescriptor[]
 
 	public readonly oapiSchema: OAPI.OpenAPIObject
-	private rootBlock: Block
-	private pathMap: Record<string, boolean> = {}
 	public readonly hasCatch: boolean
 
-	private constructor(root:HTML.Element[]) {
-		this.rootBlock = MakeRootBlock(root)
-		this.forms = this.prepareForms()
-		this.pages = this.preparePages()
-		this.portals = this.preparePortals()
-		this.exposes = this.prepareExposes()
-		this.subscribes = this.prepareSubscribes()
+	private constructor(components:VtmlDocumentComponents) {
+		this.rootBlock = components.rootBlock
+		this.forms = components.forms
+		this.pages = components.pages
+		this.portals = components.portals
+		this.exposes = components.exposes
+		this.subscribes = components.subscribes
+
 		this.oapiSchema = OAPI.createOpenApiSchema(this)
 		this.hasCatch = !!this.rootBlock.Find(utils.byName("v-catch"))
 	}
+
+	static Init(root:HTML.Element[]): InitializationResponse<VtmlDocument> {
+		const rootBlockResponse = MakeRootBlock(root)
+		if (!rootBlockResponse.ok) {
+			return rootBlockResponse
+		}
+		const rootBlock = rootBlockResponse.result
+
+		const isolateResponse = prepareIsolates(rootBlock)
+		if (! isolateResponse.ok) {
+			return isolateResponse
+		}
+
+		const isolateComponents = isolateResponse.result
+		
+		const doc = new VtmlDocument({
+			rootBlock,
+			...isolateComponents,
+		})
+
+		return utils.Ok(doc)
+	}
+
 
 	get title() {
 		return utils.findTitle(this.rootBlock)
 	}
 
-	preparePages() {
-		const pages = this.rootBlock.FindAll(utils.matchPage).map(PreparePage)
-
-		for (const page of pages) {
-			if (this.pathMap[page.path]) {
-				throw Error(`Duplicate path in page ${page.path}`)
-			}
-
-			this.pathMap[page.path] = true
-		}
-
-		return pages
-	}
-
 	getPages() {
 		return this.pages
-	}
-
-	prepareForms(): FormDescriptor[] {
-		const actionForms = this.rootBlock.FindAll(utils.matchActionForm)
-
-		const forms = actionForms.map(PrepareForm)
-
-		// Check for duplicate v-name(s). Even though the full path may be
-		// different for each form the v-name must be unique.
-
-		for (const form of forms) {
-
-			if (this.pathMap[form.path]) {
-				throw Error(`Duplicate path in form ${form.path}`)
-			}
-
-			this.pathMap[form.path] = true
-		}
-
-		return forms
-	}
-
-	preparePortals(): PortalDescriptor[] {
-		const portalBlocks = this.rootBlock.FindAll(utils.matchPortal)
-
-		const portals = portalBlocks.map(PreparePortal)
-
-		for (const portal of portals) {
-
-			if (this.pathMap[portal.path]) {
-				throw Error(`Duplicate path in portal ${portal.path}`)
-			}
-
-			this.pathMap[portal.path] = true
-		}
-
-		return portals
-	}
-
-	prepareExposes(): ExposeDescriptor[] {
-		const exposeBlocks = this.rootBlock.FindAll(utils.matchExpose)
-
-		const exposes = exposeBlocks.map(PrepareExpose)
-
-		for (const expose of exposes) {
-
-			if (this.pathMap[expose.path]) {
-				throw Error(`Duplicate path in expose ${expose.path}`)
-			}
-
-			this.pathMap[expose.path] = true
-		}
-
-		return exposes
-	}
-
-	prepareSubscribes(): SubscribeDescriptor[] {
-		const subscribeBlocks = this.rootBlock.FindAll(utils.matchSubscribe)
-
-		const subscribes = subscribeBlocks.map(PrepareSubscribes)
-
-		for (const subscribe of subscribes) {
-
-			if (this.pathMap[subscribe.path]) {
-				throw Error(`Duplicate path in subscribe ${subscribe.path}`)
-			}
-
-			this.pathMap[subscribe.path] = true
-		}
-
-		return subscribes
 	}
 
 	findHint(tag:string, attr:string): string|undefined {
@@ -180,15 +120,14 @@ class VtmlDocument {
 		return form.execute(rootDataset, body)
 	}
 
-
 	static LoadFromString(html:string) {
 		const document = HTML.parse(html, "<string>")
-		return new this(document)
+		return VtmlDocument.Init(document)
 	}
 
 	static LoadFromFile(filePath:string) {
 		const document = preLoad(filePath)
-		return new this(document)
+		return VtmlDocument.Init(document)
 	}
 
 	getRenderDescription() {

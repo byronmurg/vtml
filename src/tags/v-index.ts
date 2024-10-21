@@ -4,6 +4,7 @@ export
 const VIndex = CreateDisplayTag({
 	name: "v-index",
 	attributes: {},
+	bodyPolicy: "require",
 
 	prepareRender(block) {
 		return async (ctx) => {

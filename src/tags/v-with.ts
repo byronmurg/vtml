@@ -1,7 +1,6 @@
 import type {VtmlTag} from "../types"
 import type FilterContext from "../filter_context"
 
-
 export
 const VWith: VtmlTag = {
 	name: "v-with",
@@ -9,6 +8,7 @@ const VWith: VtmlTag = {
 		source: { source:true, required:true },	
 		as: { inject:true, required:true },	
 	},
+	bodyPolicy: "require",
 
 	prepare(block) {
 		const source = block.sourceAttr()

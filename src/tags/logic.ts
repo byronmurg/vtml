@@ -1,6 +1,6 @@
-import type {TagCommon, VtmlTag} from "../types"
 import type {VtmlBlock} from "../block"
 import type FilterContext from "../filter_context"
+import type {TagCommon, VtmlTag} from "../types"
 
 type LogicTag = TagCommon & {
 	prepareLogic: (block:VtmlBlock) => (ctx:FilterContext) => Promise<boolean>
@@ -12,6 +12,7 @@ function CreateLogicTag(tag:LogicTag): VtmlTag {
 	return {
 		name: tag.name,
 		attributes: tag.attributes,
+		bodyPolicy: "require",
 
 		prepare(block) {
 			const check = tag.prepareLogic(block)

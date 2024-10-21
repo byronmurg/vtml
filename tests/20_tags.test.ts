@@ -1,19 +1,18 @@
-import VtmlDocument from "../src/document"
-import {InitCtx, RenderTest} from "./test_lib"
-
-// Just an example context
-const ctx = InitCtx()
-
-function trimAll(str:string): string {
-	return str.split("\n").map((s) => s.trim()).join("")
-}
+import {RenderTest, RenderErrors, InitDocument, InitCtx, trimAll} from "./test_lib"
 
 test("Unknown tags throw an error", () => {
 	const exampleHTML = `<v-dunnome/>`
 
-	const func = () => VtmlDocument.LoadFromString(exampleHTML)
+	const errors = RenderErrors(exampleHTML)
 
-	expect(func).toThrow(`Unknown VTML tag v-dunnome`)
+	expect(errors).toEqual([
+		{
+			message: "Unknown VTML tag",
+			tag: "v-dunnome",
+			filename: "<string>",
+			linenumber: 1,
+		}
+	])
 })
 
 ///////////////////////////
@@ -81,7 +80,7 @@ test("v-hint-port", async () => {
 		<v-hint-port port="1337" />
 	`
 
-	const doc = VtmlDocument.LoadFromString(exampleHTML)
+	const doc = InitDocument(exampleHTML)
 
 	const port = await doc.findHint("v-hint-port", "port")
 
@@ -99,7 +98,8 @@ describe("v-if", () => {
 			${tag}
 		`
 
-		const doc = VtmlDocument.LoadFromString(exampleHTML)
+		const doc = InitDocument(exampleHTML)
+		const ctx = InitCtx()
 
 		return trimAll(await doc.renderLoaderMl(ctx))
 	}
@@ -173,9 +173,7 @@ test("v-unless", async () => {
 		</v-unless>
 	`
 
-	const doc = VtmlDocument.LoadFromString(exampleHTML)
-
-	const output = await doc.renderLoaderMl(ctx)
+	const output = await RenderTest(exampleHTML)
 
 	expect(output).toBe("")
 })
@@ -194,9 +192,7 @@ test("v-for-each", async () => {
 		</v-for-each>
 	`
 
-	const doc = VtmlDocument.LoadFromString(exampleHTML)
-
-	const output = await doc.renderLoaderMl(ctx)
+	const output = await RenderTest(exampleHTML)
 
 	expect(output).toBe(`<p>foo</p><p>bar</p>`)
 })
@@ -207,9 +203,7 @@ test("v-dump", async () => {
 		<v-dump source="$foo" />
 	`
 
-	const doc = VtmlDocument.LoadFromString(exampleHTML)
-
-	const output = await doc.renderLoaderMl(ctx)
+	const output = await RenderTest(exampleHTML)
 
 	expect(output).toBe(`<pre>"bar"</pre>`)
 })
@@ -224,15 +218,14 @@ test("v-page", async () => {
 		</v-page>
 	`
 
-	const fooCtx = InitCtx({
+	const fooCtx = {
 		path: "/foo",
 		matchedPath: "/foo",
-	})
+	}
 
-	const doc = VtmlDocument.LoadFromString(exampleHTML)
+	const fooOut = await RenderTest(exampleHTML, fooCtx)
 
-	const fooOut = await doc.renderLoaderMl(fooCtx)
-	expect(trimAll(fooOut)).toBe(`Foo`)
+	expect(fooOut).toBe(`Foo`)
 })
 
 test(`select`, async () => {
@@ -244,9 +237,7 @@ test(`select`, async () => {
 		</select>
 	`
 
-	const doc = VtmlDocument.LoadFromString(exampleHTML)
-
-	const output = await doc.renderLoaderMl(ctx)
+	const output = await RenderTest(exampleHTML)
 
 	expect(output).toBe(`<select name="foo_test" value="foo"><option selected="yes">foo</option><option>bar</option></select>`)
 })
@@ -256,7 +247,8 @@ test(`v-set-status`, async () => {
 		<v-set-status code="403" />
 	`
 
-	const doc = VtmlDocument.LoadFromString(exampleHTML)
+	const doc = InitDocument(exampleHTML)
+	const ctx = InitCtx()
 
 	const res = await doc.renderDocument(ctx)
 
@@ -285,5 +277,14 @@ test(`v-expose`, async () => {
 		</v-expose>
 	`
 
-	expect(() => RenderTest(html)).toThrow(`can never have a body in v-expose at <string>:2`)
+	const errors = RenderErrors(html)
+
+	expect(errors).toEqual([
+		{
+			message: `Must not have body`,
+			tag: "v-expose",
+			filename: "<string>",
+			linenumber: 2
+		}
+	])
 })

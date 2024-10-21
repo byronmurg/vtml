@@ -7,6 +7,7 @@ export const VForEach: VtmlTag = {
 		as: { required:true, inject:true },
 		keyas: { inject:true },
 	},
+	bodyPolicy: "require",
 
 	isLoop: true,
 

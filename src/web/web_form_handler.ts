@@ -1,7 +1,7 @@
 import WebRouter from "./web_router"
 import WebService from "./web_service"
 import type WebClient from "./web_client"
-import type {FormDescriptor} from "../form"
+import type {FormDescriptor} from "../isolates/form"
 import Multer from "multer"
 import Debug from "debug"
 import {CreateResponseError} from "./web_utils"

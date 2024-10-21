@@ -1,5 +1,4 @@
-import VtmlDocument from "../src/document"
-import {InitCtx} from "./test_lib"
+import {InitDocument, InitCtx} from "./test_lib"
 
 test("nothing renders when no error is set", async () => {
 	const ctx = InitCtx()
@@ -12,7 +11,7 @@ test("nothing renders when no error is set", async () => {
 		</v-catch>
 	`
 
-	const doc = VtmlDocument.LoadFromString(exampleHTML)
+	const doc = InitDocument(exampleHTML)
 	const res = await doc.renderLoaderMl(ctx)
 
 	expect(res).toBe("")
@@ -29,7 +28,7 @@ test("error is set", async () => {
 		</v-catch>
 	`
 
-	const doc = VtmlDocument.LoadFromString(exampleHTML)
+	const doc = InitDocument(exampleHTML)
 	const res = await doc.renderLoaderMl(ctx)
 
 	expect(res).toBe("<p>Internal Server Error</p>")

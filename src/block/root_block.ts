@@ -1,17 +1,48 @@
-import type {Branch, Block, TagBlock, BlockReport, RenderDescription } from "../types"
+import type {Branch, Block, TagBlock, BlockReport, InitializationResponse, RenderDescription } from "../types"
 import * as HTML from "../html"
 import FilterContext from "../filter_context"
 import BlockCollection from "./block_collection"
+import {Ok} from "../utils"
 
 
 export default
 class RootBlock implements Block {
 
-	public children: BlockCollection
+	private constructor() {}
 
-	constructor(children:HTML.Element[]) {
-		this.children = BlockCollection.Create(children, this)
-		this.checkConsumers()
+	_children: BlockCollection|undefined
+	get children() {
+		if (! this._children) {
+			throw Error(`children accessed before initialization`)
+		} else {
+			return this._children
+		}
+	}
+
+	setChildren(children:BlockCollection) {
+		this._children = children
+	}
+
+	static Init(children:HTML.Element[]): InitializationResponse<RootBlock> {
+		const block = new RootBlock()
+
+		const childrenResult = BlockCollection.Create(children, block)
+		if (! childrenResult.ok) {
+			return childrenResult
+		}
+
+		block.setChildren(childrenResult.result)
+
+		const consumerResponse = block.checkConsumers()
+		if (! consumerResponse.ok) {
+			return consumerResponse
+		}
+
+		return Ok(block)
+	}
+
+	setParent() {
+		throw Error(`Cannot set the parent of a root block`)
 	}
 
 	isDynamic() {
@@ -19,16 +50,21 @@ class RootBlock implements Block {
 		return true
 	}
 
-	error(msg:string): never {
-		throw Error(msg)
+	mkError(message:string) {
+		return {
+			message,
+			filename: "<root>",
+			linenumber: 0,
+			tag: "<root_block>"
+		}
 	}
 
 	report(): BlockReport {
 		return this.children.aggReport()
 	}
 
-	checkConsumers() {
-		this.children.checkAllConsumer([], [])
+	checkConsumers(): InitializationResponse<void> {
+		return this.children.checkAllConsumer([], [])
 	}
 
 	Find(check:(el:TagBlock) => boolean): TagBlock|undefined {

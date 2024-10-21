@@ -1,16 +1,19 @@
-import type {RootDataset, TagBlock, PortalResult} from "./types"
-import * as utils from "./utils"
-import FilterContext from "./filter_context"
-import {ServerError} from "./default_errors"
+import type {RootDataset, TagBlock, PortalResult, InitializationResponse} from "../types"
+import * as utils from "../utils"
+import FilterContext from "../filter_context"
+import {ServerError} from "../default_errors"
+import ValidationSet from "../validation_set"
 
 export
 type PortalDescriptor = {
 	path: string
 	load: (rootDataset:RootDataset) => Promise<PortalResult>
+	block: TagBlock
 }
 
 export default
-function preparePortal(portalTag:TagBlock): PortalDescriptor {
+function preparePortal(portalTag:TagBlock): InitializationResponse<PortalDescriptor> {
+	const validationSet = new ValidationSet(portalTag)
 
 	// Figure out the form path suffix
 	const path = portalTag.attr("path")
@@ -19,7 +22,11 @@ function preparePortal(portalTag:TagBlock): PortalDescriptor {
 	const pagePath = utils.findNearestPagePath(portalTag)
 
 	if (!path.startsWith(pagePath)) {
-		portalTag.error(`v-portal path ${path} must extend it's parent page ${pagePath}`)
+		validationSet.error(`v-portal path ${path} must extend it's parent page ${pagePath}`)
+	}
+
+	if (! validationSet.isOk) {
+		return validationSet.Fail()
 	}
 
 	const isolate = portalTag.Isolate()
@@ -82,8 +89,9 @@ function preparePortal(portalTag:TagBlock): PortalDescriptor {
 		}
 	}
 
-	return {
+	return utils.Ok({
 		path,
+		block: portalTag,
 		load,
-	}
+	})
 }

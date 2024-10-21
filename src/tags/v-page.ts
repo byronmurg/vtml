@@ -1,5 +1,5 @@
 import type { VtmlTag } from "../types"
-import {getPathParameterGlobals} from "../page"
+import {getPathParameterGlobals} from "../isolates/page"
 import * as utils from "../utils"
 
 export
@@ -10,6 +10,7 @@ const VPage: VtmlTag = {
 	},
 
 	providesError: false,
+	bodyPolicy: "require",
 
 	prepare: (block) => {
 		const path = block.attr("path")
@@ -17,13 +18,9 @@ const VPage: VtmlTag = {
 		const subPages = block.FindChildren(utils.byName("v-page"))
 		const subPaths: string[] = []
 
-		// Check that all sub-pages start with this page's path.
+		// Get all sub-paths. These wil have been validated by the isolate.
 		for (const subPage of subPages) {
 			const subPath = subPage.attr("path")
-			if (! subPath.startsWith(path)) {
-				subPage.error(`path must start with parent path (${path})`)
-			}
-
 			// Then collect the paths
 			subPaths.push(subPath)
 		}
@@ -35,7 +32,10 @@ const VPage: VtmlTag = {
 
 			preceeds: (ctx) => Promise.resolve(ctx),
 			// Always found!!!
-			contains: (ctx) => Promise.resolve({ ctx, found: true }),
+			contains: (ctx) => {
+				ctx = ctx.SetVar("$__matchedPage", path)
+				return Promise.resolve({ ctx, found: true })
+			},
 
 			async render(ctx) {
 				const matchPath = ctx.rootDataset.matchedPath

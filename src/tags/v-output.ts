@@ -7,11 +7,12 @@ const VOutput = CreateLoaderTag({
 	attributes: {
 		source: { required:true, source:true },
 	},
+	bodyPolicy: "requireTextOnly",
 
 	prepareChain(block) {
 		const parentAction = block.findAncestor(utils.byName("v-action"))
 		if (! parentAction) {
-			block.error(`Must appear inside a v-action`)
+			throw Error(`Must appear inside a v-action`)
 		}
 
 		const source = block.sourceAttr()

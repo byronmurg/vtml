@@ -8,6 +8,7 @@ const VSetStatus = CreateLoaderTag({
 	attributes: {
 		"code": {  required:true },
 	},
+	bodyPolicy: "deny",
 
 	prepareChain(block) {
 		return async (ctx) => {

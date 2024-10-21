@@ -1,8 +1,4 @@
-import VtmlDocument from "../src/document"
-import {InitCtx} from "./test_lib"
-
-// Just an example context
-const ctx = InitCtx()
+import {RenderTest, RenderErrors} from "./test_lib"
 
 test("v-nodejs basic", async () => {
 
@@ -15,9 +11,7 @@ test("v-nodejs basic", async () => {
 		<p>$foo</p>
 	`
 
-	const doc = VtmlDocument.LoadFromString(exampleHTML)
-
-	const output = await doc.renderLoaderMl(ctx)
+	const output = await RenderTest(exampleHTML)
 
 	expect(output).toBe(`<p>24</p>`)
 })
@@ -37,14 +31,12 @@ test("v-nodejs binding", async () => {
 		<p>$foo</p>
 	`
 
-	const doc = VtmlDocument.LoadFromString(exampleHTML)
-
-	const output = await doc.renderLoaderMl(ctx)
+	const output = await RenderTest(exampleHTML)
 
 	expect(output).toBe(`<p>24</p>`)
 })
 
-test("v-nodejs invalid", async () => {
+test("v-nodejs invalid", () => {
 	expect.assertions(1)
 
 	const exampleHTML = `
@@ -55,13 +47,16 @@ test("v-nodejs invalid", async () => {
 		<p>$foo</p>
 	`
 
-	try {
-		const doc = VtmlDocument.LoadFromString(exampleHTML)
-		await doc.renderLoaderMl(ctx)
-	} catch (err) {
-		const e = err as Error
-		expect(e.message).toMatch(/^Syntax error in v-node/)
-	}
+	const errors = RenderErrors(exampleHTML)
+
+	expect(errors).toEqual([
+		{
+			message: "Syntax error in v-node: Unexpected number",
+			filename: "<string>",
+			linenumber: 2,
+			tag: "v-nodejs",
+		}
+	])
 })
 
 test("v-nodejs throw", async () => {
@@ -73,8 +68,7 @@ test("v-nodejs throw", async () => {
 		<p>$foo</p>
 	`
 	try {
-		const doc = VtmlDocument.LoadFromString(exampleHTML)
-		await doc.renderDocument(ctx)
+		await RenderTest(exampleHTML)
 	} catch (err) {
 		const e = err as Error
 		expect(e.message).toMatch(`Error in v-node: See me`)
@@ -94,8 +88,7 @@ test("v-nodejs multiple throw", async () => {
 		<p>$foo $bar</p>
 	`
 	try {
-		const doc = VtmlDocument.LoadFromString(exampleHTML)
-		await doc.renderDocument(ctx)
+		await RenderTest(exampleHTML)
 	} catch (err) {
 		const e = err as Error
 		expect(e.message).toMatch(`Error in v-node: See me`)

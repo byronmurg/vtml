@@ -1,16 +1,19 @@
-import type {RootDataset, TagBlock, SubscribeResult} from "./types"
-import * as utils from "./utils"
-import FilterContext from "./filter_context"
-import {ServerError} from "./default_errors"
+import type {RootDataset, TagBlock, SubscribeResult, InitializationResponse} from "../types"
+import * as utils from "../utils"
+import FilterContext from "../filter_context"
+import {ServerError} from "../default_errors"
+import ValidationSet from "../validation_set"
 
 export
 type SubscribeDescriptor = {
 	path: string
+	block: TagBlock
 	canSubscribe: (rootDataset:RootDataset) => Promise<SubscribeResult>
 }
 
 export default
-function prepareSubscribe(subscribe:TagBlock): SubscribeDescriptor {
+function prepareSubscribe(subscribe:TagBlock): InitializationResponse<SubscribeDescriptor> {
+	const validationSet = new ValidationSet(subscribe)
 
 	const channelPath = subscribe.attr("path")
 
@@ -18,7 +21,11 @@ function prepareSubscribe(subscribe:TagBlock): SubscribeDescriptor {
 	const pagePath = utils.findNearestPagePath(subscribe)
 
 	if (!channelPath.startsWith(pagePath)) {
-		subscribe.error(`v-subscribe path ${channelPath} must extend it's parent page ${pagePath}`)
+		validationSet.error(`v-subscribe path ${channelPath} must extend it's parent page ${pagePath}`)
+	}
+
+	if (! validationSet.isOk) {
+		return validationSet.Fail()
 	}
 
 	const isolate = subscribe.Isolate()
@@ -66,8 +73,9 @@ function prepareSubscribe(subscribe:TagBlock): SubscribeDescriptor {
 		}
 	}
 
-	return {
+	return utils.Ok({
 		path:channelPath,
+		block:subscribe,
 		canSubscribe,
-	}
+	})
 }

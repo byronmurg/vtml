@@ -1,4 +1,4 @@
-import {RenderTest} from "./test_lib"
+import {RenderTest, RenderErrors} from "./test_lib"
 
 test("basic variable references", async () => {
 	
@@ -10,13 +10,20 @@ test("basic variable references", async () => {
 	expect(output).toBe(`FOO`)
 })
 
-test("error thrown when undefined", async () => {
+test("error raised when undefined", async () => {
 	
-	const fnc = () => RenderTest(`
+	const errors = RenderErrors(`
 		$foo
 	`)
 
-	expect(fnc).toThrow(`foo not defined in <root> at <string>:1`)
+	expect(errors).toEqual([
+		{
+			message: `$foo not defined`,
+			tag: `#text`,
+			filename: `<string>`,
+			linenumber: 1,
+		}
+	])
 })
 
 test("no error thrown when referencing root variable", async () => {
@@ -56,7 +63,14 @@ test("redefining a variable throws an error", async () => {
 		<v-json target="$one" >2</v-json>
 	`
 
-	const fnc = () => RenderTest(testVtml)
+	const errors = RenderErrors(testVtml)
 
-	expect(fnc).toThrow(`one redefined in v-json at <string>:3`)
+	expect(errors).toEqual([
+		{
+			message: `$one redefined`,
+			tag: "v-json",
+			filename: "<string>",
+			linenumber: 3,
+		},
+	])
 })

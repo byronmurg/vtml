@@ -9,6 +9,7 @@ const VFsReaddir = CreateLoaderTag({
 		"path": { relative:true, required:true },
 		"target": { target:true, required:true },
 	},
+	bodyPolicy: "deny",
 
 	prepareChain(block) {
 		const target = block.targetAttr()

@@ -8,17 +8,14 @@ export const VNotify = CreateLoaderTag({
 		channel: { required:true },
 		message: {},
 	},
+	bodyPolicy: "deny",
 
 	prepareChain: (block) => {
 		if (! EventStream.isConnected()) {
-			block.error(`v-notify used but no EVENT_STREAM_URL environment variable found`)
+			throw Error(`v-notify used but no EVENT_STREAM_URL environment variable found`)
 		}
 
-		if (block.hasChildren()) {
-			block.error(`v-notify cannot have a body`)
-		}
-
-		const loader = async (ctx:FilterContext) => {
+		return async (ctx:FilterContext) => {
 			const attrs = block.templateAttributes(ctx)
 			const channel = attrs['channel']?.toString() ||""
 			const message = attrs['message']?.toString() ||""
@@ -26,7 +23,5 @@ export const VNotify = CreateLoaderTag({
 			EventStream.sendMessage(channel, message)
 			return ctx
 		}
-
-		return loader
 	}
 })

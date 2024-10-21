@@ -1,4 +1,4 @@
-import type { TagCommon, VtmlTag, Branch } from "../types"
+import type {TagCommon, Branch, VtmlTag} from "../types"
 import type FilterContext from "../filter_context"
 import type { VtmlBlock } from "../block"
 
@@ -11,6 +11,9 @@ export default function CreateOverrideTag(tag: OverrideTag): VtmlTag {
 		name: tag.name,
 		attributes: tag.attributes,
 		allowExtraAttributes: true,
+
+		// Although some tags may not have a body that's HTML's problem not ours.
+		bodyPolicy: "allow",
 
 		prepare(block) {
 			const render = tag.prepareRender(block)

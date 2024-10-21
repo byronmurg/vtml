@@ -1,5 +1,4 @@
-import RootBlock from "../src/block/root_block"
-import * as HTML from "../src/html"
+import {InitRootBlock} from "./test_lib"
 
 describe("inbuilt tags", () => {
 
@@ -9,8 +8,7 @@ describe("inbuilt tags", () => {
 				<p>Hi</p>
 			</div>
 		`
-		const vtml = HTML.parse(exampleVtml, "<test_string>")
-		const rootDoc = new RootBlock(vtml)
+		const rootDoc = InitRootBlock(exampleVtml)
 		const div = rootDoc.Find((bl) => bl.getName() === "div")
 		expect(div).toBeDefined()
 
@@ -24,8 +22,7 @@ describe("inbuilt tags", () => {
 				<v-dump source="$.path" />
 			</div>
 		`
-		const vtml = HTML.parse(exampleVtml, "<test_string>")
-		const rootDoc = new RootBlock(vtml)
+		const rootDoc = InitRootBlock(exampleVtml)
 		const div = rootDoc.Find((bl) => bl.getName() === "div")
 		expect(div).toBeDefined()
 
@@ -38,8 +35,7 @@ describe("inbuilt tags", () => {
 				<p>$.path</p>
 			</div>
 		`
-		const vtml = HTML.parse(exampleVtml, "<test_string>")
-		const rootDoc = new RootBlock(vtml)
+		const rootDoc = InitRootBlock(exampleVtml)
 		const div = rootDoc.Find((bl) => bl.getName() === "div")
 		expect(div).toBeDefined()
 
