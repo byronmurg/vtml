@@ -1,4 +1,7 @@
 
+// This is a utility class to figure out the line number in a string given only
+// the indent. It does so by building a length map of all lines.
+
 export default
 class LineMap {
 	constructor(
