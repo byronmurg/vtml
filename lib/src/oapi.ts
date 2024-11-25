@@ -1,5 +1,5 @@
 import type VtmlDocument from "./document"
-import * as OAPI from "openapi3-ts/oas31"
+import type * as OAPI from "openapi3-ts/oas31"
 import {getPathParameters} from "./isolates/page"
 import type {FormDescriptor} from "./isolates/form"
 export type * from "openapi3-ts/oas31"

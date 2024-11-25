@@ -1,8 +1,8 @@
 import type { TagBlock } from "./types"
-import * as OAPI from "openapi3-ts/oas31"
+import type * as OAPI from "openapi3-ts/oas31"
 import {matchInputs} from "./isolates/form"
 import * as Vars from "./variables"
-export * from "openapi3-ts/oas31"
+export type * from "openapi3-ts/oas31"
 
 type InputSchema = {
 	handled: true

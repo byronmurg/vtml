@@ -1,7 +1,6 @@
-build/
-release/
-node_modules/
-coverage/
+*/build/
+*/dist/
+*/release/
+*/node_modules/
+*/coverage/
 deploy.sh
-vtml
-vtml.gz

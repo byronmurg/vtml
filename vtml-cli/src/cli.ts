@@ -1,6 +1,5 @@
-import VtmlDocument from "./document"
-import {serveVtmlDocument} from "./web"
-import type {exposeOptions} from "./web"
+#!/usr/bin/env node
+import {VtmlDocument, exposeOptions, serveVtmlDocument} from "@vtml/lib"
 import {printRenderDescription} from "./description"
 import printValidationErrors from "./validation_errors"
 import {program} from "commander"

@@ -1,5 +1,7 @@
 {
   "compilerOptions": {
+	//"rootDir": "./src",
+
     // Enable latest features
     "lib": ["esnext"],
     "target": "esnext",
@@ -20,6 +22,9 @@
     "noUnusedParameters": true,
     "noPropertyAccessFromIndexSignature": true,
 
-	"outDir": "build/"
+	"outDir": "dist",
+
+	"declaration": true                              /* Generate .d.ts files from TypeScript and JavaScript files in your project. */
+
   }
 }

@@ -1,4 +1,4 @@
-import { ValidationError } from "./types"
+import { ValidationError } from "@vtml/lib/dist/types"
 
 type formatter = (msg:string) => string
 
