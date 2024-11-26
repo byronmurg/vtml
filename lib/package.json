@@ -1,7 +1,9 @@
 {
   "name": "@vtml/lib",
-  "version": "0.4.3",
-  "description": "",
+  "version": "0.4.4",
+  "description": "VTML implementation library",
+  "homepage": "https://vtml.org",
+  "keywords": ["vtml", "web", "framework", "html"],
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -11,6 +13,11 @@
   },
   "author": "Byron Murgatroyd <npm@omanom.com>",
   "license": "MIT",
+
+  "bugs": {
+	"email": "vtml-bugs@omanom.com"
+  },
+
   "dependencies": {
     "ajv": "^8.12.0",
     "ajv-formats": "^3.0.1",

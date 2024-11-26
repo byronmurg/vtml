@@ -1,19 +1,28 @@
 {
   "name": "@vtml/vtml",
-  "version": "0.4.5",
-  "description": "",
+  "version": "0.4.7",
+  "description": "VTML command line cli",
+  "homepage": "https://vtml.org",
+  "keywords": ["vtml", "web", "framework", "html"],
   "main": "src/cli.ts",
-  "bin": "dist/src/cli.js",
+  "bin": {
+    "vtml": "dist/src/cli.js"
+  },
   "scripts": {
-    "lint": "node_modules/.bin/eslint src/**",
-	"prepublish": "tsc"
+    "lint": "eslint src/**",
+    "prepublish": "tsc"
   },
   "author": "Byron Murgatroyd <npm@omanom.com>",
   "license": "MIT",
+
+  "bugs": {
+	"email": "vtml-bugs@omanom.com"
+  },
+
   "dependencies": {
     "commander": "^12.1.0",
     "debug": "^4.3.4",
-	"@vtml/lib": "^0.4.3"
+    "@vtml/lib": "^0.4.4"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.25.8",
