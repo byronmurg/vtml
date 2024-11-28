@@ -27,7 +27,7 @@
     Server-side validation is generated from form inputs. Define the interaction once and
     let VTML take care of the REST.
   code: |
-    <form v-name="say hi" action="/sayhi" >
+    <form v-name="say_hi" action="/sayhi" >
       <input
         name="message"
         type="text"

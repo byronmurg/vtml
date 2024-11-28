@@ -221,7 +221,7 @@ In order to properly explain how the HTML inputs correlate to jsonschema types l
 <input
     maxlength="64"
     minlength="3"
-    pattern="\S="
+    pattern="\S+"
 />
 ```
 
@@ -230,7 +230,7 @@ In order to properly explain how the HTML inputs correlate to jsonschema types l
     "type":"string",
     "maxLength": 64,
     "minLength": 3,
-    "pattern": "\S+",
+    "pattern": "^\S+$",
 }
 ```
 
