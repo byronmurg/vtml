@@ -6,11 +6,14 @@ import {program} from "commander"
 import DevMode from "./dev_mode"
 import starterTemplate from "./template"
 import meta from "../package.json"
+import {getLogo} from "./logo"
+
 
 program.name("vtml")
 	.description("Vtml runtime cli")
 	.version(meta.version)
 	.argument("<file>", "html start file")
+	.addHelpText("before", getLogo(process.stdout.isTTY))
 	.option("--template", "Print the starter template")
 	.option("--dev", "Watch files for changes and restart")
 	.option("--validate", "Validate the document then exit")
