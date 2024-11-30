@@ -44,7 +44,7 @@
 				</fieldset>
 
 				<!--
-					Any 'v-' tag that ends with '-action' will be called when the form submits
+					The 'v-action' tag will be called when the form submits
 					
 					In this case we insert to the text from the form body into table with sql.
 
@@ -66,10 +66,9 @@
 				Now let's get the todos already in the database and show them to the client.
 
 				We start with a v-sql block which selects all todos and sets them to the
-				vtml variable 'todos'. Later we'll be able to reference this variable
-				with '$todos'.
+				vtml variable '$todos'.
 			-->
-			<v-sql target="$todos" >
+			<v-sql target=$todos >
 				SELECT * FROM simple.todos ORDER BY c DESC
 			</v-sql>
 
@@ -80,7 +79,7 @@
 				To do this we use v-for-each and specify the $todos variable to loop through.
 			-->
 
-			<v-for-each source="$todos" as="$todo" >
+			<v-for-each $todos as=$todo >
 
 				<!--
 					We're now inside the loop and can taking in individual rows.
@@ -134,7 +133,7 @@
 						<v-sql>
 							DELETE FROM simple.todos WHERE _id = $.body.id
 						</v-sql>
-					<v-action>
+					</v-action>
 				</form>
 
 			</v-for-each>
@@ -152,7 +151,7 @@
 				So here we have a v-nodejs block that returns the length of the todos array
 				and sets it to the 'ntodos' variable.
 			-->
-			<v-nodejs target="$ntodos" >
+			<v-nodejs target=$ntodos >
 				return $todos.length
 			</v-nodejs>
 
