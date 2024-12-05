@@ -7,17 +7,19 @@
     <header>Routing<header>
     <main>
       <h3>VTML can be</h3>
+      <v-page path="/" >
 
-      <v-index>
-        Great
-      </v-index>
+        <v-index>
+          Great
+        </v-index>
 
-      <v-page path="/speed" >
-        Quick
-      </v-page>
+        <v-page path="/speed" >
+          Quick
+        </v-page>
 
-      <v-page path="/readability" >
-        Simple
+        <v-page path="/readability" >
+          Simple
+        </v-page>
       </v-page>
     </main>
 

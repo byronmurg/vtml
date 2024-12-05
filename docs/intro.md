@@ -6,7 +6,7 @@
 </v-nodejs>
 
 <ul>
-    <v-for-each source=$adjectives as=$adj >
+    <v-for-each $adjectives as=$adj >
         <li>$adj</li>
     </v-for-each>
 </ul>
