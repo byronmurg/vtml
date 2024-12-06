@@ -1,51 +1,51 @@
 <v-yaml src="./reference.yaml" target="$tags" />
 
 <v-for-each source="$tags" as="$entry" >
-		<a id="$entry.tag" href="#$entry.tag"><h3>&lt;$entry.tag&gt;</h3></a>
+	<a id="$entry.tag" href="#$entry.tag"><h3>&lt;$entry.tag&gt;</h3></a>
 
-		<v-if $entry.pre-process >
-			<span class="chip">pre-process</span>
-		</v-if>
-		<v-if $entry.form-only >
-			<span class="chip">form-only</span>
-		</v-if>
+	<v-if $entry.pre-process >
+		<span class="chip">pre-process</span>
+	</v-if>
+	<v-if $entry.form-only >
+		<span class="chip">form-only</span>
+	</v-if>
 
-		<v-markdown $entry.description />
+	<v-markdown $entry.description />
 
-		<v-if $entry.arguments >
-			<table class="arg-table">
-				<thead>
+	<v-if $entry.arguments >
+		<table class="arg-table">
+			<thead>
+				<tr>
+					<th scope="col">name</th>
+					<th scope="col">required</th>
+					<th scope="col">templated</th>
+				</tr>
+			</thead>
+			<tbody>
+				<v-for-each $entry.arguments as=$arg >
 					<tr>
-						<th scope="col">name</th>
-						<th scope="col">required</th>
-						<th scope="col">templated</th>
+						<td>$arg.name</td>
+
+						<td>
+							<v-if $arg.optional >no</v-if>
+							<v-unless $arg.optional >yes</v-unless>
+						</td>
+
+						<v-if $arg.templated >
+							<td>yes</td>
+						</v-if>
+						<v-unless $arg.templated >
+							<td>no</td>
+						</v-unless>
 					</tr>
-				</thead>
-				<tbody>
-					<v-for-each $entry.arguments as=$arg >
-						<tr>
-							<td>$arg.name</td>
+				</v-for-each>
+			</tbody>
+		</table>
+	</v-if>
 
-							<td>
-								<v-if $arg.optional >no</v-if>
-								<v-unless $arg.optional >yes</v-unless>
-							</td>
-
-							<v-if $arg.templated >
-								<td>yes</td>
-							</v-if>
-							<v-unless $arg.templated >
-								<td>no</td>
-							</v-unless>
-						</tr>
-					</v-for-each>
-				</tbody>
-			</table>
-		</v-if>
-
-		<v-if $entry.example >
-			<pre class="language-html"><code>$entry.example</code></pre>
-		</v-if>
+	<v-if $entry.example >
+		<pre class="language-html"><code>$entry.example</code></pre>
+	</v-if>
 
 	<hr class="large" >
 	<div class="space" />
