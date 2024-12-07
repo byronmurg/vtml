@@ -5,7 +5,7 @@
     // Enable latest features
     "lib": ["esnext"],
     "target": "esnext",
-    "module": "commonjs",
+    "module": "nodenext",
     "allowJs": true,
 
     // Bundler mode

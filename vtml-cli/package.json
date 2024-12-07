@@ -1,6 +1,6 @@
 {
   "name": "@vtml/vtml",
-  "version": "0.4.8",
+  "version": "0.4.10",
   "description": "VTML command line cli",
   "homepage": "https://vtml.org",
   "keywords": ["vtml", "web", "framework", "html"],
@@ -22,7 +22,7 @@
   "dependencies": {
     "commander": "^12.1.0",
     "debug": "^4.3.4",
-    "@vtml/lib": "^0.4.4"
+    "@vtml/lib": "^0.4.5"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.25.8",
