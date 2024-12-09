@@ -1,8 +1,9 @@
 {
   "name": "@vtml/vtml",
-  "version": "0.4.12",
+  "version": "0.4.14",
   "description": "VTML command line cli",
   "homepage": "https://vtml.org",
+  "repository": "byronmurg/vtml",
   "keywords": [
     "vtml",
     "web",
