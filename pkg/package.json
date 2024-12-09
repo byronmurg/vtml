@@ -1,6 +1,6 @@
 {
   "name": "@vtml/vtml",
-  "version": "0.4.14",
+  "version": "0.4.15",
   "description": "VTML command line cli",
   "homepage": "https://vtml.org",
   "repository": "byronmurg/vtml",
@@ -11,7 +11,7 @@
     "html"
   ],
   "type": "commonjs",
-  "main": "dist/cli.ts",
+  "main": "dist/index.js",
   "bin": {
     "vtml": "dist/cli.js"
   },
