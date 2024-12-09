@@ -1,4 +1,4 @@
-import type {RenderDescription} from "@vtml/lib/dist/types"
+import type {RenderDescription} from "./types"
 
 function makeIndentString(indent: number): string {
 	return new Array(indent * 2).fill(" ").join("")

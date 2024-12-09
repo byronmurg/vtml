@@ -1,4 +1,4 @@
-import { ValidationError } from "@vtml/lib/dist/types"
+import { ValidationError } from "./types"
 import {red, cyan, yellow} from "./color"
 
 function printValidationError(error:ValidationError) {
