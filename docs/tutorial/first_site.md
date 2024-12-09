@@ -83,10 +83,11 @@ Now we need to actually render the rows. Replace <a class="link" href="/referenc
         <p>$dog.description</p>
       </v-if>
       <div>
-        <v-for-each $dog.attributes keyas=$label as=$value >
-          <label>$label</label>
-          <progress value=$value max=10 />
-        </v-for-each>
+        <label>smelly</label>
+        <progress value=$dog.smelly max=10 />
+
+        <label>cheeky</label>
+        <progress value=$dog.cheeky max=10 />
       </div>
     </div>
   </article>
