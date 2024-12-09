@@ -1,9 +1,14 @@
 {
   "name": "@vtml/vtml",
-  "version": "0.4.11",
+  "version": "0.4.12",
   "description": "VTML command line cli",
   "homepage": "https://vtml.org",
-  "keywords": ["vtml", "web", "framework", "html"],
+  "keywords": [
+    "vtml",
+    "web",
+    "framework",
+    "html"
+  ],
   "type": "commonjs",
   "main": "dist/cli.ts",
   "bin": {
@@ -11,24 +16,22 @@
   },
   "scripts": {
     "lint": "eslint src/**",
-	"test":"node_modules/.bin/jest tests/"
+    "test": "node_modules/.bin/jest tests/"
   },
   "author": "Byron Murgatroyd <npm@omanom.com>",
   "license": "MIT",
-
   "bugs": {
-	"email": "vtml-bugs@omanom.com"
+    "email": "vtml-bugs@omanom.com"
   },
-
   "dependencies": {
-    "commander": "^12.1.0",
-    "debug": "^4.3.4",
     "ajv": "^8.12.0",
     "ajv-formats": "^3.0.1",
     "body-parser": "^1.20.2",
+    "commander": "^12.1.0",
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.6",
-    "express": "^4.21.1",
+    "debug": "^4.3.4",
+    "express": "^4.21.2",
     "htmlparser2": "^9.1.0",
     "lodash": "^4.17.21",
     "marked": "^14.0.0",
@@ -42,18 +45,16 @@
   "devDependencies": {
     "@babel/preset-env": "^7.25.8",
     "@babel/preset-typescript": "^7.25.7",
+    "@eslint/js": "^9.8.0",
     "@types/compression": "^1.7.5",
     "@types/cookie-parser": "^1.4.7",
+    "@types/debug": "^4.1.12",
     "@types/express": "^4.17.21",
     "@types/jest": "^29.5.12",
     "@types/lodash": "^4.17.0",
     "@types/multer": "^1.4.12",
     "@types/node": "^22.7.5",
     "@types/pg": "^8.11.5",
-    "@eslint/js": "^9.8.0",
-    "@types/debug": "^4.1.12",
-    "@types/jest": "^29.5.12",
-    "@types/node": "^22.7.5",
     "eslint": "^9.9.1",
     "globals": "^15.9.0",
     "jest": "^29.7.0",
