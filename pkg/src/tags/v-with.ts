@@ -14,7 +14,10 @@ const VWith: VtmlTag = {
 		const source = block.sourceAttr()
 		const asAttr = block.attr("as")
 
-		const isFound = (ctx:FilterContext) => ctx.getKey(source) !== undefined
+		const isFound = (ctx:FilterContext) => {
+			const v = ctx.getKey(source)
+			return (v !== undefined) && (v !== null)
+		}
 
 		return {
 			injectGlobals: () => [],

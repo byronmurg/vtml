@@ -7,7 +7,7 @@
   - name: as
     optional: true
   description: |
-    Include content block if variable is truthy.
+    Include content block if variable is not undefined or null.
 
     Can also abbreviate long variable paths with the `as` attribute.
 
