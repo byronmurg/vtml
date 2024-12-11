@@ -56,6 +56,18 @@ describe("v-with", () => {
 		expect(output).toBe(``)
 	})
 
+	test("does not render when null", async () => {
+		const output = await RenderTest(`
+			<v-json target="$numbers" >
+				{ "eleventeen":null }
+			</v-json>
+			<v-with source="$numbers.eleventeen" as="$el" >
+				<p>Hello $el</p>
+			</v-with>
+		`)
+		expect(output).toBe(``)
+	})
+
 	test("renders inject variable when defined", async () => {
 		const output = await RenderTest(`
 			<v-json target="$numbers" >
