@@ -71,7 +71,7 @@
     to deliver lightning fast load times.
   code: |
     <v-sql>
-      select lotsof, data from very_big_table;
+      SELECT lotsof, data FROM very_big_table;
     </v-sql>
 
     <v-nodejs>

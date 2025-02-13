@@ -84,7 +84,7 @@ When a <a class="link" href="/reference#form" >&lt;form&gt;</a> is used inside a
 
     <v-action>
       <v-sql>
-        insert into list_entries (listid, text) values ($.params.listid, $.body.text);
+        INSERT INTO list_entries (listid, text) VALUES ($.params.listid, $.body.text);
       </v-sql>
     </v-action>
 

@@ -125,18 +125,32 @@
 			</div>
 
 			<v-try>
+
 				<v-page path="/tutorial" >
+					<v-json target=$link_class >"secondary small-round padding"</v-json>
+					
 					<v-page path="/tutorial/start" >
 						<v-markdown src="./tutorial/start.md" />
+						<a href="/tutorial/hello_world" class=$link_class >Next: Hello world</a>
 					</v-page>
 					<v-page path="/tutorial/hello_world" >
 						<v-markdown src="./tutorial/hello.md" />
+						<a href="/tutorial/first_site" class=$link_class >Next: First site</a>
 					</v-page>
 					<v-page path="/tutorial/first_site" >
 						<v-markdown src="./tutorial/first_site.md" />
+						<a href="/tutorial/adding_a_form" class=$link_class >Next: Adding a form</a>
 					</v-page>
 					<v-page path="/tutorial/adding_a_form" >
 						<v-markdown src="./tutorial/adding_a_form.md" />
+						<a href="/tutorial/routing" class=$link_class >Next: Routing</a>
+					</v-page>
+					<v-page path="/tutorial/routing" >
+						<v-markdown src="./tutorial/routing.md" />
+						<a href="/tutorial/events" class=$link_class >Next: Events</a>
+					</v-page>
+					<v-page path="/tutorial/auth" >
+						<v-markdown src="./tutorial/auth.md" />
 					</v-page>
 				</v-page>
 

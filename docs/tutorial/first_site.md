@@ -11,7 +11,7 @@ If you have sqlite installed you can create the db really easily by running
 
 ```bash
 $ sqlite3 dogsdb.sqlite
-sqlite> create table dogs (id INTEGER PRIMARY KEY, name TEXT, description TEXT, smelly INT, cheeky INT);
+sqlite> CREATE TABLE dogs (id INTEGER PRIMARY KEY, name TEXT, description TEXT, smelly INT, cheeky INT);
 ```
 
 But if you can't be bothered at all with that then go ahead and download one
@@ -21,7 +21,7 @@ I made earlier at [https://vtml.org/assets/dogsdb.sqlite](/assets/dogsdb.sqlite)
 Let's add a row to our table manually so that we can see what's going on. If you downloaded
 the example db from assets this row has already been added.
 ```bash
-sqlite> insert into dogs (name, description, smelly, cheeky) values ('Freddy', 'The official VTML dog', 8, 9);
+sqlite> INSERT INTO dogs (name, description, smelly, cheeky) VALUES ('Freddy', 'The official VTML dog', 8, 9);
 ```
 
 
@@ -56,7 +56,7 @@ Let's head back over to `main.vtml` and add the following content
 
 ```html
 <v-sql target=$dogs >
-  select * from dogs;
+  SELECT * FROM dogs;
 </v-sql>
 ```
 

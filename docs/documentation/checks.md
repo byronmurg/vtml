@@ -15,7 +15,7 @@ Here are some examples of when you might use a check tag:
 ```html
 <v-page path="/thingy/:id" >
     <v-sql target=$thingy single-row >
-        select * from thingies where id = $.params.id
+        SELECT * FROM thingies WHERE id = $.params.id
     </v-sql>
 
     <v-check-found $thingy >
@@ -30,7 +30,7 @@ Here are some examples of when you might use a check tag:
 
 ```html
 <v-sql target=$user single-row >
-    select * from user where email = $.headers.x-email
+    SELECT * FROM user WHERE email = $.headers.x-email
 </v-sql>
 
 <v-check-authenticated $user >
@@ -43,7 +43,7 @@ Here are some examples of when you might use a check tag:
 
 ```html
 <v-sql target=$user single-row >
-    select * from user where email = $.headers.x-email
+    SELECT * FROM user WHERE email = $.headers.x-email
 </v-sql>
 
 <v-check-authenticated $user >

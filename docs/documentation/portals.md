@@ -6,13 +6,13 @@ Portals are useful when we want to use AJAX to re-render just part of the page. 
 
 ```html
 <v-sql target=$dogs >
-    select * from dogs
+    SELECT * FROM dogs
 </v-sql>
 
 <form v-name="create_dog" >
     <input name="new_name" required />
     <v-action>
-        <v-sql>insert into dogs (name) values ($.body.new_name)</v-sql>
+        <v-sql>INSERT INTO dogs (name) VALUES ($.body.new_name)</v-sql>
     </v-action>
 </form>
 

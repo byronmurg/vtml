@@ -1,7 +1,7 @@
 
 # Forms
 
-We need a way to update the dogs table so let's go ahead and create a new form.
+We need a way to update the dogs table so let's go ahead and create a new form. At the bottom of `main.vtml` add this:
 
 ```html
 <form v-name="create_dog" >
@@ -21,7 +21,7 @@ We need a way to update the dogs table so let's go ahead and create a new form.
   
   <v-action>
     <v-sql>
-  	insert into dogs (name, description, smelly, cheeky) values (
+  	INSERT INTO dogs (name, description, smelly, cheeky) VALUES (
   		$.body.name,
   		$.body.description,
   		$.body.smelly,
@@ -55,6 +55,8 @@ has been created. You can even call it directly and add new dogs to your file.
 
 
 ## Adding an error page
+Our site works great so far but we must prepare for the worst. In case something goes worng we need to show something to the user.
+
 Let's add an error page to handle any errors that might be thrown in our page. Edit the <main>
 tag to look like this
 

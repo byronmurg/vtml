@@ -15,7 +15,7 @@ Currently supported databases are:
 You can use <a class="link" href="/reference#v-sql" >&lt;v-sql&gt;</a> like so:
 ```html
 <v-sql target=$things >
-    select * from things;
+    SELECT * FROM things;
 </v-sql>
 ```
 
@@ -23,7 +23,7 @@ Variables are automatically bound but may need coercion in some cases:
 
 ```html
 <v-sql target=$things >
-    select * from things where name = $.query.search::text;
+    SELECT * FROM things WHERE name = $.query.search::text;
 </v-sql>
 ```
 
@@ -34,7 +34,7 @@ The nodejs interface always uses `?` as it's variable anchor.
 
 ```html
 <v-nodejs target=$from_node >
-    return sql.query(`select * from things where name = ?`, [ $.query.search ])
+    return sql.query(`SELECT * FROM things WHERE name = ?`, [ $.query.search ])
 </v-nodejs>
 ```
 

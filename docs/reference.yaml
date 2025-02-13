@@ -103,7 +103,7 @@
     <form v-name="create_thingy" >
 
     <v-sql target=$thingys >
-      select * from thingys;
+      SELECT * FROM thingys;
     </v-sql>
 
     <v-portal path="/thingys" >
@@ -182,7 +182,7 @@
     the first returned row or undefined if no rows were returned.
   example:
     <v-sql target=$people >
-      select * from people where occupation = 'developer';
+      SELECT * FROM people WHERE occupation = 'developer';
     </v-sql>
 
 - tag: v-nodejs
@@ -294,7 +294,7 @@
       <v-action>
         <v-sql target=$new_person single-row >
           -- Insert a new person and return the new row
-          insert into people (name) values ($.body.new_name) returning id, name;
+          INSERT INTO people (name) VALUES ($.body.new_name) RETURNING id, name;
         </v-sql>
 
         <v-output $new_person >
@@ -323,7 +323,7 @@
 
   example: |
     <v-sql target=$user single-row >
-      select * from user where email = $.headers.x-email
+      SELECT * FROM user WHERE email = $.headers.x-email
     </v-sql>
 
     <v-check-authorized source="$user" >
@@ -376,7 +376,7 @@
   example: |
     <form v-name="noddy" >
       <v-action>
-        <v-sql>insert into mytable values (22)</v-sql>
+        <v-sql>INSERT INTO mytable VALUES (22)</v-sql>
         <v-set-status code=201 />
       </v-action>
     </form>
@@ -397,7 +397,7 @@
 
       <v-action>
         <v-sql target=$newdog >
-          insert into dogs (name) values ($.body.name);
+          INSERT INTO dogs (name) VALUES ($.body.name) RETURNING *;
         </v-sql>
 
         <v-redirect path="/dogs/view/$newdog.id" />

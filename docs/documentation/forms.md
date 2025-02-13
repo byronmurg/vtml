@@ -132,7 +132,7 @@ Vtml only searches for forms with an v-name attribute. Therefore if we want to c
 
 <v-sql target=$todos >
   -- I'm being a bit lazy here and having the DB check if q is null
-  select * from todos where $.search.q is null or text like $.search.q
+  SELECT * FROM todos WHERE $.search.q IS NULL OR text LIKE $.search.q
 </v-sql>
 
 <v-for-each $todos >
@@ -154,7 +154,7 @@ Any page parameter can be used by referencing the **$.params** root variable.
 
     <v-action>
       <v-sql>
-        update todos set text = $.body.text where id = $.params.id
+        UPDATE todos SET text = $.body.text WHERE id = $.params.id
       </v-sql>
     </v-action>
   </form>
@@ -193,7 +193,7 @@ For example
   <v-action>
     <v-sql target=$new_person single-row >
       -- Insert a new person and return the new row
-      insert into people (name) values ($.body.new_name) returning id, name;
+      INSERT INTO people (name) VALUES ($.body.new_name) RETURNING id, name;
     </v-sql>
 
     <v-output $new_person >
