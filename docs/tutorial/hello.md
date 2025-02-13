@@ -68,7 +68,7 @@ Now edit the index.vtml and change the `<main>` tag like so:
 
 ```html
 <main class="container" >
-  <v-include src="./main.vtml" ./>
+  <v-include src="./main.vtml" />
 </main>
 ```
 
