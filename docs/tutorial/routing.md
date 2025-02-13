@@ -22,10 +22,14 @@ Right now our `main.vtml` looks something like this:
 </form>
 ```
 
-...which is a bit squashed together. Lets start by wrapping this in a route.
+...which is a bit squashed together. Lets start by wrapping this in some routes.
+
+We'll put our main list as an index. This means that the request path must match the parent route _exactly_. Then let's put the create form into it's own page so that the client has to browse to `/create` to see it.
 
 ```
-<v-page path="/" >
+<v-index>
+    <a href="/create" >Create</a>
+
     <v-sql target=$dogs >
         ...
     </v-sql>
@@ -33,41 +37,13 @@ Right now our `main.vtml` looks something like this:
     <v-for-each $dogs as=$dog >
         ...
     </v-for-each>
+</v-index>
 
+<v-page path="/create" >
     <form v-name="create_dog" >
         ...
     </form>
 </v-page>
-```
-
-<article class="secondary-container" >
-<i>info</i>
-VTML assumes that everything is under one '/' route. If we want a VTML app to contain multiple pages we now need to specify the '/' route or it will always return 404.
-</article>
-
-So far this doesn't do much. Let's now seperate out the routes.
-
-We'll put our main list as an index. This means that the request path must match the parent route _exactly_. Then let's put the create form into it's own page so that the client has to browse to `/create` to see it.
-
-```
-<v-page path="/" >
-    <v-index>
-        <a href="/create" >Create</a>
-
-        <v-sql target=$dogs >
-            ...
-        </v-sql>
-
-        <v-for-each $dogs as=$dog >
-            ...
-        </v-for-each>
-    </v-index>
-
-    <v-page path="/create" >
-        <form v-name="create_dog" >
-            ...
-        </form>
-    </v-page>
 ```
 
 We also added an `<a>` tag to the index as a way of navigating to the create form.

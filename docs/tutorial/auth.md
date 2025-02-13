@@ -60,22 +60,23 @@ it's an external source file which only needs to be imported on application star
 The last thing we need to do outside of VTML is add an initial user to the dataabse. We'll add a user named `admin` with the password `password1`. Not very original but that's fine for now.
 
 ```sql
-INSERT INTO users (name, password_hash) VALUES ('admin', '7c6a180b36896a0a8c02787eeafb0e4c')
+INSERT INTO users (name, password_hash) VALUES ('admin', '7c6a180b36896a0a8c02787eeafb0e4c');
 ```
 
-Once we have everything setup we're going to want to add a login page. Remember in the last chapter when we created the route `<v-route path='/' >` in `main.vtml`. Well let's go back and add a new route inside it with a login form.
+Once we have everything setup we're going to want to add a login page. Let's go back to our `main.vtml` and add a new route inside it with a login form.
 
 ```html
-<v-route path=`/login` >
+<v-page path="/login" >
     <form v-name="login" method="post" >
-        <input name="username" />
-        <input name="password" type="password" />
+        <input name="username" placeholder="username" />
+        <input name="password" type="password" placeholder="password" />
+		<button type="submit" >Login</button>
 
         <v-action>
             ...
         </v-action>
     </form>
-</v-route>
+</v-page>
 ```
 
 For the action we need to do five things when the login is valid:
@@ -89,7 +90,7 @@ For the action we need to do five things when the login is valid:
 <v-action>
 
     <v-nodejs target=$hash >
-        return $hash_password($.body)
+        return $hash_password($.body.password)
     </v-nodejs>
 
     <v-sql single-row target=$user >
@@ -98,11 +99,11 @@ For the action we need to do five things when the login is valid:
 
     <v-check-found $user >
         <v-nodejs target=$session_key >
-            return Math.random()
+            return "skey_"+Math.random()
         </v-nodejs>
 
         <v-sql>
-            UPDATE USERS SET session_key = $session_key WHERE name = $username;
+            UPDATE USERS SET session_key = $session_key WHERE name = $.body.username;
         </v-sql>
 
         <v-set-cookie name="session_key" value=$session_key max-days=1 />
@@ -117,51 +118,45 @@ The new tag that we used here is <a class="link" href="/reference#v-check-found"
 
 To better explain the `v-check` tags let's add another one into our application. Let's say that we want guests to the site to be able to view any of the dogs but not create or edit them.
 
-To do so we want to use a different `v-check` tag <a class="link" href="/reference#v-check-authorized" >&lt;v-check-authorized&gt;</a> which, similar to the `v-check-found` tag will return 401 when when the condition is false.
+To do so we want to use a different `v-check` tag <a class="link" href="/reference#v-check-authenticated" >&lt;v-check-authenticated&gt;</a> which, similar to the `v-check-found` tag will return 401 when when the condition is false.
 
-To apply this we need to revisit the routing block in `main.vtml` and change it to look like so:
+We also need to find the user in the database by the `session_key` passed into the request.
+
+To apply this we need to revisit the routing block in `main.vtml` and change the `/create` page to look like so:
 
 ```html
-<v-page path="/" >
-    <v-index>
-        <a href="/create" >Create</a>
-
-        <v-sql target=$dogs >
-            ...
-        </v-sql>
-
-        <v-for-each $dogs as=$dog >
-            ...
-        </v-for-each>
-    </v-index>
-
-    <v-route path=`/login` >
-        <form v-name="login" method="post" >
+<v-page path="/create" >
+    <v-sql single-row target=$user >
+        SELECT * FROM users WHERE session_key = $.cookies.session_key;
+    </v-sql>
+    <v-check-authenticated $user >
+        <form v-name="create_dog" >
             ...
         </form>
-    </v-route>
-
-    <v-page path="/create" >
-        <v-check-authorized $user >
-            <form v-name="create_dog" >
-                ...
-            </form>
-        </v-check-authorized>
-    </v-page>
+    </v-check-authenticated>
+</v-page>
 
 ```
 
-Now our application will set a 401 status and display an error message when we try to visit this page as `$user` is undefined.
+Now our application will set a 401 status and display an error message when we try to visit this page when `$user` is undefined.
 
-The last thing we need to do is check if clients are currently logged in.
+One last thing we can do is to redirect the user to the login page when they get the 401 status.
 
-At the top of `main.vtml` add this:
+Back in the `index.vtml` update the <a class="link" href="/reference#v-catch" >&lt;v-catch&gt;</a> block with a bit of logic to check what the status is:
 
+```html
+<v-catch>
+  <v-if source=$error.code eq="401" >
+  	<v-redirect path="/login" />
+  </v-if>
+
+  Error: $error.message
+</v-catch>
 ```
-<v-sql single-row target=$user >
-    SELECT * FROM users WHERE session_key = $.cookies.session_key
-</v-sql>
-```
+
+Now when the <a class="link" href="/reference#v-check-authenticated" >&lt;v-check-authenticated&gt;</a> throws a 401 and we end up in the 
+<a class="link" href="/reference#v-catch" >&lt;v-catch&gt;</a>
+we will be sent to the login page instead of seeing the error.
 
 And that's it! Now users can view the site but need to be logged in with a valid user to be able to add our own pooches.
 
