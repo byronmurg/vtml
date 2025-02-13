@@ -9,7 +9,7 @@ const VIndex = CreateDisplayTag({
 	prepareRender(block) {
 		return async (ctx) => {
 			const matchedPath = ctx.getKey("$.matchedPath")
-			const matchedPage = ctx.getKey("$__matchedPage")
+			const matchedPage = ctx.getKey("$__matchedPage") || "/"
 
 			if (matchedPage === matchedPath) {
 				return block.renderChildren(ctx)

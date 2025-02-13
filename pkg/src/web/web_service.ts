@@ -176,10 +176,8 @@ class WebService extends WebRouter {
 		this.vtmlDocument.exposes.forEach(this.useExposeRoute)
 		this.vtmlDocument.pages.forEach(this.usePageRoute)
 
-		// Assume a single page if no pages were found
-		if (this.vtmlDocument.pages.length === 0) {
-			this.useSinglePageRoute()
-		}
+		// Always use the root handler LAST
+		this.useSinglePageRoute()
 
 		this.useFaviconFallback()
 		this.useApi404Page()
