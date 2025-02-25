@@ -35,7 +35,7 @@ Inlined <a class="link" href="/reference#v-nodejs" >&lt;v-nodejs&gt;</a> tags ar
 
 In VTML script tags can use variables set on the server.
 
-!!! Be warned that variables are templates as JSON !!!
+!!! Be warned that variables are templated as JSON !!!
 
 ```html
 <v-nodejs target=$number >

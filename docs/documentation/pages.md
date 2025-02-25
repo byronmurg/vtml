@@ -1,13 +1,13 @@
 # Pages
 
-Pages allow us to create multiple pages within out website.
+VTML allow us to create multiple pages within out website.
 
 The only tag for creating pages is <a class="link" href="/reference#v-page" >&lt;v-page&gt;</a>.
 
 When the loader reaches an <a class="link" href="/reference#v-page" >&lt;v-page&gt;</a> tag it will only display if the path matches the current request.
 
 
-For eaxmple:
+For example:
 ```html
 <html>
 

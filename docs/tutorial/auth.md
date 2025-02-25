@@ -37,7 +37,7 @@ It's a very simple hashing function and shouldn't be used in the real world but 
 
 Let's go ahead and make this function available to VTML. At the top of your `index.vtml` add this tag:
 
-```
+```html
 <v-nodejs target="$hash_password" import="./hash_password.js" />
 ```
 
@@ -45,7 +45,7 @@ Let's go ahead and make this function available to VTML. At the top of your `ind
 <i>info</i>
 We could have imported the function like so:
 
-```
+```html
 <v-nodejs target="$hash_password" >
 import hash_password from "./hash_password"
 return hash_passport
