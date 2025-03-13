@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <v-hint-port port="3456" />
 <v-expose src="assets/vtml_icon.png" path="/favicon.ico" />
+<v-expose src="assets/vtml_gif.gif" path="/vtml_gif.gif" />
 <v-expose path="/assets/:name" src="assets/$.params.name" />
 <html lang="en">
 
@@ -200,6 +201,12 @@
 					<img alt="VTML" src="/assets/vtml_logo.svg" class="center" />
 
 					<h3 class="center-align" >Web development made simple</h3>
+
+					<div class="space" />
+
+					<div class="center-align" >
+						<img width=600 src="/vtml_gif.gif" />
+					</div>
 
 					<v-markdown src="./intro.md" />
 
