@@ -27,11 +27,11 @@
 					<li><b>Vtml shop</b></li>
 				</ul>
 
-				<v-sql target="basket_summary" >
+				<v-sql target=$basket_summary >
 					select sum(p.price * ub.amount) as total from shop.user_basket ub, shop.products p where p._id = ub.product ;
 				</v-sql>
 
-				<v-with source="$basket_summary.0" >
+				<v-with source=$basket_summary.0.total as=$total >
 					<ul>
 						<li>total £$total</li>
 					</ul>
@@ -40,42 +40,52 @@
 		</header>
 
 		<main class="container" >
+			<v-try>
+
 			<v-page path="/" >
-				<v-sql target="products" >
-					select p.*, ub.amount from shop.products p left join shop.user_basket ub on p._id = ub.product order by p._id
+				<v-sql target=$products >
+					SELECT
+						p.*, ub.amount
+					FROM shop.products p
+					LEFT JOIN shop.user_basket ub
+						ON p._id = ub.product ORDER BY p._id
 				</v-sql>
 
 
-				<v-for-each source="$products" >
+				<v-for-each $products as=$product >
 					<article>
 						<header>
-							<p>$name</p>
+							<p>$product.name</p>
 						</header>
-						<p>£$price</p>
 
-						<v-with source="$amount" >
-							<p>$ in basket</p>
-						</v-with>
+						<p>£$product.price</p>
+
+						<v-if source=$product.amount gt=0 >
+							<p>$product.amount in basket</p>
+						</v-if>
 
 						<form method="POST" v-name="add_to_basket" >
-							<v-sql-body>
-								insert into shop.user_basket as ub (product, amount)
-								values ($.body.product_id, 1)
-								on conflict (product) do update set amount = (ub.amount +1)
-							</v-sql-body>
-							<v-dump />
-							<input name="product_id" type="hidden" value="$_id" />
+							<input name="product_id" type="hidden" value="$product._id" />
 							<button>add to basket</button>
+
+							<v-action>
+								<v-sql>
+									INSERT INTO shop.user_basket AS ub (product, amount)
+									VALUES ($.body.product_id, 1)
+									ON CONFLICT (product) DO UPDATE SET amount = (ub.amount +1)
+								</v-sql>
+							</v-action>
+
 						</form>
 					</article>
 				</v-for-each>
-
 			</v-page>
 
+			</v-try>
 
 			<v-catch>
 				<h3>:(</h3>
-				<h6>$.error.message</h6>
+				<h6>$error.message</h6>
 			</v-catch>
 
 		</main>
