@@ -45,7 +45,7 @@ function preFilterElements(elements:Element[], dir:string): Element[] {
 		} else if (child.name === "v-include") {
 			const src = child.attributes['src']
 			if (! src) {
-				throw Error(`No src attribute on v-exclude in ${child.filename}`)
+				throw Error(`No src attribute on v-include in ${child.filename}`)
 			}
 			return preLoadInclude(path.posix.join(dir, src.toString()))
 		} else if (relativeAttrs.length) {
