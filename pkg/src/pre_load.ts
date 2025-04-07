@@ -81,7 +81,8 @@ export default
 function preLoad(filePath:string): Element[] {
 	const preDoc = loadXml(filePath)
 	const newDir = path.dirname(filePath)
+	const absDir = path.isAbsolute(newDir)? newDir : path.join(process.cwd(), newDir)
 
-	return preFilterElements(preDoc, newDir)
+	return preFilterElements(preDoc, absDir)
 }
 

@@ -124,7 +124,7 @@ class WebClient {
 	}
 
 	sendFile(path:string) {
-		this.res.sendFile(path, { root:process.cwd() })
+		this.res.sendFile(path)
 	}
 
 	sendExpose(response:ExposeResult) {
