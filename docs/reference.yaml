@@ -196,6 +196,22 @@
     If the `import` attribute is set then the javascript library at that path
     will be imported and set to the `target` variable.
 
+- tag: v-action
+  description: |
+    The contents of a v-action tag will be performed only when the parent form is executed.
+
+    v-action can read variables set under `$.body` and `$.files` to process the request data.
+  example: |
+    <form v-name="create_entry" >
+      <input name="text" type="text" />
+
+      <v-action>
+        <v-sql>
+          INSERT INTO list_entries (text) VALUES ($.body.text);
+        </v-sql>
+      </v-action>
+    </form>
+
 - tag: v-dump
   arguments:
   - name: source
@@ -227,6 +243,19 @@
       <p>I'm the Dog page</p>
     </v-page>
 
+- tag: v-index
+  description: |
+    Define a default page to display if no other pages are matched at the same level
+
+    See the **[Pages documentation](/documentation/pages)** form more details.
+  example: |
+    <v-page path="/about" >
+      <p>I'm the about page</p>
+    </v-page>
+    <v-index>
+      <p>I'm the landing page</p>
+    </v-index>
+
 - tag: v-expose
   arguments:
   - name: path
@@ -237,32 +266,6 @@
   special: true
   example: |
     <v-expose path="/favicon.ico" src="./assets/vtml_icon.png" content-type="image/png" />
-
-- tag: v-set-cookie
-  form-ony: true
-  arguments:
-  - name: name
-    templated: true
-  - name: value
-    templated: true
-  - name: max-seconds
-    templated: true
-  - name: max-minutes
-    templated: true
-  - name: max-hours
-    templated: true
-  - name: max-days
-    templated: true
-  description: |
-    Set a response cookie.
-
-    The maximum cookie age will be set to the sum of the max-* attribute values.
-  example: |
-    <v-set-cookie
-        name="session_key"
-        value=$session_key
-        max-days=365
-    />
 
 - tag: v-include
   description: Include an external vtml file. This tag is processed before anything
@@ -331,6 +334,20 @@
     </v-check-authorized>
 
 
+- tag: v-try
+  description: |
+    Rendered when no error has occured. Useful when a section may result in an error.
+
+    Can be used in conjunction with `v-catch` to catch errors that may occur within it's
+    contents.
+  example: |
+    <v-try>
+      <v-sql>Im invalid SQL</v-sql>
+    </v-try>
+    <v-catch>
+      <p>Error $error.message</p>
+    </v-catch>
+
 - tag: v-catch
   description: |
     Rendered when an error has occured.
@@ -344,20 +361,6 @@
     You **don't** need to set the error code to the page with `<v-set-status>`.
 
   example: |
-    <v-catch>
-      <p>Error $error.message</p>
-    </v-catch>
-
-- tag: v-try
-  description: |
-    Rendered when no error has occured. Useful when a section may result in an error.
-
-    Can be used in conjunction with `v-catch` to catch errors that may occur within it's
-    contents.
-  example: |
-    <v-try>
-      <v-sql>Im invalid SQL</v-sql>
-    </v-try>
     <v-catch>
       <p>Error $error.message</p>
     </v-catch>
@@ -380,6 +383,32 @@
         <v-set-status code=201 />
       </v-action>
     </form>
+
+- tag: v-set-cookie
+  form-ony: true
+  arguments:
+  - name: name
+    templated: true
+  - name: value
+    templated: true
+  - name: max-seconds
+    templated: true
+  - name: max-minutes
+    templated: true
+  - name: max-hours
+    templated: true
+  - name: max-days
+    templated: true
+  description: |
+    Set a response cookie.
+
+    The maximum cookie age will be set to the sum of the max-* attribute values.
+  example: |
+    <v-set-cookie
+        name="session_key"
+        value=$session_key
+        max-days=365
+    />
 
 - tag: v-redirect
   arguments:
