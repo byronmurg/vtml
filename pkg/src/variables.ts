@@ -89,7 +89,10 @@ class TemplateSet {
 			}
 		}
 
-		if (currVar) {
+		// If there is a var in the buffer and it is not
+		// a single dollar sign then the string ended on
+		// a variable.
+		if (currVar && currVar !== "$") {
 			ret += cbk(currVar)
 		}
 
