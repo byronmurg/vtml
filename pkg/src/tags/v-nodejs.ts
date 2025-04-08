@@ -7,7 +7,7 @@ function determineImportPath(importAttr:string, filename:string) {
 		// If the import starts with './' then the import
 		// is relative so we must figure out the actualt path.
 		const dir = dirname(filename)
-		return join(process.cwd(), dir, importAttr)
+		return join(dir, importAttr)
 	} else {
 		// Otherwise we are importing a library directly
 		return importAttr
