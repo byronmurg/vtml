@@ -19,8 +19,9 @@ class WebFormHandler extends WebRouter {
 	}
 
 	prepare() {
+		const {method, path, encoding} = this.form
 
-		if (this.form.encoding === "multipart/form-data") {
+		if (encoding === "multipart/form-data") {
 			debug("Multipart form", this.form.name)
 
 			const uploadFields = this.form.uploadFields
@@ -30,10 +31,9 @@ class WebFormHandler extends WebRouter {
 				? multer.fields(fields)
 				: multer.none()
 				
-			this.use(fileHandler)
+			this.useMiddleware(path, fileHandler)
+			this.useMiddleware(`/_ajax${path}`, fileHandler)
 		}
-
-		const {method, path} = this.form
 
 		this.handle(method, path, this.FormAction)
 		this.handle(method, `/_ajax${path}`, this.FormAjax)

@@ -36,6 +36,11 @@ class WebRouter {
 	post = this.handler("post")
 	delete = this.handler("delete")
 
+
+	useMiddleware(path:string, handler: Express.Handler|Express.ErrorRequestHandler) {
+		this.router.use(path, handler)
+	}
+
 	use(handler: Express.Handler|Express.ErrorRequestHandler) {
 		this.router.use(handler)
 	}
