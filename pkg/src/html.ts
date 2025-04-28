@@ -66,7 +66,7 @@ function toAttributes(el: DomElement): TagElement["attributes"] {
 		const v = el.attribs[k]
 		if (v === "" && canBeEmptyAttribute(el.name, k)) {
 			ret[k] = true
-		} else if (k.startsWith("") && v === "") {
+		} else if (k.startsWith("$") && v === "") {
 			ret["source"] = k
 		} else {
 			ret[k] = v
