@@ -30,9 +30,7 @@ const emptyTags: Record<string, string[]> = {
 	input: ["required", "disabled", "autofocus", "checked"],
 	textarea: ["required"],
 	details: ["open"],
-
-	form: ["v-ajax"],
-	"v-sql": ["single-row"],
+	dialog: ["open"],
 }
 
 const neverClose = [

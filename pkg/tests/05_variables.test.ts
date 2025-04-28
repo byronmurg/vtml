@@ -42,6 +42,11 @@ test("variables can be escaped", async () => {
 	expect(output).toBe(`$foo`)
 })
 
+test("html boolean attributes are rendered correctly", async () => {
+	const output = await RenderTest(`<dialog open>Hello</dialog>`)
+	expect(output).toBe(`<dialog open>Hello</dialog>`)
+})
+
 test("variables can use bracket notation", async () => {
 	const output = await RenderTest(`
 		<v-json target="$foo" >"FOO"</v-json>
