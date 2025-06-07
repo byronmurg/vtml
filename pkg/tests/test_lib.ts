@@ -18,6 +18,7 @@ function InitRoot(init:Partial<RootDataset> = {}): RootDataset {
 		method: "GET",
 		cookies: {},
 		headers: {},
+		hostname: "localhost",
 		params:{},
 		action: false,
 		...init,
