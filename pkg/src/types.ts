@@ -14,6 +14,7 @@ type RootDataset = {
 	matchedPath: string
 	params: Record<string, string>
 	query: ParsedQs
+	hostname: string
 	method: string
 	search?: string
 	body?: unknown

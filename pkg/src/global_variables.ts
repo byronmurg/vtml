@@ -6,6 +6,7 @@ const providedGlobals = [
 
 const implicitGlobals = [
 	"path",
+	"hostname",
 	"matchedPath",
 	"query.",
 	"method",

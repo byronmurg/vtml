@@ -1,13 +1,18 @@
 import CreateLoaderTag from "./loader"
 import NodeFunction from "../node"
-import {join, dirname} from "node:path"
+import path from "node:path"
+import Debug from "debug"
+
+const debug = Debug("vtml:tag:v-nodejs")
 
 function determineImportPath(importAttr:string, filename:string) {
+	debug("determineImportPath", importAttr)
 	if (importAttr.startsWith("./")) {
-		// If the import starts with './' then the import
-		// is relative so we must figure out the actualt path.
-		const dir = dirname(filename)
-		return join(dir, importAttr)
+		const resolved = path.relative(__dirname, path.dirname(filename))
+		debug("resolved", resolved)
+		const actualPath = path.join(resolved, importAttr)
+		debug("actual import path", actualPath)
+		return actualPath
 	} else {
 		// Otherwise we are importing a library directly
 		return importAttr

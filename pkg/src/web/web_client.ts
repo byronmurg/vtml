@@ -41,6 +41,7 @@ class WebClient {
 			params: req.params,
 			search: this.search,
 			matchedPath: req.route.path,
+			hostname: req.hostname,
 			path: req.path,
 			method: req.method,
 			headers: req.headers,
