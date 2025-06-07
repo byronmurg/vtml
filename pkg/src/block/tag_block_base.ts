@@ -117,7 +117,7 @@ abstract class TagBlockBase {
 
 	boolAttr(name:string): boolean {
 		const v = this.attr(name)
-		return typeof(v) === "boolean" ? v : ((v === name) || (v === "true"))
+		return typeof(v) === "boolean" ? v : (this.hasAttr(name) && v !== "false")
 	}
 
 	requireAttr(key:string) {
