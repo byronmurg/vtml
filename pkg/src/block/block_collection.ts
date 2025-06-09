@@ -5,6 +5,7 @@ import intersection from "lodash/intersection"
 import type {InitializationResponse, RenderDescription, Branch, Block, TagBlock, BlockReport, ValidationError} from "../types"
 import * as HTML from "../html"
 import type FilterContext from "../filter_context"
+import type {TemplateSet} from "../variables"
 import {Ok, ValidateAgg} from "../utils"
 
 type ChainReport = {
@@ -55,8 +56,8 @@ class BlockCollection {
 		}))
 	}
 
-	static Create(children:HTML.Element[], parent:Block): InitializationResponse<BlockCollection> {
-		const blockResults = children.map((child, i) => MakeBlock(child, i, parent))
+	static Create(children:HTML.Element[], parent:Block, templateSet:TemplateSet): InitializationResponse<BlockCollection> {
+		const blockResults = children.map((child, i) => MakeBlock(child, i, parent, templateSet))
 
 		const blockResult = ValidateAgg(...blockResults)
 

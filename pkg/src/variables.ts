@@ -41,6 +41,7 @@ type VarMatches = {
 	globals: string[]
 }
 
+export
 class TemplateSet {
 	constructor(private options: TemplateSetOptions) {}
 
@@ -151,7 +152,7 @@ export const basicTemplate = new TemplateSet({
 })
 
 export const nodeTemplate = new TemplateSet({
-	validCharacters: /\w/,
+	validCharacters: /[A-Z,a-z]/,
 	allowBrackets: false,
 })
 

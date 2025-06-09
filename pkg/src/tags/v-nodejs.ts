@@ -2,6 +2,7 @@ import CreateLoaderTag from "./loader"
 import NodeFunction from "../node"
 import path from "node:path"
 import Debug from "debug"
+import {nodeTemplate} from "../variables"
 
 const debug = Debug("vtml:tag:v-nodejs")
 
@@ -28,6 +29,7 @@ const VNodeJs = CreateLoaderTag({
 		"import": { special:true },
 	},
 	bodyPolicy:  "allowTextOnly",
+	templateSet: nodeTemplate,
 
 	prepareChain(block) {
 		const importAttr = block.attr("import")

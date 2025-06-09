@@ -30,3 +30,14 @@ test("script complex binding", async () => {
 	const fooOut = await RenderTest(exampleHTML)
 	expect(fooOut).toBe(`<script>let f = [1,2,3]</script>`)
 })
+
+test("script jQuery style variables", async () => {
+	const exampleHTML = `
+		<script>
+			$('#foo').hide()
+		</script>
+	`
+
+	const fooOut = await RenderTest(exampleHTML)
+	expect(fooOut).toBe(`<script>$('#foo').hide()</script>`)
+})

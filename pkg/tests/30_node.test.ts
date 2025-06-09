@@ -36,6 +36,29 @@ test("v-nodejs binding", async () => {
 	expect(output).toBe(`<p>24</p>`)
 })
 
+test("v-nodejs complex binding", async () => {
+
+	const exampleHTML = `
+		<v-json target="$foo" >
+			{ "bar":22 }
+		</v-json>
+		<v-json target="$bar" >
+			"bar"
+		</v-json>
+
+		<v-nodejs target="$out" >
+			return $foo[$bar]
+		</v-nodejs>
+
+		<p>$out</p>
+	`
+
+	const output = await RenderTest(exampleHTML)
+
+	expect(output).toBe(`<p>22</p>`)
+})
+
+
 test("v-nodejs invalid", () => {
 	expect.assertions(1)
 

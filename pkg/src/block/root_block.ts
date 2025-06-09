@@ -2,6 +2,7 @@ import type {Branch, Block, TagBlock, BlockReport, InitializationResponse, Rende
 import * as HTML from "../html"
 import FilterContext from "../filter_context"
 import BlockCollection from "./block_collection"
+import { basicTemplate } from "../variables"
 import {Ok} from "../utils"
 
 
@@ -26,7 +27,7 @@ class RootBlock implements Block {
 	static Init(children:HTML.Element[]): InitializationResponse<RootBlock> {
 		const block = new RootBlock()
 
-		const childrenResult = BlockCollection.Create(children, block)
+		const childrenResult = BlockCollection.Create(children, block, basicTemplate)
 		if (! childrenResult.ok) {
 			return childrenResult
 		}

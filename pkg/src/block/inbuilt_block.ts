@@ -9,6 +9,7 @@ import * as HTML from "../html"
 import * as utils from "../utils"
 import FilterContext from "../filter_context"
 import ValidationSet from "../validation_set"
+import type {TemplateSet} from "../variables"
 
 const attrOps = {
 	pass: { special:true },
@@ -52,9 +53,9 @@ class InbuiltBlock extends TagBlockBase implements TagBlock {
 		}
 	}
 	
-	static Init(el:HTML.TagElement, seq:number, parent:Block) {
+	static Init(el:HTML.TagElement, seq:number, parent:Block, templateSet:TemplateSet) {
 		const block = new InbuiltBlock(el, seq, parent)
-		const childrenResult = BlockCollection.Create(el.elements, block)
+		const childrenResult = BlockCollection.Create(el.elements, block, templateSet)
 		if (! childrenResult.ok) {
 			return childrenResult
 		}

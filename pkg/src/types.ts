@@ -3,6 +3,7 @@ import type { Element } from "./html"
 import type FilterContext from "./filter_context"
 import type {VtmlBlock} from "./block"
 import type * as HTML from "./html"
+import type {TemplateSet} from "./variables"
 
 export type InputValue = string|string[]|number|boolean
 
@@ -75,6 +76,7 @@ export
 type TagCommon = {
 	name: string
 	attributes: AttributeSpec
+	templateSet?: TemplateSet
 }
 
 export
@@ -86,7 +88,7 @@ type VtmlTagPrepared = {
 }
 
 export
-type BodyPolicy = "allow"|"require"|"deny"|"requireTextOnly"|"allowTextOnly"
+type BodyPolicy = "allow"|"require"|"deny"|"requireTextOnly"|"allowTextOnly"|"node"
 
 export
 type VtmlTag = TagCommon & {

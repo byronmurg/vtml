@@ -4,6 +4,7 @@ import * as Vars from "../variables"
 import * as GlobalVars from "../global_variables"
 import {Ok} from "../utils"
 import FilterContext from "../filter_context"
+import type {TemplateSet} from "../variables"
 
 export default
 class TextBlock implements Block {
@@ -12,13 +13,13 @@ class TextBlock implements Block {
 	private safeText: string
 	
 
-	private constructor(private el:HTML.TextElement, private seq:number, private parent:Block) {
+	private constructor(private el:HTML.TextElement, private seq:number, private parent:Block, private templateSet:TemplateSet) {
 		this.bodyVars = this.getVarsInBody()
 		this.safeText = HTML.escapeHtml(el.text)
 	}
 
-	static Init(el:HTML.TextElement, seq:number, parent:Block) {
-		const block = new TextBlock(el, seq, parent)
+	static Init(el:HTML.TextElement, seq:number, parent:Block, templateSet:TemplateSet) {
+		const block = new TextBlock(el, seq, parent, templateSet)
 		return Ok(block)
 	}
 
@@ -32,7 +33,7 @@ class TextBlock implements Block {
 	}
 
 	getVarsInBody() {
-		return Vars.basicTemplate.findAllVars(this.el.text)
+		return this.templateSet.findAllVars(this.el.text)
 	}
 
 	async Render(ctx:FilterContext): Promise<Branch> {
@@ -45,7 +46,7 @@ class TextBlock implements Block {
 	}
 
 	RenderConstant(): HTML.TextElement {
-		const safeText = Vars.basicTemplate.sanitize(this.safeText)
+		const safeText = this.templateSet.sanitize(this.safeText)
 		const resp:HTML.Element = {
 			...this.el,
 			text: safeText,

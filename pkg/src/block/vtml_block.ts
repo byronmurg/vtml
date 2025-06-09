@@ -9,6 +9,7 @@ import FilterContext from "../filter_context"
 import * as utils from "../utils"
 import * as GlobalVars from "../global_variables"
 import ValidationSet from "../validation_set"
+import type {TemplateSet} from "../variables"
 
 export default
 class VtmlBlock extends TagBlockBase implements TagBlock {
@@ -19,14 +20,22 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 		super(el, seq, parent)
 	}
 
-	static Init(tag:VtmlTag, el:HTML.TagElement, seq:number, parent:Block): InitializationResponse<VtmlBlock> {
+	static Init(tag:VtmlTag, el:HTML.TagElement, seq:number, parent:Block, templateSet:TemplateSet): InitializationResponse<VtmlBlock> {
+
+		// If the tag sets the template set do so here
+		const subTemplateSet = tag.templateSet || templateSet
+
+		// Initialize the object
 		const vtmlBlock = new VtmlBlock(tag, el, seq, parent)
-		const childrenResult = BlockCollection.Create(el.elements, vtmlBlock)
+
+		// Create child blocks
+		const childrenResult = BlockCollection.Create(el.elements, vtmlBlock, subTemplateSet)
 		if (! childrenResult.ok) {
 			return childrenResult
 		}
-
 		vtmlBlock.setChildren(childrenResult.result)
+
+		// Run all validation checks
 		const checkResponse = utils.ValidateAgg<unknown>(
 			vtmlBlock.prepare(tag),
 			vtmlBlock.checkAttributes(),
@@ -35,8 +44,8 @@ class VtmlBlock extends TagBlockBase implements TagBlock {
 		if (! checkResponse.ok) {
 			return checkResponse
 		}
+
 		return utils.Ok(vtmlBlock)
-		
 	}
 
 	checkBody(): InitializationResponse<void> {

@@ -13,6 +13,7 @@ function CreateLoaderTag(tag:LoaderTag): VtmlTag {
 		name: tag.name,
 		attributes: tag.attributes,
 		bodyPolicy: tag.bodyPolicy,
+		templateSet: tag.templateSet,
 
 		prepare(block) {
 			const chain = tag.prepareChain(block)
