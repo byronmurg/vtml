@@ -273,6 +273,16 @@ test("v-markdown", async () => {
 	expect(output).toBe(`<h1>title</h1><p>text</p>`)
 })
 
+test("v-style", async () => {
+	const output = await RenderTest(`
+		<v-style minify >
+			input { color: white; }
+		</v-style>
+	`)
+
+	expect(output).toMatch(`<style>input{color:white;}</style>`)
+})
+
 test("v-fs-readdir", async () => {
 	const output = await RenderTest(`
 		<v-fs-readdir target="$dir" path="tests/test_assets" />
