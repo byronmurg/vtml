@@ -212,6 +212,24 @@
       </v-action>
     </form>
 
+- tag: v-style
+  arguments:
+  - name: src
+  - minify: src
+  description: |
+    Import and optionally minify a CSS stylesheet
+
+    Note that the minification used is quite simplistic. For more
+    complex stylesheets you may wish to minify as a build stage.
+  example: |
+    <v-style minify >
+      input {
+        color: pink;
+      }
+    </v-style>
+
+    <v-style src="./my.css" />
+
 - tag: v-dump
   arguments:
   - name: source

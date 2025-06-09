@@ -31,6 +31,8 @@ const emptyTags: Record<string, string[]> = {
 	textarea: ["required"],
 	details: ["open"],
 	dialog: ["open"],
+	"v-style": ["minify"],
+	"v-sql": ["single-row"],
 }
 
 const neverClose = [
