@@ -44,6 +44,7 @@ const neverClose = [
 	"div",
 	"head",
 	"header",
+	"main",
 	"footer",
 	"table",
 	"tbody",
