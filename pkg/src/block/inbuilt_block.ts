@@ -150,11 +150,11 @@ class InbuiltBlock extends TagBlockBase implements TagBlock {
 			}
 		}
 
-		return {
+		return utils.deepFreeze({
 			...this.el,
 			elements: children,
 			attributes: attrs,
-		}
+		})
 	}
 
 	CheckPreceeds(ctx:FilterContext) {

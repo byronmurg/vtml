@@ -18,8 +18,9 @@ export const Select = CreateOverrideTag({
 		return async (ctx) => {
 			const attrs = block.templateAttributes(ctx)
 			const children = await block.renderChildren(ctx)
+			const elements = structuredClone(children.elements)
 
-			for (const option of utils.findElementsInList(children.elements, isOption)) {
+			for (const option of utils.findElementsInList(elements, isOption)) {
 				let value = option.attributes['value']
 				// The value may be set as a child
 				if (value === undefined) {
@@ -27,7 +28,7 @@ export const Select = CreateOverrideTag({
 				}
 
 				if (value === attrs['value']) {
-					option.attributes['selected'] = "yes"
+					option.attributes["selected"] = "yes"
 				}
 			}
 
@@ -37,7 +38,7 @@ export const Select = CreateOverrideTag({
 				filename: el.filename,
 				linenumber: el.linenumber,
 				attributes: attrs,
-				elements: children.elements,
+				elements: elements,
 			}
 
 			return { ctx, elements:[resp] }
