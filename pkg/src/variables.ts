@@ -152,7 +152,7 @@ export const basicTemplate = new TemplateSet({
 })
 
 export const nodeTemplate = new TemplateSet({
-	validCharacters: /[A-Z,a-z]/,
+	validCharacters: /[A-Z,a-z,_]/,
 	allowBrackets: false,
 })
 
