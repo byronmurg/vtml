@@ -1,24 +1,26 @@
 <div>
-<v-sql target="coffee" >
+<v-sql target=$coffee >
 	select * from coffee.coffee_time order by dow asc
 </v-sql>
 
-<v-json target="daysofweek" >
+<v-json target=$daysofweek >
 	["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 </v-json>
 
 <table>
 	<tbody>
-		<v-for-each source="$coffee" >
+		<v-for-each source="$coffee" as=$dow >
 			<tr>
-				<td>$daysofweek.$dow</td>
+				<td>$(daysofweek).$dow</td>
 				<td>
 					<form method="POST" v-name="update_coffee" hx-trigger="focusout" hx-post="/ajax/update_coffee" hx-target="#coffee_ajax_output" >
-						<v-sql-body>
-							update coffee.coffee_time set time = $.body.time where dow = $.body.dow
-						</v-sql-body>
+						<v-action>
+							<v-sql>
+								update coffee.coffee_time set time = $.body.time where dow = $.body.dow
+							</v-sql>
+						</v-action>
 						<input type="hidden" name="dow" value="$dow" />
-						<input type="time" name="time" value="$time" style="margin-bottom:0;" />
+						<input type="time" name="time" style="margin-bottom:0;" />
 					</form>
 				</td>
 			</tr>
