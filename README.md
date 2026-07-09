@@ -12,6 +12,9 @@ database client, you write plain HTML and sprinkle in `v-` tags. VTML reads that
 and takes care of routing, form handling and validation, database queries, conditional
 logic, and partial re-rendering — all from the one file.
 
+> **Status:** VTML is pre-1.0. It's usable and dogfooded (this repo's own docs site runs on
+> it), but the API may still change before a stable release.
+
 See **[vtml.org](https://vtml.org)** for the full documentation and getting-started guide.
 
 ```html
