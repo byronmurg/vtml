@@ -8,7 +8,7 @@ import WebFormHandler from "./web_form_handler"
 import type VtmlDocument from "../document"
 import FilterContext from "../filter_context"
 import type {ResponseError} from "../types"
-import {CreateResponseError} from "./web_utils"
+import {CreateResponseError, getErrorStatus} from "./web_utils"
 
 import type {FormDescriptor, PortalDescriptor, ExposeDescriptor, PageDescriptor, SubscribeDescriptor} from "../isolates"
 
@@ -59,7 +59,8 @@ class WebService extends WebRouter {
 	}
 
 	renderNativeError = (client:WebClient, err:Error) => {
-		const error = CreateResponseError(500, err.message)
+		const status = getErrorStatus(err)
+		const error = CreateResponseError(status, err.message)
 		return this.renderError(client, error)
 	}
 

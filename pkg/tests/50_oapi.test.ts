@@ -18,6 +18,58 @@ test("form basic", async () => {
 	expect(schema.info.version).toBe(`1.0`)
 })
 
+test("error responses are defined under components and referenced by ref", async () => {
+
+	const exampleHTML = `
+		<form method="POST" v-name="foo" >
+			<input name="bar" type="text" required />
+			<v-action>
+				<v-nodejs>console.log("Hi")</v-nodejs>
+			</v-action>
+		</form>
+	`
+
+	const doc = InitDocument(exampleHTML)
+
+	const schema = doc.oapiSchema
+
+	const responses = schema.components?.responses
+	if (! responses) {
+		throw Error(`No component responses were defined`)
+	}
+
+	for (const name of ["BadRequest", "Unauthorized", "Forbidden", "NotFound", "PayloadTooLarge", "UnsupportedMediaType", "InternalServerError"]) {
+		expect(responses[name]).toMatchObject({
+			content: {
+				"application/json": {
+					schema: { $ref:"#/components/schemas/error" }
+				}
+			}
+		})
+	}
+
+	const paths = schema.paths
+	if (! paths) {
+		throw Error(`No paths were defined`)
+	}
+
+	const fooPost = paths["/_api/foo"]?.["post"]
+	if (! fooPost) {
+		throw Error(`No POST in foo path defined`)
+	}
+
+	expect(fooPost.responses).toEqual({
+		"200": expect.any(Object),
+		"400": { $ref:"#/components/responses/BadRequest" },
+		"401": { $ref:"#/components/responses/Unauthorized" },
+		"403": { $ref:"#/components/responses/Forbidden" },
+		"404": { $ref:"#/components/responses/NotFound" },
+		"413": { $ref:"#/components/responses/PayloadTooLarge" },
+		"415": { $ref:"#/components/responses/UnsupportedMediaType" },
+		"500": { $ref:"#/components/responses/InternalServerError" },
+	})
+})
+
 test("form advanced", async () => {
 
 	const exampleHTML = `

@@ -56,6 +56,57 @@ const defaultOutputSchema = {
 	properties: { code:{ type:"number" } },
 }
 
+const errorSchemaRef = { $ref:"#/components/schemas/error" }
+
+// All the error responses a form endpoint can produce: 400 from input
+// validation (or a malformed request body), 401/403/404 from v-check-*
+// tags, 413/415 from the request body middleware, 500 from an uncaught
+// error.
+const errorResponses: Record<string, OAPI.ResponseObject> = {
+	BadRequest: {
+		description: "Invalid input",
+		content: {
+			"application/json": { schema: errorSchemaRef }
+		},
+	},
+	Unauthorized: {
+		description: "Unauthorized",
+		content: {
+			"application/json": { schema: errorSchemaRef }
+		},
+	},
+	Forbidden: {
+		description: "Forbidden",
+		content: {
+			"application/json": { schema: errorSchemaRef }
+		},
+	},
+	NotFound: {
+		description: "Target not found",
+		content: {
+			"application/json": { schema: errorSchemaRef }
+		},
+	},
+	PayloadTooLarge: {
+		description: "Request body too large",
+		content: {
+			"application/json": { schema: errorSchemaRef }
+		},
+	},
+	UnsupportedMediaType: {
+		description: "Unsupported charset or content encoding",
+		content: {
+			"application/json": { schema: errorSchemaRef }
+		},
+	},
+	InternalServerError: {
+		description: "Internal server error",
+		content: {
+			"application/json": { schema: errorSchemaRef }
+		},
+	},
+}
+
 function createFormApi(form:FormDescriptor): OAPI.OperationObject {
 	const headers: OAPI.ResponseObject["headers"] = {}
 
@@ -100,39 +151,13 @@ function createFormApi(form:FormDescriptor): OAPI.OperationObject {
 					}
 				}
 			},
-			"400": {
-				description: "Invalid input",
-				content: {
-					"application/json": {
-				  		schema: { $ref:"#/components/schemas/error" }
-					}
-				},
-			},
-			"401": {
-				description: "Unauthorized",
-				content: {
-					"application/json": {
-				  		schema: { $ref:"#/components/schemas/error" }
-					}
-				},
-			},
-			"403": {
-				description: "Forbidden",
-				content: {
-					"application/json": {
-				  		schema: { $ref:"#/components/schemas/error" }
-					}
-				},
-			},
-			"404": {
-				description: "Target not found",
-				content: {
-					"application/json": {
-				  		schema: { $ref:"#/components/schemas/error" }
-					}
-				},
-			},
-			// @TODO rest of these
+			"400": { $ref:"#/components/responses/BadRequest" },
+			"401": { $ref:"#/components/responses/Unauthorized" },
+			"403": { $ref:"#/components/responses/Forbidden" },
+			"404": { $ref:"#/components/responses/NotFound" },
+			"413": { $ref:"#/components/responses/PayloadTooLarge" },
+			"415": { $ref:"#/components/responses/UnsupportedMediaType" },
+			"500": { $ref:"#/components/responses/InternalServerError" },
 		}
 	}
 	
@@ -160,7 +185,8 @@ function createOpenApiSchema(doc:VtmlDocument): OAPI.OpenAPIObject {
 						message: { type:"string" },
 					},
 				}
-			}
+			},
+			responses: errorResponses,
 		},
 	}
 
