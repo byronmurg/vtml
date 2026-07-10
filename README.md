@@ -18,17 +18,31 @@ logic, and partial re-rendering — all from the one file.
 See **[vtml.org](https://vtml.org)** for the full documentation and getting-started guide.
 
 ```html
-<h3>VTML is...</h3>
-<v-nodejs target=$adjectives>
-    return ["fast", "easy", "awesome"]
-</v-nodejs>
+<v-sql target=$todos>
+    SELECT * FROM todos ORDER BY id;
+</v-sql>
 
 <ul>
-    <v-for-each $adjectives as=$adj>
-        <li>$adj</li>
+    <v-for-each $todos as=$todo>
+        <li>$todo.text</li>
     </v-for-each>
 </ul>
+
+<form v-name="add_todo">
+    <input name="text" type="text" maxlength="128" required />
+    <button type="submit">Add</button>
+
+    <v-action>
+        <v-sql>
+            INSERT INTO todos (text) VALUES ($.body.text);
+        </v-sql>
+    </v-action>
+</form>
 ```
+
+That's a working, validated CRUD page — no router, no ORM, no separate validation layer. The
+`<form>` above generates its own server-side endpoint, with `required`/`maxlength` turned
+into real input validation automatically.
 
 ## Features
 

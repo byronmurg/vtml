@@ -23,11 +23,18 @@ function sqliteInterface(url:URL): NodeSqlInterface {
 	function sqliteQuery(sql:string, vars:unknown[]): Promise<unknown[]> {
 		sql = slightlyNicerSql(sql)
 		debug(sql)
-		const query = sqliteDb.prepare(sql)
-		return new Promise((resolve, reject) => query.all(vars, (err, rows) => {
-			if (err) reject(err)
-			else resolve(rows)
-		}))
+		return new Promise((resolve, reject) => {
+			// A callback must be passed to prepare() or sqlite3 will emit an
+			// "error" event instead of surfacing it here, which crashes the
+			// process since nothing is listening for it.
+			const query = sqliteDb.prepare(sql, (err:Error|null) => {
+				if (err) reject(err)
+			})
+			query.all(vars, (err, rows) => {
+				if (err) reject(err)
+				else resolve(rows)
+			})
+		})
 	}
 
 	function vtmlToSqliteQuery(sql:string, ctx:FilterContext): ProcessedSQL {

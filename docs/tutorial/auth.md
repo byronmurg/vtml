@@ -116,6 +116,11 @@ For the action we need to do five things when the login is valid:
 
 The new tag that we used here is <a class="link" href="/reference#v-check-found" >&lt;v-check-found&gt;</a> which will cause the response to return a 404 status when the source variable (`$user` in this case) is falsy (or undefined in this case).
 
+<article class="secondary-container" >
+<i>info</i>
+<a class="link" href="/reference#v-set-cookie" >&lt;v-set-cookie&gt;</a> always sets cookies with `Secure` and `SameSite=Strict`, so this session cookie can never be sent by the browser on a cross-site request. That's enough to protect this login flow from CSRF without any extra token, since a forged request from another site simply won't carry the cookie.
+</article>
+
 To better explain the `v-check` tags let's add another one into our application. Let's say that we want guests to the site to be able to view any of the dogs but not create or edit them.
 
 To do so we want to use a different `v-check` tag <a class="link" href="/reference#v-check-authenticated" >&lt;v-check-authenticated&gt;</a> which, similar to the `v-check-found` tag will return 401 when when the condition is false.

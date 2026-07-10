@@ -16,9 +16,13 @@ class WebClient {
 	) {}
 
 	static Wrap(handler:WebHandler) {
-		return (req:Express.Request, res:Express.Response) => {
+		return (req:Express.Request, res:Express.Response, next:Express.NextFunction) => {
 			const client = new WebClient(req, res)
-			return handler(client)
+			try {
+				Promise.resolve(handler(client)).catch(next)
+			} catch (err) {
+				next(err)
+			}
 		}
 	}
 
@@ -85,8 +89,14 @@ class WebClient {
 	}
 
 	get safeReferer() {
-		const referer = new URL(this.req.get("Referrer") || "/")
-		return referer.pathname
+		const referer = this.req.get("Referrer")
+		if (! referer) return "/"
+
+		try {
+			return new URL(referer).pathname
+		} catch {
+			return "/"
+		}
 	}
 
 	redirectOrReturn(href:string|undefined) {

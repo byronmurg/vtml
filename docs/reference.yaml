@@ -421,6 +421,13 @@
     Set a response cookie.
 
     The maximum cookie age will be set to the sum of the max-* attribute values.
+
+    Cookies are always set with `Secure` and `SameSite=Strict`, so they will
+    never be sent by the browser on a cross-site request. This is sufficient
+    CSRF protection for the common case of a session cookie set by
+    `v-set-cookie` and read back with `$.cookies` (see the
+    <a class="link" href="/tutorial/auth" >auth tutorial</a>), since a
+    forged cross-site request simply won't carry the cookie at all.
   example: |
     <v-set-cookie
         name="session_key"
