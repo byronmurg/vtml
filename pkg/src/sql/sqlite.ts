@@ -20,6 +20,11 @@ function sqliteInterface(url:URL): NodeSqlInterface {
 
 	const sqliteDb = new SQLiteDatabase(path)
 
+	// Defense in depth alongside the prepare() callback below: any other
+	// native error emitted on the database with no listener (e.g. opening a
+	// corrupt file) would otherwise crash the process.
+	sqliteDb.on("error", (err) => debug("sqlite database error", err))
+
 	function sqliteQuery(sql:string, vars:unknown[]): Promise<unknown[]> {
 		sql = slightlyNicerSql(sql)
 		debug(sql)

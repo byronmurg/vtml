@@ -5,6 +5,9 @@ import {URL} from "node:url"
 import * as HTML from "../html"
 import {CreateResponseError} from "./web_utils"
 import EventStream from "../event_stream"
+import Debug from "debug"
+
+const debug = Debug("vtml:web")
 
 export type WebHandler = (client:WebClient) => Promise<void>|void
 
@@ -187,6 +190,14 @@ class WebClient {
 
 	async subscribe(response:SubscribeResult) {
 		const res = this.res
+
+		// A broken pipe / reset connection surfaces as "error" here, not
+		// "close" - without a listener that's unhandled and crashes the
+		// process.
+		res.on("error", (err) => {
+			debug("SSE response error", err)
+			connection.disconnect()
+		})
 
 		res.on("close", () => {
 			connection.disconnect()

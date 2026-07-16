@@ -22,6 +22,23 @@ that history.
 
 ## [Unreleased]
 
+### Fixed
+
+- Same crash class as 0.5.12, in the other DB drivers and the Redis event
+  stream: `pg`/`mysql2` connection pools emit a background `error` event for
+  problems unrelated to any in-flight query (e.g. an idle connection getting
+  dropped), and node-redis does the same for connection issues. None of
+  these had a listener, so any of them could crash the process. Verified
+  live against real Postgres and Redis servers; mysql2 verified against its
+  actual pool/event-emitter objects (no server available to test against).
+- Same crash class again in three more places: `vtml --dev`'s file watcher
+  and its child process both lacked `error` listeners (e.g. an ENOSPC from
+  hitting the OS's inotify limit could kill the dev server); an SSE
+  response (`<v-subscribe>`) crashed on a broken pipe instead of just
+  closing; and a Redis subscriber crashed if it disconnected while a
+  `subscribe()` call was still in flight — a normal occurrence, not an edge
+  case.
+
 ## [0.5.12] - 2026-07-10
 
 ### Fixed

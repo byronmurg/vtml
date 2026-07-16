@@ -1,4 +1,5 @@
 import type Express from "express"
+import { EventEmitter } from "node:events"
 import WebClient from "../src/web/web_client"
 
 function fakeReqRes() {
@@ -6,6 +7,13 @@ function fakeReqRes() {
 	const res = {} as Express.Response
 	return { req, res }
 }
+
+jest.mock("../src/event_stream", () => ({
+	__esModule: true,
+	default: {
+		connectClient: () => ({ onMessage: () => undefined, disconnect: jest.fn() }),
+	},
+}))
 
 test("safeReferer falls back to / when there's no Referer header", () => {
 	const { req, res } = fakeReqRes()
@@ -56,4 +64,22 @@ test("Wrap passes a rejected promise to next instead of crashing", async () => {
 	await new Promise((resolve) => setImmediate(resolve))
 
 	expect(next).toHaveBeenCalledWith(expect.any(Error))
+})
+
+test("subscribe() survives an error event on the response (e.g. a broken pipe)", async () => {
+	class FakeRes extends EventEmitter {
+		set() { /* no-op */ }
+		flushHeaders() { /* no-op */ }
+		write() { /* no-op */ }
+		end() { /* no-op */ }
+	}
+
+	const res = new FakeRes()
+	const client = new WebClient({} as Express.Request, res as unknown as Express.Response)
+
+	await client.subscribe({ channel: "test-channel" } as never)
+
+	// Before the fix this threw synchronously (no listener for "error"),
+	// which is exactly what would otherwise crash the whole process.
+	expect(() => res.emit("error", new Error("write EPIPE"))).not.toThrow()
 })

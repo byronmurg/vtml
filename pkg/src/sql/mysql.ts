@@ -9,6 +9,13 @@ export default
 function mysqlInterface(url:URL): NodeSqlInterface {
 	const pool = mysql.createPool(url.href)
 
+	// Background pool errors (e.g. an idle connection dropped by the
+	// server) are emitted on the underlying core pool, not the promise
+	// wrapper - mysql2/promise only forwards 'acquire'/'connection'/
+	// 'enqueue'/'release', not 'error'. Without a listener here this is an
+	// unhandled event and crashes the process.
+	pool.pool.on("error", (err) => debug("mysql pool error", err))
+
 	async function queryBase(sql:string, vars:unknown[]) {
 		const connection = await pool.getConnection()
 		try {

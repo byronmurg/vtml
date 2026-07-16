@@ -11,6 +11,7 @@ function mkProcess() {
 
 function start() {
 	const ps = mkProcess()
+	ps.on("error", (err) => console.error("Failed to start process:", err))
 	ps.stdout.on("data", (d) => console.log(d.toString()))
 	ps.stderr.on("data", (d) => console.log(d.toString()))
 	return ps
@@ -34,5 +35,8 @@ async function DevMode(file:string) {
 		timer = setTimeout(restartProcess, 50)
 	}
 
-	watch(dir, { persistent:true, recursive:true }, shouldRestart)
-} 
+	const watcher = watch(dir, { persistent:true, recursive:true }, shouldRestart)
+	// e.g. ENOSPC from hitting the OS's inotify watch limit - an unhandled
+	// "error" here would otherwise crash the whole dev server.
+	watcher.on("error", (err) => console.error("Watch error:", err))
+}

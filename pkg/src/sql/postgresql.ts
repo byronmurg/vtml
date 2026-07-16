@@ -12,7 +12,13 @@ function postgresqlInterface(url:URL): NodeSqlInterface {
 	const pgPool = new Pool({
 		connectionString: url.href,
 	})
-	
+
+	// The pool emits "error" for problems on idle connections, unrelated to
+	// any in-flight query (e.g. the server dropping a connection). Without a
+	// listener this is an unhandled event and crashes the process.
+	pgPool.on("error", (err) => debug("postgres pool error", err))
+
+
 	function queryPg(sql:string, vars:unknown[]) {
 		const nicerSQL = slightlyNicerSql(sql)
 		debug(nicerSQL, vars)
